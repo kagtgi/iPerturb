@@ -1,0 +1,69 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "iperturb"
+version = "0.1.0"
+description = "Gene Regulatory Neural Network for CRISPRi Perturb-seq perturbation prediction"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+keywords = [
+    "single-cell", "CRISPR", "perturbation", "gene-regulatory-network",
+    "neural-network", "bioinformatics", "genomics",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "torch>=2.0",
+    "scanpy>=1.9",
+    "anndata>=0.9",
+    "pandas>=2.0",
+    "numpy>=1.24",
+    "networkx>=3.1",
+    "requests>=2.28",
+    "urllib3>=1.26",
+    "tqdm>=4.65",
+    "matplotlib>=3.7",
+    "scikit-misc>=0.2",    # required by scanpy seurat_v3 HVG
+    "omnipath>=1.0",
+    "gseapy>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+    "pytest-cov",
+    "ruff",
+    "mypy",
+    "types-requests",
+]
+
+[project.scripts]
+iperturb-build-grn   = "iperturb.grn:build_grn"
+iperturb-pipeline    = "scripts.run_pipeline:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["iperturb*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
