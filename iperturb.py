@@ -172,7 +172,7 @@ from pathlib import Path
 import requests
 import pandas as pd
 import numpy as np
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -1532,7 +1532,7 @@ import matplotlib.patheffects as pe
 from matplotlib.colors import TwoSlopeNorm
 from matplotlib.lines import Line2D
 from IPython.display import display, HTML
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 
 log = logging.getLogger("grn")
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -2775,7 +2775,7 @@ from pathlib import Path
 import requests
 import pandas as pd
 import numpy as np
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -3821,7 +3821,7 @@ import matplotlib.patheffects as pe
 from matplotlib.colors import TwoSlopeNorm
 from matplotlib.lines import Line2D
 from IPython.display import display, HTML
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 
 log = logging.getLogger("grn")
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -4800,5 +4800,6 @@ results_path = f"/content/{CELL_LINE}_metrics_subsample_{N_EVAL_RUNS}runs.tsv"
 results_df.to_csv(results_path, sep="\t", index=False)
 print(f"\n✓ Per-run metrics saved → {results_path}")
 
-# Results are collected, zipped and downloaded by notebooks/iPerturb_Colab.ipynb.
-files.download("myfolder.zip")
+# Results (figures in /content/grn_plots, metrics TSVs and GRN tables in /content)
+# are collected/zipped by notebooks/iPerturb_Colab.ipynb (Colab) or retrieved directly.
+print("\n✓ iPerturb pipeline complete — all outputs written under /content/.")
