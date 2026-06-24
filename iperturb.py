@@ -2475,7 +2475,9 @@ def evaluate_all(
     model.to(device)
 
     # Resolve x0 — works for Subset (wraps the underlying dataset)
-    base_ds = dataset.dataset if hasattr(dataset, "dataset") else dataset
+    base_ds = dataset
+    while not hasattr(base_ds, "x0") and hasattr(base_ds, "dataset"):
+        base_ds = base_ds.dataset      # unwrap nested Subset(s) to reach the base dataset
     x0 = base_ds.x0.to(device)
 
     loader = DataLoader(dataset, batch_size=batch_size,
