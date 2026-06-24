@@ -7,7 +7,7 @@ import csv, sys
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 sys.path.insert(0, "figs")
-from style_google import apply_style, mono_ticks, GBLUE, GREY500, GREY300, GREY900
+from style_google import apply_style, mono_ticks, GBLUE_L, GREY500, GREY300, GREY900
 
 apply_style()
 cloud, hi = [], []
@@ -28,8 +28,8 @@ ax.plot([0, 900], [0, 900], ls=(0, (4, 3)), color=GREY300, lw=1.0, zorder=1)
 ax.scatter([c[0] for c in cloud], [c[1] for c in cloud], s=11, c=GREY500,
            alpha=0.55, linewidths=0, zorder=2, label="TF")
 # highlighted TFs (exact)
-ax.scatter([h[0] for h in hi], [h[1] for h in hi], s=46, c=GBLUE,
-           edgecolors="white", linewidths=0.8, zorder=4, label="Highlighted TF")
+ax.scatter([h[0] for h in hi], [h[1] for h in hi], s=46, c=GBLUE_L,
+           edgecolors=GREY900, linewidths=0.6, zorder=4, label="Highlighted TF")
 
 # leader-line labels, hand-placed (dx, dy in points, ha) to avoid collisions
 OFF = {"TRIM24": (-18, 20, "right"), "ATF4": (20, 8, "left"),

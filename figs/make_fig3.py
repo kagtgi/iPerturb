@@ -9,13 +9,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 sys.path.insert(0, "figs")
-from style_google import (apply_style, mono_ticks, GBLUE, GRED, GYELLOW, GGREEN,
-                          GPURPLE, GGREY, GREY700, GREY900, SEQ_BAD_GOOD)
+from style_google import (apply_style, mono_ticks, GREY300, GREY500, GREY700, GREY900,
+                          GBLUE_L, GRED_L, GYELLOW_L, GGREEN_L, GPURPLE_L, GGREY_L,
+                          SEQ_BAD_GOOD_L)
 apply_style()
 
 METHODS = ["CPA", "GEARS", "scGPT", "STATE", "Cell2Sentence", "iPerturb"]
-COLOR = {"CPA": GPURPLE, "GEARS": GYELLOW, "scGPT": GGREEN, "STATE": GRED,
-         "Cell2Sentence": GGREY, "iPerturb": GBLUE}
+COLOR = {"CPA": GPURPLE_L, "GEARS": GYELLOW_L, "scGPT": GGREEN_L, "STATE": GRED_L,
+         "Cell2Sentence": GGREY_L, "iPerturb": GBLUE_L}
 CELLS = ["K562", "RPE1"]
 
 D = {}
@@ -30,8 +31,8 @@ def grouped(ax, metric, title, letter, ylim=None):
         ys = [D[(metric, c, m)][0] for c in CELLS]
         es = [D[(metric, c, m)][1] for c in CELLS]
         ax.bar(xs, ys, w, yerr=es, label=m, color=COLOR[m],
-               edgecolor=(GREY900 if m == "iPerturb" else "white"),
-               linewidth=(0.9 if m == "iPerturb" else 0.4),
+               edgecolor=(GREY900 if m == "iPerturb" else GREY500),
+               linewidth=(1.0 if m == "iPerturb" else 0.5),
                error_kw=dict(elinewidth=0.7, capsize=1.6, ecolor=GREY700))
     ax.set_xticks(range(len(CELLS))); ax.set_xticklabels(CELLS)
     ax.set_title(title, loc="center", fontsize=8.5)
@@ -45,7 +46,7 @@ def heatmap(ax, letter):
     cols = [("K562", "d20"), ("K562", "d"), ("RPE1", "d20"), ("RPE1", "d")]
     M = np.array([[D[(f"pearson_{mm}", cc, meth)][0] for cc, mm in cols]
                   for meth in METHODS])
-    cmap = LinearSegmentedColormap.from_list("bad_good", SEQ_BAD_GOOD)
+    cmap = LinearSegmentedColormap.from_list("bad_good", SEQ_BAD_GOOD_L)
     im = ax.imshow(M, cmap=cmap, vmin=0.0, vmax=0.75, aspect="auto")
     ax.set_xticks(range(4)); ax.set_yticks(range(len(METHODS)))
     ax.set_xticklabels(["K562\n$\\Delta_{20}$", "K562\n$\\Delta$",
@@ -66,7 +67,7 @@ def heatmap(ax, letter):
     ax.text(-0.16, 1.04, letter, transform=ax.transAxes, fontweight="bold",
             fontsize=10, va="bottom")
 
-fig, axs = plt.subplots(2, 2, figsize=(6.8, 2.8))
+fig, axs = plt.subplots(2, 2, figsize=(6.8, 2.55))
 grouped(axs[0, 0], "directional", "Directional accuracy", "a", ylim=(0.5, 0.95))
 grouped(axs[0, 1], "mse", "Mean squared error", "b", ylim=(0, 0.85))
 heatmap(axs[1, 0], "c")

@@ -84,6 +84,7 @@ The paper figures are regenerated in a consistent Google/Material style from the
 provided metric tables:
 
 ```bash
+python figs/make_fig1_overview.py  # Figure 1: iPerturb framework overview
 python figs/make_fig2_scatter.py   # Figure 2: TF cell-type-specific wiring scatter
 python figs/make_fig3.py           # Figure 3: benchmark panels + Pearson heatmap
 ```

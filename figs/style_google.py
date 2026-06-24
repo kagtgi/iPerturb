@@ -15,6 +15,15 @@ GREY300 = "#DADCE0"; GREY200 = "#E8EAED"; GREY500 = "#9AA0A6"; GREY700 = "#5F636
 GREY900 = "#202124"
 # Sequential ramp for "bad -> good" heatmaps (guide section 8.2): red -> amber -> green
 SEQ_BAD_GOOD = ["#EA4335", "#FBBC04", "#34A853"]
+
+# Lighter (300-level) tints of the brand hues -- softer fills for dense charts
+GBLUE_L   = "#8AB4F8"   # blue 300
+GRED_L    = "#F28B82"   # red 300
+GYELLOW_L = "#FDD663"   # yellow 300
+GGREEN_L  = "#81C995"   # green 300
+GPURPLE_L = "#B39DDB"   # purple 300
+GGREY_L   = "#BDC1C6"   # grey 400
+SEQ_BAD_GOOD_L = ["#F6AEA6", "#FDD663", "#A8D5B5"]   # lighter bad -> good ramp
 # Container tints
 AMBER = "#B06000"
 
