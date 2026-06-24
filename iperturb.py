@@ -2646,6 +2646,39 @@ results_path = f"/content/{CELL_LINE}_metrics_subsample_{N_EVAL_RUNS}runs.tsv"
 results_df.to_csv(results_path, sep="\t", index=False)
 print(f"\n✓ Per-run metrics saved → {results_path}")
 
+# ===== Lambda ablation (Phase F): drop-one-term + lambda-5 sweep on K562 =====
+# Opt-in via env IPERTURB_ABLATION=1. Reuses the subsample-eval setup and the SAME
+# initial weights (1,1,1,0.5,2) as the baseline ("full"); this only measures each
+# term's contribution + lambda_5 robustness. Writes K562_ablation_lambda.tsv, then
+# exits before RPE1 (run a normal pass for the main results).
+if os.environ.get("IPERTURB_ABLATION"):
+    import sys as _sys, pandas as _pd_abl
+    ABL_SEEDS = [0, 1, 2]
+    BASE = dict(lam_wmse=1.0, lam_afda=1.0, lam_delta=1.0, lam_balance=0.5, lam_deg=2.0)
+    CONFIGS = [("full", {}), ("-WMSE", {"lam_wmse": 0.0}), ("-AFDA", {"lam_afda": 0.0}),
+               ("-bal", {"lam_balance": 0.0}), ("-Delta", {"lam_delta": 0.0}),
+               ("-DEG", {"lam_deg": 0.0}), ("l5=0.5", {"lam_deg": 0.5}),
+               ("l5=1", {"lam_deg": 1.0}), ("l5=4", {"lam_deg": 4.0})]
+    def _abl_one(weights, seed):
+        tr, va, te = split_dataset(dataset, train_frac=0.70, val_frac=0.10, seed=0)
+        torch.manual_seed(seed); np.random.seed(seed)
+        mdl, _ = grn_tsv_to_grnn(OUT_FILE, GENE_NAMES, x0_numpy)
+        train_grnn(mdl, tr, va, n_epochs=50, lr=1e-3, top_k_deg=20, device=DEVICE, **weights)
+        r = evaluate_all(mdl, te, top_k_pearson=20, lfc_threshold=0.1, device=DEVICE)
+        return r["directional_accuracy"], r["mse_delta"]
+    _abl_rows = []
+    for _name, _ov in CONFIGS:
+        _w = {**BASE, **_ov}; _da, _ms = [], []
+        for _s in ABL_SEEDS:
+            a, mse = _abl_one(_w, _s); _da.append(a); _ms.append(mse)
+            print(f"[ablation] {_name:7} seed={_s} dir={a:.3f} mse={mse:.4f}", flush=True)
+        _abl_rows.append(dict(config=_name,
+            dir_acc_mean=float(np.mean(_da)), dir_acc_sd=float(np.std(_da)),
+            mse_mean=float(np.mean(_ms)), mse_sd=float(np.std(_ms)), **_w))
+    _pd_abl.DataFrame(_abl_rows).to_csv("/content/K562_ablation_lambda.tsv", sep="\t", index=False)
+    print("✓ Ablation saved → /content/K562_ablation_lambda.tsv", flush=True)
+    _sys.exit(0)
+
 import scanpy as sc
 
 DATA_PATH = "/content/RPE1.h5ad"
