@@ -1,0 +1,31 @@
+# iPerturb dependencies.
+# In Colab, torch/numpy/pandas/scipy/networkx/matplotlib are preinstalled and
+# pip will skip them (version constraints are already satisfied); the single-cell
+# and regulatory-database packages are the ones actually installed.
+
+# Core ML
+torch>=1.12
+
+# Single-cell I/O + preprocessing
+scanpy[leiden]>=1.9
+anndata>=0.8
+scikit-misc>=0.1.3
+
+# Scientific stack
+numpy>=1.21
+pandas>=1.3
+scipy>=1.7
+networkx>=2.6
+matplotlib>=3.5
+
+# Data fetching
+requests>=2.27
+urllib3>=1.26
+tqdm>=4.60
+
+# Regulatory databases
+omnipath>=1.0
+gseapy>=1.0
+
+# Figure-data extraction only (figs/extract_*.py); optional
+pymupdf>=1.23

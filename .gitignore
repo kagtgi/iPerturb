@@ -1,0 +1,46 @@
+# ---- Large / license-gated source data (never commit) ----
+GeneHancer_*.gff
+GeneHancer_*.txt
+*.h5ad
+Hsa*coex*.zip
+coxpresdb_extract/
+grn_cache/
+cache/
+
+# ---- Copyrighted reference PDFs ----
+network_propagation*.pdf
+
+# ---- The paper lives elsewhere; this is a code-only repo ----
+iPerturb/
+iPerturb.pdf
+
+# ---- Generated pipeline outputs ----
+grn_plots/
+results/
+*.graphml
+grn_edges.tsv
+*_grn_logged.tsv
+grn_gene_lists.txt
+*_metrics_subsample_*runs.tsv
+*.zip
+
+# ---- Generated figure renders at repo root (regenerate via figs/) ----
+/tf_k562_rpe1_scatter_colored.pdf
+/tf_k562_rpe1_scatter_colored.png
+/figure3_combined.pdf
+/figure3_combined.png
+/Dir_improvement_dots.pdf
+/MSE_improvement_dots.pdf
+/centroid_accuracy_bars.pdf
+/pearson_delta_heatmap.pdf
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
