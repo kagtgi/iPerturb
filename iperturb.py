@@ -2653,7 +2653,7 @@ print(f"\n✓ Per-run metrics saved → {results_path}")
 # exits before RPE1 (run a normal pass for the main results).
 if os.environ.get("IPERTURB_ABLATION"):
     import sys as _sys, pandas as _pd_abl
-    ABL_SEEDS = [0, 1, 2]
+    ABL_SEEDS = [0, 1]   # smaller study (CPU-feasible); 2 seeds
     BASE = dict(lam_wmse=1.0, lam_afda=1.0, lam_delta=1.0, lam_balance=0.5, lam_deg=2.0)
     CONFIGS = [("full", {}), ("-WMSE", {"lam_wmse": 0.0}), ("-AFDA", {"lam_afda": 0.0}),
                ("-bal", {"lam_balance": 0.0}), ("-Delta", {"lam_delta": 0.0}),
@@ -2663,7 +2663,7 @@ if os.environ.get("IPERTURB_ABLATION"):
         tr, va, te = split_dataset(dataset, train_frac=0.70, val_frac=0.10, seed=0)
         torch.manual_seed(seed); np.random.seed(seed)
         mdl, _ = grn_tsv_to_grnn(OUT_FILE, GENE_NAMES, x0_numpy)
-        train_grnn(mdl, tr, va, n_epochs=50, lr=1e-3, top_k_deg=20, device=DEVICE, **weights)
+        train_grnn(mdl, tr, va, n_epochs=30, lr=1e-3, top_k_deg=20, device=DEVICE, **weights)
         r = evaluate_all(mdl, te, top_k_pearson=20, lfc_threshold=0.1, device=DEVICE)
         return r["directional_accuracy"], r["mse_delta"]
     _abl_rows = []
