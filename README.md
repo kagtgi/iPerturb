@@ -18,6 +18,39 @@ reproduce the results for the two human cell lines studied (K562 and RPE1).
 
 ---
 
+## 🆕 iPerturb v2 — network propagation (this `ver2` branch)
+
+`ver2` upgrades iPerturb's **prediction step** from the Hill-kinetics fixed point
+to **network propagation** — random-walk-with-restart / heat diffusion over the
+*same* signed L1–L4 GRN — with a closed-form, inferred ridge readout. The GRN
+construction and the mechanistic-interpretability story are unchanged; only the
+predictor is replaced. This is the **exact code used in the FairPert benchmark**
+([`PerturbationBenchmarkTool`](https://github.com/kagtgi/PerturbationBenchmarkTool)),
+packaged under [`iperturb_v2/`](iperturb_v2/) — see
+[`iperturb_v2/README.md`](iperturb_v2/README.md) for method, config, and usage.
+
+**Why:** v1's Hill-kinetics predictor fell back to control on gene *pairs* and had
+no way to score genes *unseen* in training. v2 composes combinations as additive
+network sources and predicts unseen genes from their **network position** — with
+no test-cell leakage.
+
+**Benchmark result (Norman 2019):** combinatorial Pearson Δ **0.06 → 0.64** (last
+place → rank 3 of 10, rivalling the matching-mean baseline); unseen single-gene Δ
+**0.009 → 0.25** — the **only** model to significantly beat the non-targeting null
+on perturbations held out entirely from training.
+
+| | v1 (`hill`, on `main`) | v2 (`propagate`, this branch) |
+|---|---|---|
+| Predictor | signed Hill-kinetics fixed point | RWR / heat propagation + ridge readout |
+| Combinations | fall back to control | additive network sources (compose by linearity) |
+| Unseen genes | no signal | prediction from network position |
+| Leakage | reads the test KD level | none (readout fit on train only) |
+| Compute | GPU (per-sample training) | CPU (numpy/scipy, seconds) |
+
+The original Hill-kinetics pipeline (**v1**) is unchanged and documented below.
+
+---
+
 ## Quickstart (Google Colab — recommended)
 
 Open [`notebooks/iPerturb_Colab.ipynb`](notebooks/iPerturb_Colab.ipynb) in Colab
