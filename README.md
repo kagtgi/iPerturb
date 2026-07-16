@@ -49,6 +49,16 @@ For each cell line, [`iperturb.py`](iperturb.py) runs top-to-bottom:
 5. **Evaluation** — directional accuracy, MSE, Pearson (top-20 and genome-wide),
    and centroid accuracy on held-out perturbations, vs. five baselines.
 
+### Reproducibility note
+
+The metrics reported in the paper come from a **full held-out-set** evaluation of
+the original training run. For speed, this pipeline evaluates on repeated **30%
+subsamples** of the held-out set by default (`SUBSAMPLE_FRAC` / `N_EVAL_RUNS` near
+the top of [`iperturb.py`](iperturb.py)); as an independent re-run, its exact
+values can therefore differ from the paper. Set `SUBSAMPLE_FRAC = 1.0` for a
+full-set evaluation. The values plotted in the paper's Figure 3 are stored in
+[`figs/fig3_values.csv`](figs/fig3_values.csv).
+
 ## Data requirements
 
 | Source | How it is obtained | In repo? |

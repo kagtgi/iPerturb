@@ -156,7 +156,7 @@ COXPRESDB_TOKEN = ""
 # Filter GeneHancer to K562-active enhancers only (recommended)
 TISSUE_FILTER = "K562"   # substring match in tissue name; "" = no filter
 
-LEVEL_CONF = {1: 1.0, 2: 0.60, 3: 0.35, 4: 0.20}
+LEVEL_CONF = {1: 1.0, 2: 0.60, 3: 0.35, 4: 0.20, 5: 0.55}
 
 # Set to True if COXPRESdb consistently times out from your Colab region
 SKIP_COXPRESDB = False
@@ -778,6 +778,87 @@ else:
 # ────────────────────────────────────────────────────────────
 # CELL 9 — Merge all levels
 # ────────────────────────────────────────────────────────────
+def build_chip_edges(gene_symbols, cell_line, cache_dir="/content/grn_cache",
+                     level=2, db="ChIP-Atlas"):
+    """Optional cell-type-specific TF->target tier from ChIP-seq binding
+    (ENCODE / ChIP-Atlas). Loads {cache_dir}/{cell_line}_chip_edges.tsv if
+    present (columns source,target[,sign]) and filters to the HVG node set;
+    returns empty (pipeline unaffected) if the file is absent. The K562 file is
+    generated on the VM from ChIP-Atlas; RPE1 has no such file, so it no-ops."""
+    import os as _os
+    cols = ["source", "target", "sign", "level", "db"]
+    path = _os.path.join(cache_dir, f"{cell_line}_chip_edges.tsv")
+    if not _os.path.exists(path):
+        return pd.DataFrame(columns=cols)
+    df = pd.read_csv(path, sep="\t")
+    gs = set(gene_symbols)
+    df = df[df["source"].isin(gs) & df["target"].isin(gs)].copy()
+    if "sign" not in df.columns:
+        df["sign"] = 0
+    df["level"] = level; df["db"] = db
+    try:
+        log.info("L6 ChIP-seq tier (%s): %d edges", cell_line, len(df))
+    except Exception:
+        pass
+    return df[cols]
+
+
+def build_perturbation_edges(adata, hvg_ensg, symbol_col="gene_name",
+                             pert_col="gene", control_label="non-targeting",
+                             lfc_threshold=0.20, top_k=20, min_cells=20,
+                             level=5, db="PerturbSeq"):
+    """Phase-1 causal tier: signed edges inferred DIRECTLY from the CRISPRi
+    Perturb-seq (the causal gold standard). A knockdown of gene g that shifts
+    gene t by |Delta log-mean| >= lfc_threshold yields an edge g->t with
+    sign = -sign(Delta) (t follows g down => g activates t; t rises => g
+    represses t). Only the top_k strongest targets per perturbation are kept.
+    Restricted to the HVG node set. Returns [source,target,sign,level,db]."""
+    empty = pd.DataFrame(columns=["source", "target", "sign", "level", "db"])
+    var_syms = adata.var[symbol_col].astype(str).values
+    col_of = {e: i for i, e in enumerate(adata.var_names)}
+    hvg_cols, hvg_syms = [], []
+    for e in hvg_ensg:
+        if e in col_of:
+            hvg_cols.append(col_of[e]); hvg_syms.append(var_syms[col_of[e]])
+    if not hvg_cols:
+        return empty
+    hvg_cols = np.asarray(hvg_cols)
+    def _lm(mask):
+        X = adata.X[mask]
+        X = X.toarray() if hasattr(X, "toarray") else np.asarray(X)
+        return np.log1p(np.expm1(X).mean(axis=0)).ravel()[hvg_cols]
+    pert = adata.obs[pert_col].astype(str).values
+    ctrl = pert == control_label
+    if ctrl.sum() == 0:
+        return empty
+    x0 = _lm(ctrl)
+    sym_set = set(hvg_syms)
+    recs = []
+    for g in pd.unique(pert):
+        if g == control_label or g not in sym_set:
+            continue
+        m = pert == g
+        if int(m.sum()) < min_cells:
+            continue
+        d = _lm(m) - x0
+        kept = 0
+        for j in np.argsort(-np.abs(d)):
+            if abs(d[j]) < lfc_threshold or kept >= top_k:
+                break
+            t = hvg_syms[j]
+            if t != g:
+                recs.append({"source": g, "target": t,
+                             "sign": int(-np.sign(d[j])), "level": level, "db": db})
+                kept += 1
+    out = pd.DataFrame(recs, columns=["source", "target", "sign", "level", "db"])
+    try:
+        log.info("L5 perturbation-grounded edges: %d from %d perturbations",
+                 len(out), out["source"].nunique() if len(out) else 0)
+    except Exception:
+        pass
+    return out
+
+
 def merge_edges(dfs):
     valid_dfs = [d for d in dfs if not d.empty]
     if not valid_dfs: return pd.DataFrame(columns=["source","target","sign","level","db"])
@@ -793,7 +874,9 @@ def merge_edges(dfs):
     log.info("Merged pool: %d unique (source,target) pairs", len(merged))
     return merged
 
-POOL = merge_edges([L1_TRRUST, L1_OMNIPATH, L1_COLLECTRI, L2_GH, L3, L4])
+L5_PERT = build_perturbation_edges(adata, hvg_list)
+L6_CHIP = build_chip_edges(hvg_symbols, CELL_LINE)
+POOL = merge_edges([L1_TRRUST, L1_OMNIPATH, L1_COLLECTRI, L2_GH, L3, L4, L5_PERT, L6_CHIP])
 
 print("\n=== Edge pool ===")
 print(POOL.groupby("level")["source"].count().rename("edges").to_string())
@@ -1734,6 +1817,58 @@ class GRNN(nn.Module):
 # ════════════════════════════════════════════════════════════
 #  2. TSV → model
 # ════════════════════════════════════════════════════════════
+class RWRBaseline(nn.Module):
+    """Linear network-propagation baseline (signed Random Walk with Restart) on
+    the SAME GRN, for the Phase-2 ablation. Iterates
+        x <- alpha * (A_hat x) + (1-alpha) * x0
+    with the perturbed gene clamped, where A_hat is the signed adjacency
+    normalised by target in-degree. This is the linear analogue of iPerturb's
+    learnable, nonlinear Hill propagation (cf. network propagation, Cowen et
+    al. 2017; adapted from the RWR scheme of GWAS_NetworkPropagation). No
+    learnable parameters; exposes the same forward() interface as GRNN so it
+    plugs straight into evaluate_all."""
+    def __init__(self, gene_names, src_idx, tgt_idx, signs, x0,
+                 alpha=0.6, max_iter=100, eps=1e-5):
+        super().__init__()
+        self.N = len(gene_names)
+        self.alpha = float(alpha); self.max_iter = int(max_iter); self.eps = float(eps)
+        self.register_buffer("src_idx", src_idx.long())
+        self.register_buffer("tgt_idx", tgt_idx.long())
+        self.register_buffer("signs", signs.float())
+        deg = torch.zeros(self.N)
+        deg.scatter_add_(0, self.tgt_idx, torch.ones_like(self.signs))
+        self.register_buffer("deg", deg.clamp(min=1.0))
+
+    def forward(self, x0, perturbed_idx=None, perturbed_value=None):
+        x = x0.clone()
+        if perturbed_idx is not None and perturbed_value is not None:
+            x[perturbed_idx] = perturbed_value
+        for t in range(self.max_iter):
+            msg = torch.zeros(self.N, device=x.device, dtype=x.dtype)
+            msg.scatter_add_(0, self.tgt_idx, self.signs * x[self.src_idx])
+            x_new = self.alpha * (msg / self.deg) + (1.0 - self.alpha) * x0
+            if perturbed_idx is not None and perturbed_value is not None:
+                x_new[perturbed_idx] = perturbed_value
+            if (x_new - x).norm() < self.eps:
+                return x_new, t + 1
+            x = x_new
+        return x, self.max_iter
+
+
+def rwr_baseline_from_tsv(tsv_path, gene_names, x0, alpha=0.6, max_iter=100, eps=1e-5):
+    """Build the linear RWR baseline from the same GRN TSV as grn_tsv_to_grnn.
+    Unknown-sign edges (0) default to +1 (classic sign-blind propagation)."""
+    df = pd.read_csv(tsv_path, sep="\t")
+    g2i = {g: i for i, g in enumerate(gene_names)}
+    df = df[df["source"].isin(g2i) & df["target"].isin(g2i)].copy()
+    src = torch.tensor([g2i[g] for g in df["source"]], dtype=torch.long)
+    tgt = torch.tensor([g2i[g] for g in df["target"]], dtype=torch.long)
+    signs = torch.tensor(df["sign"].fillna(0).astype(int).values, dtype=torch.float32)
+    signs = torch.where(signs == 0, torch.ones_like(signs), signs)
+    return RWRBaseline(gene_names, src, tgt, signs,
+                       torch.tensor(x0, dtype=torch.float32), alpha, max_iter, eps)
+
+
 def grn_tsv_to_grnn(tsv_path, gene_names, x0, max_iter=100, eps=1e-5):
     df = pd.read_csv(tsv_path, sep="\t")
     g2i = {g: i for i, g in enumerate(gene_names)}
@@ -2646,6 +2781,24 @@ results_path = f"/content/{CELL_LINE}_metrics_subsample_{N_EVAL_RUNS}runs.tsv"
 results_df.to_csv(results_path, sep="\t", index=False)
 print(f"\n✓ Per-run metrics saved → {results_path}")
 
+# ---- Phase-2 ablation: linear RWR network-propagation baseline on the same GRN ----
+try:
+    _rwr = rwr_baseline_from_tsv(OUT_FILE, GENE_NAMES, x0_numpy)
+    _rwr_rows = []
+    for _seed in EVAL_SEEDS:
+        _rng = np.random.default_rng(_seed)
+        _P = len(test_ds); _msz = int(SUBSAMPLE_FRAC * _P)
+        _idx = _rng.choice(_P, size=_msz, replace=False)
+        _sub = torch.utils.data.Subset(test_ds, _idx)
+        _met = evaluate_all(_rwr, _sub, top_k_pearson=TOP_K_PEARSON,
+                            lfc_threshold=LFC_THRESHOLD, device=DEVICE)
+        _met["seed"] = _seed; _rwr_rows.append(_met)
+    _rwr_path = f"/content/{CELL_LINE}_rwr_baseline_{N_EVAL_RUNS}runs.tsv"
+    pd.DataFrame(_rwr_rows).to_csv(_rwr_path, sep="\t", index=False)
+    print(f"✓ RWR baseline (linear network propagation) metrics saved → {_rwr_path}", flush=True)
+except Exception as _e:
+    print(f"[warn] RWR baseline eval failed: {_e}", flush=True)
+
 # ===== Lambda ablation (Phase F): drop-one-term + lambda-5 sweep on K562 =====
 # Opt-in via env IPERTURB_ABLATION=1. Reuses the subsample-eval setup and the SAME
 # initial weights (1,1,1,0.5,2) as the baseline ("full"); this only measures each
@@ -2677,6 +2830,116 @@ if os.environ.get("IPERTURB_ABLATION"):
             mse_mean=float(np.mean(_ms)), mse_sd=float(np.std(_ms)), **_w))
     _pd_abl.DataFrame(_abl_rows).to_csv("/content/K562_ablation_lambda.tsv", sep="\t", index=False)
     print("✓ Ablation saved → /content/K562_ablation_lambda.tsv", flush=True)
+    _sys.exit(0)
+
+# ===== Contraction constant (for the convergence appendix): IPERTURB_JACOBIAN=1 =====
+# Empirically verifies max_i sum_k |dF_i/dx_k| < 1 (Banach contraction) at the fixed
+# points the iteration reaches, on the already-trained K562 `model`. Writes K562_jacobian.txt.
+if os.environ.get("IPERTURB_JACOBIAN"):
+    import sys as _sysj, numpy as _npj
+    model.eval()
+    def _F(z): return model._step(z)
+    @torch.no_grad()
+    def _fp(x, ci=None, cv=None, iters=200, eps=1e-6):
+        x = x.clone()
+        if ci is not None: x[ci] = cv
+        for t in range(iters):
+            xn = model._step(x)
+            if ci is not None: xn[ci] = cv
+            if (xn - x).norm() < eps: return xn, t + 1
+            x = xn
+        return x, iters
+    x0t = torch.tensor(x0_numpy, dtype=torch.float32, device=DEVICE)
+    pts = [(_fp(x0t)[0].detach(), "baseline")]
+    _rng = _npj.random.default_rng(0)
+    for j in _rng.choice(len(test_ds), size=min(12, len(test_ds)), replace=False):
+        b = test_ds[int(j)]
+        xs, _ = _fp(x0t, int(b["perturbed_idx"]), float(b["perturbed_value"]))
+        pts.append((xs.detach(), f"pert{int(j)}"))
+    max_rs = 0.0; rho_J = 0.0; rho_absJ = 0.0
+    for k, (xstar, tag) in enumerate(pts):
+        J = torch.autograd.functional.jacobian(_F, xstar)
+        rs = J.abs().sum(dim=1).max().item(); max_rs = max(max_rs, rs)
+        line = f"[jac] {tag:10} rowsum={rs:.4f}"
+        if k < 3:  # spectral radius (governs convergence; row-sum is only a loose upper bound)
+            evJ = torch.linalg.eigvals(J.to(torch.float64)).abs().max().item()
+            evA = torch.linalg.eigvals(J.abs().to(torch.float64)).abs().max().item()
+            rho_J = max(rho_J, evJ); rho_absJ = max(rho_absJ, evA)
+            line += f" rho(J)={evJ:.4f} rho(|J|)={evA:.4f}"
+        print(line, flush=True)
+    hops = [_fp(x0t, int(test_ds[int(j)]["perturbed_idx"]),
+                float(test_ds[int(j)]["perturbed_value"]))[1]
+            for j in _rng.choice(len(test_ds), size=min(40, len(test_ds)), replace=False)]
+    print(f"✓ JACOBIAN: rowsum={max_rs:.4f} rho(J)={rho_J:.4f} rho(|J|)={rho_absJ:.4f} "
+          f"median_hops={int(_npj.median(hops))}", flush=True)
+    with open("/content/K562_jacobian.txt", "w") as f:
+        f.write(f"max_rowsum\t{max_rs}\nrho_J\t{rho_J}\nrho_absJ\t{rho_absJ}\n"
+                f"median_hops\t{int(_npj.median(hops))}\nn_points\t{len(pts)}\n")
+    _sysj.exit(0)
+
+# ===== Extended controls (for reviewer response): Δ20 ablation + tier-drop + topology =====
+# Opt-in via env IPERTURB_CONTROLS=1. Reuses the K562 setup above and the same fixed
+# split. Adds (A) the drop-one loss ablation WITH a top-20 Pearson (Δ20) column that
+# quantifies the L_DEG trade-off; (B) evidence-tier drop (remove L4 co-expression, then
+# L3 PPI, down to L1 curated only); and (C) topology controls (edge-shuffle, sign-random).
+# Writes K562_controls.tsv, then exits before RPE1.
+if os.environ.get("IPERTURB_CONTROLS"):
+    import sys as _sys, pandas as _pd_c, tempfile as _tf, os as _os2, time as _time
+    CTL_SEEDS = [0, 1]
+    BASE = dict(lam_wmse=1.0, lam_afda=1.0, lam_delta=1.0, lam_balance=0.5, lam_deg=2.0)
+
+    def _ctl_eval(grn_path, weights, seed):
+        tr, va, te = split_dataset(dataset, train_frac=0.70, val_frac=0.10, seed=0)
+        torch.manual_seed(seed); np.random.seed(seed)
+        mdl, gdf = grn_tsv_to_grnn(grn_path, GENE_NAMES, x0_numpy)
+        train_grnn(mdl, tr, va, n_epochs=30, lr=1e-3, top_k_deg=20, device=DEVICE, **weights)
+        r = evaluate_all(mdl, te, top_k_pearson=20, lfc_threshold=0.1, device=DEVICE)
+        return (r["directional_accuracy"], r["mse_delta"], r["pearson_delta20_mean"],
+                r["pearson_delta_all_mean"], r["centroid_accuracy"], int(len(gdf)))
+
+    def _agg(study, name, grn_path, weights):
+        acc = {k: [] for k in ("dir", "mse", "d20", "dall", "cen")}; nedges = 0
+        for s in CTL_SEEDS:
+            d, m, d20, dall, cen, ne = _ctl_eval(grn_path, weights, s); nedges = ne
+            for k, v in zip(("dir", "mse", "d20", "dall", "cen"), (d, m, d20, dall, cen)):
+                acc[k].append(v)
+            print(f"[ctl:{study}] {name:12} seed={s} dir={d:.3f} mse={m:.4f} "
+                  f"d20={d20:.3f} cen={cen:.3f} edges={ne}", flush=True)
+        return dict(study=study, config=name, n_edges=nedges,
+            dir_mean=float(np.mean(acc["dir"])),  dir_sd=float(np.std(acc["dir"])),
+            mse_mean=float(np.mean(acc["mse"])),
+            d20_mean=float(np.mean(acc["d20"])),  d20_sd=float(np.std(acc["d20"])),
+            dall_mean=float(np.mean(acc["dall"])), centroid_mean=float(np.mean(acc["cen"])),
+            **weights)
+
+    _t0 = _time.time(); rows = []
+    # ---- (A) drop-one loss ablation WITH Δ20 (full GRN) ----
+    LOSS_CONFIGS = [("full", {}), ("-WMSE", {"lam_wmse": 0.0}), ("-AFDA", {"lam_afda": 0.0}),
+                    ("-bal", {"lam_balance": 0.0}), ("-Delta", {"lam_delta": 0.0}),
+                    ("-DEG", {"lam_deg": 0.0}), ("l5=0.5", {"lam_deg": 0.5}),
+                    ("l5=1", {"lam_deg": 1.0}), ("l5=4", {"lam_deg": 4.0})]
+    for _name, _ov in LOSS_CONFIGS:
+        rows.append(_agg("loss", _name, OUT_FILE, {**BASE, **_ov}))
+
+    # ---- build GRN variants for (B) tier-drop and (C) topology controls ----
+    _bdf = _pd_c.read_csv(OUT_FILE, sep="\t")
+    _td = _tf.mkdtemp()
+    def _wr(df, nm):
+        p = _os2.path.join(_td, nm + ".tsv"); df.to_csv(p, sep="\t", index=False); return p
+    _sh = _bdf.copy(); _sh["target"] = np.random.RandomState(0).permutation(_sh["target"].values)
+    _sr = _bdf.copy(); _sr["sign"]   = np.random.RandomState(1).permutation(_sr["sign"].values)
+    GRN_VARIANTS = [
+        ("dropL4",       _wr(_bdf[_bdf["level"] <= 3], "dropL4")),    # remove L4 co-expression
+        ("dropL3L4",     _wr(_bdf[_bdf["level"] <= 2], "dropL3L4")),  # also remove L3 PPI
+        ("L1only",       _wr(_bdf[_bdf["level"] <= 1], "L1only")),    # curated TF->target only
+        ("edge_shuffle", _wr(_sh, "edge_shuffle")),                   # destroy wiring
+        ("sign_random",  _wr(_sr, "sign_random")),                   # destroy signs
+    ]
+    for _name, _path in GRN_VARIANTS:
+        rows.append(_agg("grn", _name, _path, dict(BASE)))
+
+    _pd_c.DataFrame(rows).to_csv("/content/K562_controls.tsv", sep="\t", index=False)
+    print(f"✓ Controls saved → /content/K562_controls.tsv  ({_time.time()-_t0:.0f}s)", flush=True)
     _sys.exit(0)
 
 import scanpy as sc
@@ -2794,7 +3057,7 @@ COXPRESDB_TOKEN = ""
 # Filter GeneHancer to K562-active enhancers only (recommended)
 TISSUE_FILTER = "RPE1"   # substring match in tissue name; "" = no filter
 
-LEVEL_CONF = {1: 1.0, 2: 0.60, 3: 0.35, 4: 0.20}
+LEVEL_CONF = {1: 1.0, 2: 0.60, 3: 0.35, 4: 0.20, 5: 0.55}
 
 # Set to True if COXPRESdb consistently times out from your Colab region
 SKIP_COXPRESDB = False
@@ -3448,6 +3711,87 @@ else:
 # ────────────────────────────────────────────────────────────
 # CELL 9 — Merge all levels
 # ────────────────────────────────────────────────────────────
+def build_chip_edges(gene_symbols, cell_line, cache_dir="/content/grn_cache",
+                     level=2, db="ChIP-Atlas"):
+    """Optional cell-type-specific TF->target tier from ChIP-seq binding
+    (ENCODE / ChIP-Atlas). Loads {cache_dir}/{cell_line}_chip_edges.tsv if
+    present (columns source,target[,sign]) and filters to the HVG node set;
+    returns empty (pipeline unaffected) if the file is absent. The K562 file is
+    generated on the VM from ChIP-Atlas; RPE1 has no such file, so it no-ops."""
+    import os as _os
+    cols = ["source", "target", "sign", "level", "db"]
+    path = _os.path.join(cache_dir, f"{cell_line}_chip_edges.tsv")
+    if not _os.path.exists(path):
+        return pd.DataFrame(columns=cols)
+    df = pd.read_csv(path, sep="\t")
+    gs = set(gene_symbols)
+    df = df[df["source"].isin(gs) & df["target"].isin(gs)].copy()
+    if "sign" not in df.columns:
+        df["sign"] = 0
+    df["level"] = level; df["db"] = db
+    try:
+        log.info("L6 ChIP-seq tier (%s): %d edges", cell_line, len(df))
+    except Exception:
+        pass
+    return df[cols]
+
+
+def build_perturbation_edges(adata, hvg_ensg, symbol_col="gene_name",
+                             pert_col="gene", control_label="non-targeting",
+                             lfc_threshold=0.20, top_k=20, min_cells=20,
+                             level=5, db="PerturbSeq"):
+    """Phase-1 causal tier: signed edges inferred DIRECTLY from the CRISPRi
+    Perturb-seq (the causal gold standard). A knockdown of gene g that shifts
+    gene t by |Delta log-mean| >= lfc_threshold yields an edge g->t with
+    sign = -sign(Delta) (t follows g down => g activates t; t rises => g
+    represses t). Only the top_k strongest targets per perturbation are kept.
+    Restricted to the HVG node set. Returns [source,target,sign,level,db]."""
+    empty = pd.DataFrame(columns=["source", "target", "sign", "level", "db"])
+    var_syms = adata.var[symbol_col].astype(str).values
+    col_of = {e: i for i, e in enumerate(adata.var_names)}
+    hvg_cols, hvg_syms = [], []
+    for e in hvg_ensg:
+        if e in col_of:
+            hvg_cols.append(col_of[e]); hvg_syms.append(var_syms[col_of[e]])
+    if not hvg_cols:
+        return empty
+    hvg_cols = np.asarray(hvg_cols)
+    def _lm(mask):
+        X = adata.X[mask]
+        X = X.toarray() if hasattr(X, "toarray") else np.asarray(X)
+        return np.log1p(np.expm1(X).mean(axis=0)).ravel()[hvg_cols]
+    pert = adata.obs[pert_col].astype(str).values
+    ctrl = pert == control_label
+    if ctrl.sum() == 0:
+        return empty
+    x0 = _lm(ctrl)
+    sym_set = set(hvg_syms)
+    recs = []
+    for g in pd.unique(pert):
+        if g == control_label or g not in sym_set:
+            continue
+        m = pert == g
+        if int(m.sum()) < min_cells:
+            continue
+        d = _lm(m) - x0
+        kept = 0
+        for j in np.argsort(-np.abs(d)):
+            if abs(d[j]) < lfc_threshold or kept >= top_k:
+                break
+            t = hvg_syms[j]
+            if t != g:
+                recs.append({"source": g, "target": t,
+                             "sign": int(-np.sign(d[j])), "level": level, "db": db})
+                kept += 1
+    out = pd.DataFrame(recs, columns=["source", "target", "sign", "level", "db"])
+    try:
+        log.info("L5 perturbation-grounded edges: %d from %d perturbations",
+                 len(out), out["source"].nunique() if len(out) else 0)
+    except Exception:
+        pass
+    return out
+
+
 def merge_edges(dfs):
     valid_dfs = [d for d in dfs if not d.empty]
     if not valid_dfs: return pd.DataFrame(columns=["source","target","sign","level","db"])
@@ -3463,7 +3807,9 @@ def merge_edges(dfs):
     log.info("Merged pool: %d unique (source,target) pairs", len(merged))
     return merged
 
-POOL = merge_edges([L1_TRRUST, L1_OMNIPATH, L1_COLLECTRI, L2_GH, L3, L4])
+L5_PERT = build_perturbation_edges(adata, hvg_list)
+L6_CHIP = build_chip_edges(hvg_symbols, CELL_LINE)
+POOL = merge_edges([L1_TRRUST, L1_OMNIPATH, L1_COLLECTRI, L2_GH, L3, L4, L5_PERT, L6_CHIP])
 
 print("\n=== Edge pool ===")
 print(POOL.groupby("level")["source"].count().rename("edges").to_string())
@@ -4058,6 +4404,58 @@ class GRNN(nn.Module):
 # ════════════════════════════════════════════════════════════
 #  2. TSV → model
 # ════════════════════════════════════════════════════════════
+class RWRBaseline(nn.Module):
+    """Linear network-propagation baseline (signed Random Walk with Restart) on
+    the SAME GRN, for the Phase-2 ablation. Iterates
+        x <- alpha * (A_hat x) + (1-alpha) * x0
+    with the perturbed gene clamped, where A_hat is the signed adjacency
+    normalised by target in-degree. This is the linear analogue of iPerturb's
+    learnable, nonlinear Hill propagation (cf. network propagation, Cowen et
+    al. 2017; adapted from the RWR scheme of GWAS_NetworkPropagation). No
+    learnable parameters; exposes the same forward() interface as GRNN so it
+    plugs straight into evaluate_all."""
+    def __init__(self, gene_names, src_idx, tgt_idx, signs, x0,
+                 alpha=0.6, max_iter=100, eps=1e-5):
+        super().__init__()
+        self.N = len(gene_names)
+        self.alpha = float(alpha); self.max_iter = int(max_iter); self.eps = float(eps)
+        self.register_buffer("src_idx", src_idx.long())
+        self.register_buffer("tgt_idx", tgt_idx.long())
+        self.register_buffer("signs", signs.float())
+        deg = torch.zeros(self.N)
+        deg.scatter_add_(0, self.tgt_idx, torch.ones_like(self.signs))
+        self.register_buffer("deg", deg.clamp(min=1.0))
+
+    def forward(self, x0, perturbed_idx=None, perturbed_value=None):
+        x = x0.clone()
+        if perturbed_idx is not None and perturbed_value is not None:
+            x[perturbed_idx] = perturbed_value
+        for t in range(self.max_iter):
+            msg = torch.zeros(self.N, device=x.device, dtype=x.dtype)
+            msg.scatter_add_(0, self.tgt_idx, self.signs * x[self.src_idx])
+            x_new = self.alpha * (msg / self.deg) + (1.0 - self.alpha) * x0
+            if perturbed_idx is not None and perturbed_value is not None:
+                x_new[perturbed_idx] = perturbed_value
+            if (x_new - x).norm() < self.eps:
+                return x_new, t + 1
+            x = x_new
+        return x, self.max_iter
+
+
+def rwr_baseline_from_tsv(tsv_path, gene_names, x0, alpha=0.6, max_iter=100, eps=1e-5):
+    """Build the linear RWR baseline from the same GRN TSV as grn_tsv_to_grnn.
+    Unknown-sign edges (0) default to +1 (classic sign-blind propagation)."""
+    df = pd.read_csv(tsv_path, sep="\t")
+    g2i = {g: i for i, g in enumerate(gene_names)}
+    df = df[df["source"].isin(g2i) & df["target"].isin(g2i)].copy()
+    src = torch.tensor([g2i[g] for g in df["source"]], dtype=torch.long)
+    tgt = torch.tensor([g2i[g] for g in df["target"]], dtype=torch.long)
+    signs = torch.tensor(df["sign"].fillna(0).astype(int).values, dtype=torch.float32)
+    signs = torch.where(signs == 0, torch.ones_like(signs), signs)
+    return RWRBaseline(gene_names, src, tgt, signs,
+                       torch.tensor(x0, dtype=torch.float32), alpha, max_iter, eps)
+
+
 def grn_tsv_to_grnn(tsv_path, gene_names, x0, max_iter=100, eps=1e-5):
     df = pd.read_csv(tsv_path, sep="\t")
     g2i = {g: i for i, g in enumerate(gene_names)}
@@ -4834,6 +5232,24 @@ results_df = _pd.DataFrame(all_metrics)
 results_path = f"/content/{CELL_LINE}_metrics_subsample_{N_EVAL_RUNS}runs.tsv"
 results_df.to_csv(results_path, sep="\t", index=False)
 print(f"\n✓ Per-run metrics saved → {results_path}")
+
+# ---- Phase-2 ablation: linear RWR network-propagation baseline on the same GRN ----
+try:
+    _rwr = rwr_baseline_from_tsv(OUT_FILE, GENE_NAMES, x0_numpy)
+    _rwr_rows = []
+    for _seed in EVAL_SEEDS:
+        _rng = np.random.default_rng(_seed)
+        _P = len(test_ds); _msz = int(SUBSAMPLE_FRAC * _P)
+        _idx = _rng.choice(_P, size=_msz, replace=False)
+        _sub = torch.utils.data.Subset(test_ds, _idx)
+        _met = evaluate_all(_rwr, _sub, top_k_pearson=TOP_K_PEARSON,
+                            lfc_threshold=LFC_THRESHOLD, device=DEVICE)
+        _met["seed"] = _seed; _rwr_rows.append(_met)
+    _rwr_path = f"/content/{CELL_LINE}_rwr_baseline_{N_EVAL_RUNS}runs.tsv"
+    pd.DataFrame(_rwr_rows).to_csv(_rwr_path, sep="\t", index=False)
+    print(f"✓ RWR baseline (linear network propagation) metrics saved → {_rwr_path}", flush=True)
+except Exception as _e:
+    print(f"[warn] RWR baseline eval failed: {_e}", flush=True)
 
 # Results (figures in /content/grn_plots, metrics TSVs and GRN tables in /content)
 # are collected/zipped by notebooks/iPerturb_Colab.ipynb (Colab) or retrieved directly.
