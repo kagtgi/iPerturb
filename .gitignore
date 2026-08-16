@@ -44,3 +44,12 @@ venv/
 # ---- OS ----
 .DS_Store
 Thumbs.db
+
+# Conference talk (CIBB 2026).
+# The working copy in slides/ carries speaker notes and one presenter-only
+# slide that are deliberately NOT public — the repo is public, and committing
+# them here would publish them. The public build is deployed to the gh-pages
+# branch by slides/tools/build_public.py, which strips both.
+# To version the deck itself, commit slides/dist/ instead, or remove this rule
+# once the notes are considered publishable.
+slides/
