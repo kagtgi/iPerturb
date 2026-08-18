@@ -32,6 +32,72 @@
     plugins: [RevealNotes]
   });
 
+  /**
+   * The two animated slides (GATA1 propagation, whole-network) are driven by a
+   * bespoke Player object, not reveal's native fragments. Route Up/Down to
+   * whichever mechanism the current slide actually uses, and do nothing at
+   * either end rather than falling through to a slide change.
+   */
+  function currentAnim() {
+    var s = deck.getCurrentSlide();
+    if (!s) return null;
+    if (s.id === 'slide-propagation' && window.__grnPlayer) {
+      var p = window.__grnPlayer;
+      return { obj: p, at: p.phase, last: p.lastPhase };
+    }
+    if (s.id === 'slide-fullnet' && window.__fullNet) {
+      var f = window.__fullNet;
+      return { obj: f, at: f.hop, last: f.lastWave + 1 };
+    }
+    return null;
+  }
+
+  function stepAnimForward() {
+    var a = currentAnim();
+    if (a) { if (a.at < a.last) { a.obj.stop(); a.obj.next(); } return; }
+    deck.nextFragment();
+  }
+  function stepAnimBackward() {
+    var a = currentAnim();
+    if (a) { if (a.at > 0) { a.obj.stop(); a.obj.prev(); } return; }
+    deck.prevFragment();
+  }
+
+  /**
+   * Left/Right/PageUp/PageDown/Space always change the slide, full stop —
+   * they never get intercepted to step a fragment or an animation first.
+   * Up/Down do the opposite: they only ever step whatever is animated on the
+   * current slide (a custom Player, or a native reveal fragment) and never
+   * change the slide themselves.
+   *
+   * `addKeyBinding` (populating reveal's internal `this.bindings`) is the
+   * mechanism that actually overrides a key's default behaviour in this
+   * version of reveal — the documented-looking `keyboard: {37: fn, ...}`
+   * constructor option is checked against `config.keyboard`, which reveal's
+   * own config merge collapses back down to its default boolean `true`
+   * whenever a plain object is supplied instead of `false`/`true`. That
+   * silently drops the whole override with no error, so verify with
+   * `deck.getConfig().keyboard` after any reveal upgrade — if it isn't the
+   * object you passed, bindings need to move (back) to `addKeyBinding`.
+   *
+   * `left`/`right` are fragment-aware by default in this reveal version —
+   * bare `deck.right()` on a slide with hidden fragments reveals the next
+   * fragment instead of changing slide. `{skipFragments: true}` forces pure
+   * slide navigation; it is the same option reveal's own default Alt+Arrow
+   * handling passes internally. `nextFragment`/`prevFragment` are the
+   * fragment-only primitives that no-op at the start/end of a slide instead
+   * of spilling into slide navigation.
+   */
+  function bindKeys() {
+    deck.addKeyBinding(37, function () { deck.left({ skipFragments: true }); });   // Left
+    deck.addKeyBinding(39, function () { deck.right({ skipFragments: true }); });  // Right
+    deck.addKeyBinding(33, function () { deck.left({ skipFragments: true }); });   // Page Up
+    deck.addKeyBinding(34, function () { deck.right({ skipFragments: true }); });  // Page Down
+    deck.addKeyBinding(32, function () { deck.right({ skipFragments: true }); });  // Space
+    deck.addKeyBinding(38, function () { stepAnimBackward(); });                   // Up
+    deck.addKeyBinding(40, function () { stepAnimForward(); });                    // Down
+  }
+
   /* ---------------------------------------------------- the GRN animation */
 
   function initPropagation() {
@@ -155,7 +221,7 @@
     view.go(0);
   }
 
-  /* -------- drive the animation from the spacebar while on its slide ------ */
+  /* -------------------- which slide is currently showing ------------------ */
 
   function onPropagationSlide() {
     var s = deck.getCurrentSlide();
@@ -166,34 +232,6 @@
     var s = deck.getCurrentSlide();
     return s && s.id === 'slide-fullnet';
   }
-
-  /**
-   * Both animated slides advance on the normal presentation keys, so the talk is
-   * driven with one clicker throughout. We only swallow the key while the
-   * animation still has steps left; after that it falls through to reveal and
-   * moves to the next slide.
-   */
-  document.addEventListener('keydown', function (ev) {
-    var anim = null, at = 0, last = 0;
-    if (onPropagationSlide() && window.__grnPlayer) {
-      anim = window.__grnPlayer; at = anim.phase; last = anim.lastPhase;
-    } else if (onFullNetSlide() && window.__fullNet) {
-      anim = window.__fullNet; at = anim.hop; last = anim.lastWave + 1;
-    }
-    if (!anim) return;
-
-    if (ev.key === ' ' || ev.key === 'ArrowRight' || ev.key === 'PageDown') {
-      if (at < last) {
-        ev.preventDefault(); ev.stopPropagation();
-        anim.stop(); anim.next();
-      }
-    } else if (ev.key === 'ArrowLeft' || ev.key === 'PageUp') {
-      if (at > 0) {
-        ev.preventDefault(); ev.stopPropagation();
-        anim.stop(); anim.prev();
-      }
-    }
-  }, true);
 
   /* ------------------------------------------------ rehearsal time budget */
 
@@ -230,6 +268,7 @@
   }
 
   deck.initialize().then(function () {
+    bindKeys();
     return typesetMath();
   }).then(function () {
     IPerturbFormula.register(deck);

@@ -660,19 +660,16 @@ window.MathJax = {
     <h2>How we learn</h2>
   </div>
 
-  <div class="split-body">
-    <div class="pane-text">
-      <div class="formula formula-sub" data-tex style="margin-bottom:18px">
+  <div class="split-body" style="grid-template-columns:1fr">
+    <div class="pane-text" style="grid-column:1/-1">
+      <div class="formula" data-tex style="margin-bottom:22px">
         \[
-          \begin{aligned}
-          \mathcal{L}(\Theta) = {} &
-          \class{tok tok-wmse}{\lambda_1\mathcal{L}_{\mathrm{WMSE}}} +
-          \class{tok tok-afda}{\lambda_2\mathcal{L}_{\mathrm{AFDA}}} +
-          \class{tok tok-bal}{\lambda_3\mathcal{L}_{\mathrm{bal}}} \\[2pt]
-          {} + {} &
-          \class{tok tok-delta}{\lambda_4\mathcal{L}_{\Delta}} +
-          \class{tok tok-deg}{\lambda_5\mathcal{L}_{\mathrm{DEG}}}
-          \end{aligned}
+          \mathcal{L}(\Theta) =
+          \class{tok tok-wmse}{\mathcal{L}_{\mathrm{WMSE}}} +
+          \class{tok tok-afda}{\mathcal{L}_{\mathrm{AFDA}}} +
+          \class{tok tok-bal}{\mathcal{L}_{\mathrm{bal}}} +
+          \class{tok tok-delta}{\mathcal{L}_{\Delta}} +
+          \class{tok tok-deg}{\mathcal{L}_{\mathrm{DEG}}}
         \]
       </div>
 
@@ -695,14 +692,6 @@ window.MathJax = {
           <span class="who">\(\mathcal{L}_{\mathrm{DEG}}\) — DEG-weighted</span>
           Spend capacity on the <strong>genes that actually responded</strong>.</span>
       </div>
-    </div>
-
-    <div class="pane-text">
-      <p class="small muted">Adam, 50 epochs, cosine annealing.</p>
-      <p class="small" style="margin-top:14px"><strong>(&lambda;&#8321;&hellip;&lambda;&#8325;) = (1, 1, 0.5, 1, 2)</strong></p>
-      <p class="tiny" style="margin-top:20px">Dropping any of the three reconstruction terms
-        degrades both directional accuracy and MSE (backup). The two regularisers are kept
-        for what they guard against, not for this table's numbers.</p>
     </div>
   </div>
 
@@ -881,11 +870,11 @@ window.MathJax = {
 </section>
 
 <!-- ═══════════════════════════════════════ 13b · THANK YOU ═══════════ -->
-<section class="L-statement" data-t="0:15">
+<section class="L-statement" data-t="0:15" style="align-items:center;text-align:center">
   <div class="lede">Thank you for listening.</div>
-  <p class="sub">Happy to take questions.</p>
+  <p class="sub" style="margin-left:auto;margin-right:auto">Happy to take questions.</p>
 
-  <div style="margin-top:auto;padding-top:22px;border-top:1px solid var(--rule);
+  <div style="margin-top:auto;width:100%;padding-top:22px;border-top:1px solid var(--rule);
               display:flex;justify-content:space-between;align-items:baseline;font-size:0.62em">
     <span class="muted">Code, figure scripts and a Colab notebook —
       <strong style="color:var(--brick)">github.com/kagtgi/iPerturb</strong></span>
