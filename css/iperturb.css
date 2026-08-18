@@ -1,0 +1,670 @@
+/* ==========================================================================
+   iPerturb — CIBB 2026 talk theme
+   Fulbright navy structural, CIBB brick accent. Biology colours are held in a
+   separate token group and are never used for chrome, so a repression edge can
+   never be confused with a heading.
+
+   Layout contract: content may only be placed with one of the four layout
+   classes (.L-full / .L-split / .L-statement / .L-stage). Nothing is ever
+   absolutely positioned over a figure. That is what keeps text off images.
+   ========================================================================== */
+
+@font-face {
+  font-family: 'Google Sans';
+  src: url('../assets/fonts/GoogleSans-Regular.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: block;
+}
+@font-face {
+  font-family: 'Google Sans';
+  src: url('../assets/fonts/GoogleSans-Italic.woff2') format('woff2');
+  font-weight: 400; font-style: italic; font-display: block;
+}
+@font-face {
+  font-family: 'Google Sans';
+  src: url('../assets/fonts/GoogleSans-Medium.woff2') format('woff2');
+  font-weight: 500; font-style: normal; font-display: block;
+}
+@font-face {
+  font-family: 'Google Sans';
+  src: url('../assets/fonts/GoogleSans-Bold.woff2') format('woff2');
+  font-weight: 700; font-style: normal; font-display: block;
+}
+
+:root {
+  /* chrome */
+  --navy:      #0A1F5C;
+  --navy-soft: #33477E;
+  --brick:     #9B3A3A;
+  --ink:       #12172B;
+  --muted:     #5F6980;
+  --faint:     #98A2B3;
+  --paper:     #FCFCFE;
+  --panel:     #F2F4F9;
+  --rule:      #DDE2ED;
+
+  /* biology — edge semantics */
+  --act:       #1B7F4B;   /* activation, arrowhead   */
+  --rep:       #B4531F;   /* repression, bar glyph   */
+  --unsigned:  #98A2B3;   /* database does not know  */
+
+  /* biology — expression semantics (standard diverging: red up, blue down) */
+  --up:        #C0392B;
+  --down:      #2166AC;
+  --neutral:   #E6EAF2;
+
+  /* geometry — the legibility rules, as numbers */
+  --margin-x:  76px;
+  --margin-y:  58px;
+  --gutter:    56px;
+}
+
+/* --------------------------------------------------------------- base ---- */
+
+.reveal {
+  font-family: 'Google Sans', 'Lato', system-ui, sans-serif;
+  font-size: 34px;
+  font-weight: 400;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+.reveal-viewport { background: var(--paper); }
+
+.reveal .slides { text-align: left; }
+.reveal .slides section {
+  height: 100%;
+  padding: var(--margin-y) var(--margin-x) 44px;
+  box-sizing: border-box;
+}
+
+.reveal h1, .reveal h2, .reveal h3 {
+  font-family: 'Google Sans', sans-serif;
+  color: var(--navy);
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: -0.02em;
+  margin: 0;
+  text-shadow: none;
+}
+.reveal h1 { font-size: 1.72em; line-height: 1.1; }
+.reveal h2 { font-size: 1.16em; line-height: 1.15; }
+.reveal h3 { font-size: 0.86em; font-weight: 500; color: var(--navy-soft); }
+
+.reveal p  { margin: 0 0 0.55em; line-height: 1.42; }
+.reveal em { color: var(--brick); font-style: italic; }
+.reveal strong { color: var(--navy); font-weight: 700; }
+.reveal a { color: var(--brick); text-decoration: none; border-bottom: 1px solid currentColor; }
+
+.reveal ul { margin: 0; padding-left: 1.05em; list-style: none; }
+.reveal ul li { position: relative; margin: 0 0 0.5em; line-height: 1.36; }
+.reveal ul li::before {
+  content: '';
+  position: absolute; left: -0.85em; top: 0.56em;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--brick);
+}
+
+.reveal .progress { color: var(--brick); height: 4px; }
+.reveal .slide-number {
+  background: none; color: var(--faint);
+  font-size: 17px; right: 22px; bottom: 14px;
+}
+
+/* muted / small helpers ---------------------------------------------------- */
+.muted   { color: var(--muted); }
+.small   { font-size: 0.72em; line-height: 1.4; }
+.tiny    { font-size: 0.56em; line-height: 1.45; color: var(--muted); }
+.center  { text-align: center; }
+.nowrap  { white-space: nowrap; }
+.num     { font-variant-numeric: tabular-nums; }
+
+/* the running slide title -------------------------------------------------- */
+.slide-head { margin-bottom: 26px; }
+.slide-head .eyebrow {
+  display: block;
+  font-size: 0.53em; font-weight: 500; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--brick);
+  margin-bottom: 9px;
+}
+
+/* corner mark on content slides (never over content — the layouts reserve
+   their own padding, and this sits in the bottom margin strip) */
+.reveal .slides section > .corner-mark {
+  position: absolute;
+  left: var(--margin-x); bottom: 15px;
+  height: 21px; opacity: 0.36;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------- footnotes ------- */
+/* Numbered to match the paper's own bibliography, so the talk and the
+   manuscript never disagree about what [21] means.
+   The block sits in extra bottom padding that .has-fn reserves, so it can
+   never land on a figure. */
+sup.fn {
+  font-size: 0.58em; font-weight: 700; color: var(--brick);
+  vertical-align: super; line-height: 0; margin-left: 1px;
+}
+.reveal .slides section.has-fn { padding-bottom: 112px; }
+.reveal .slides section.has-fn-lg { padding-bottom: 138px; }
+.reveal .slides section > .slide-footnote {
+  position: absolute;
+  left: var(--margin-x); right: calc(var(--margin-x) + 70px); bottom: 22px;
+  font-size: 15.5px; line-height: 1.45; color: var(--muted);
+  pointer-events: none;
+}
+.reveal .slides section > .slide-footnote::before {
+  content: ''; display: block;
+  width: 38%; max-width: 400px;
+  border-top: 1px solid var(--rule);
+  margin-bottom: 9px;
+}
+.slide-footnote .n {
+  font-size: 0.72em; font-weight: 700; color: var(--brick);
+  vertical-align: super; line-height: 0; margin-right: 2px;
+}
+.slide-footnote b { color: var(--ink); font-weight: 500; }
+.slide-footnote i { font-style: italic; }
+.slide-footnote .sep { opacity: 0.45; margin: 0 6px; }
+
+/* section label, top-right, so the audience always knows where they are */
+.reveal .slides section > .sec-tag {
+  position: absolute;
+  right: var(--margin-x); top: 26px;
+  font-size: 15px; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--faint);
+  pointer-events: none;
+}
+.reveal .slides section > .sec-tag .n {
+  display: inline-grid; place-items: center;
+  width: 21px; height: 21px; border-radius: 50%;
+  background: var(--panel); color: var(--navy-soft);
+  font-size: 12px; font-weight: 700; letter-spacing: 0;
+  margin-right: 8px; vertical-align: 1px;
+}
+
+/* --------------------------------------------------------- agenda -------- */
+.agenda { counter-reset: ag; margin-top: 8px; display: flex;
+          flex-direction: column; gap: 20px; list-style: none; padding: 0; }
+.agenda li {
+  display: grid; grid-template-columns: 54px 1fr; column-gap: 20px;
+  align-items: baseline;
+}
+.agenda li::before {
+  counter-increment: ag; content: counter(ag);
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--navy); color: #fff;
+  display: grid; place-items: center;
+  font-size: 0.62em; font-weight: 700;
+}
+.agenda .t { font-size: 0.95em; font-weight: 700; color: var(--navy); line-height: 1.2; }
+.agenda .d { font-size: 0.68em; color: var(--muted); margin-top: 4px; display: block; }
+.agenda li.on .t { color: var(--brick); }
+
+/* ----------------------------------------------------- references -------- */
+/* Numbering is authored, not generated: these must stay aligned with the
+   paper's bibliography and with the superscripts on the slides. */
+.refs {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  column-gap: 34px; row-gap: 6px;
+  font-size: 0.39em; line-height: 1.32; color: var(--muted);
+  align-content: start;
+}
+.refs > div { display: grid; grid-template-columns: 20px 1fr; column-gap: 6px; }
+.refs .n {
+  color: var(--brick); font-weight: 700;
+  font-variant-numeric: tabular-nums; text-align: right;
+}
+.refs b { color: var(--ink); font-weight: 500; }
+.refs i { color: var(--navy-soft); font-style: italic; }
+
+/* ======================================================== L A Y O U T S ==== */
+/* Each layout is a grid. Text and figures live in different grid areas, so
+   they are structurally incapable of overlapping.                            */
+
+/* --- L-statement: text only, for the transition beats --------------------- */
+.L-statement {
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+}
+.L-statement .lede    { font-size: 1.5em; line-height: 1.22; font-weight: 700; color: var(--navy); }
+.L-statement .sub     { font-size: 0.92em; color: var(--muted); margin-top: 0.6em; max-width: 24em; }
+
+/* --- L-full: one figure, caption bar underneath --------------------------- */
+.L-full {
+  display: grid !important;
+  grid-template-rows: auto 1fr auto;
+  row-gap: 22px;
+}
+.L-full > .figure-area {
+  min-height: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.L-full > .figure-area img,
+.L-full > .figure-area svg { max-width: 100%; max-height: 100%; object-fit: contain; }
+.L-full > .caption-bar {
+  border-top: 1px solid var(--rule);
+  padding-top: 14px;
+  font-size: 0.66em; color: var(--muted); line-height: 1.4;
+  min-height: 1.4em;
+}
+
+/* --- L-split: figure one side, text the other, hard gutter ---------------- */
+.L-split {
+  display: grid !important;
+  grid-template-rows: auto 1fr;
+  row-gap: 20px;
+}
+.L-split > .split-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: var(--gutter);
+  align-items: center;
+  min-height: 0;
+}
+.L-split.wide-left  > .split-body { grid-template-columns: 1.35fr 1fr; }
+.L-split.wide-right > .split-body { grid-template-columns: 1fr 1.35fr; }
+.L-split > .split-body > * { min-width: 0; min-height: 0; }
+.L-split .pane-figure {
+  height: 100%;
+  display: flex; align-items: center; justify-content: center;
+}
+.L-split .pane-figure img,
+.L-split .pane-figure svg { max-width: 100%; max-height: 100%; object-fit: contain; }
+.L-split .pane-text { font-size: 0.83em; }
+
+/* --- L-stage: animation canvas with a permanently reserved caption strip --- */
+/* The strip is always in the grid even when empty, so revealing a caption can
+   never resize or shift the canvas.                                          */
+.L-stage {
+  display: grid !important;
+  grid-template-rows: auto 1fr 150px;
+  row-gap: 16px;
+}
+.L-stage > .stage-canvas {
+  min-height: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.L-stage > .stage-canvas svg { width: 100%; height: 100%; }
+.L-stage > .stage-strip {
+  border-top: 1px solid var(--rule);
+  padding-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: var(--gutter);
+  align-items: start;
+}
+.L-stage .strip-caption { font-size: 0.72em; line-height: 1.38; color: var(--ink); }
+.L-stage .strip-caption .footnote {
+  display: block; margin-top: 7px;
+  font-size: 0.72em; color: var(--muted); font-style: italic;
+}
+
+/* ====================================================== C O M P O N E N T S = */
+
+/* title slide -------------------------------------------------------------- */
+.title-slide { display: flex !important; flex-direction: column; }
+.title-slide .logo-row {
+  display: flex; align-items: center; gap: 40px;
+  margin-bottom: auto;
+}
+.title-slide .logo-row img.fulbright { height: 62px; }
+.title-slide .logo-row img.cibb      { height: 84px; }   /* 160px source — never scale past ~120px wide */
+.title-slide .title-main { font-size: 1.62em; line-height: 1.1; }
+.title-slide .title-sub {
+  font-size: 0.82em; color: var(--brick); font-weight: 500;
+  margin-top: 0.5em;
+}
+.title-slide .byline { margin-top: 1.15em; font-size: 0.75em; line-height: 1.5; }
+.title-slide .byline .affil { color: var(--muted); font-size: 0.88em; }
+.title-slide .venue {
+  margin-top: auto; padding-top: 20px;
+  border-top: 1px solid var(--rule);
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 0.6em; color: var(--muted);
+}
+
+/* the "camps" contrast on the gap slide ------------------------------------ */
+.camps { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+.camp {
+  border: 1px solid var(--rule); border-radius: 12px;
+  padding: 22px 24px; background: var(--panel);
+}
+.camp h4 {
+  margin: 0 0 12px; font-size: 0.8em; color: var(--navy);
+  font-weight: 700; letter-spacing: -0.01em;
+}
+.camp .verdict {
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px dashed var(--rule);
+  font-size: 0.78em; color: var(--brick); font-style: italic;
+}
+.camp ul li::before { background: var(--faint); }
+
+/* evidence-tier list ------------------------------------------------------- */
+.tiers { display: flex; flex-direction: column; gap: 11px; }
+.tier {
+  display: grid; grid-template-columns: 42px 1fr; column-gap: 16px;
+  align-items: start;
+  opacity: 0.26; transition: opacity 240ms ease;
+}
+.tier.on { opacity: 1; }
+/* Tiers reveal by brightening, not by appearing: reveal.js hides fragments
+   outright, which would make the list jump as each item lands. Overriding it
+   here keeps the block a fixed size from the first frame. */
+.reveal .slides section .tier.fragment          { opacity: 0.24; visibility: visible; }
+.reveal .slides section .tier.fragment.visible  { opacity: 1; }
+.tier .badge {
+  width: 42px; height: 42px; border-radius: 10px;
+  display: grid; place-items: center;
+  background: var(--navy); color: #fff;
+  font-size: 0.62em; font-weight: 700;
+}
+.tier.signed .badge { background: var(--navy); }
+.tier.unsigned .badge { background: var(--faint); }
+.tier .say { font-size: 0.76em; line-height: 1.3; color: var(--ink); }
+.tier .src {
+  font-size: 0.55em; color: var(--muted); margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+.tier .src .sign-tag {
+  display: inline-block; margin-left: 8px; padding: 1px 7px;
+  border-radius: 999px; font-size: 0.92em;
+  background: var(--panel); border: 1px solid var(--rule);
+}
+
+/* step rail — where we are in building the network ------------------------- */
+/* Direct-child selector matters: the number lives in a nested <span>, and a
+   descendant selector would give it its own pill background too. */
+.steprail {
+  display: flex; gap: 9px; align-items: center;
+  margin: 14px 0 0; font-size: 0.46em;
+}
+.steprail > span {
+  padding: 5px 14px; border-radius: 999px;
+  background: var(--panel); color: var(--faint);
+  white-space: nowrap;
+}
+.steprail > span .k { font-weight: 700; margin-right: 7px; opacity: 0.75; }
+.steprail > span.on { background: var(--brick); color: #fff; }
+.steprail > span.on .k { color: #fff; opacity: 1; }
+.steprail > span.arr {
+  background: none; color: var(--rule); padding: 0 2px; font-size: 1.05em;
+}
+
+/* two-column "generic vs this cell line" ----------------------------------- */
+.origin { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+.origin .col { border-radius: 12px; padding: 20px 22px; }
+.origin .generic { background: var(--panel); }
+.origin .specific { background: rgba(155,58,58,.07); border: 1px solid rgba(155,58,58,.22); }
+.origin h4 {
+  margin: 0 0 14px; font-size: 0.66em; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+}
+.origin .specific h4 { color: var(--brick); }
+.origin .row { display: grid; grid-template-columns: 34px 1fr; gap: 12px; margin-bottom: 11px; }
+.origin .row:last-child { margin-bottom: 0; }
+.origin .lv {
+  width: 34px; height: 26px; border-radius: 7px;
+  display: grid; place-items: center;
+  font-size: 0.5em; font-weight: 700; color: #fff; background: var(--faint);
+}
+.origin .specific .lv { background: var(--brick); }
+.origin .what { font-size: 0.62em; line-height: 1.3; color: var(--ink); }
+
+/* merge worked example ----------------------------------------------------- */
+.merge { display: flex; flex-direction: column; gap: 22px; }
+.mcase { border-left: 3px solid var(--rule); padding-left: 18px; }
+.mcase.agree { border-left-color: var(--act); }
+.mcase.clash { border-left-color: var(--rep); }
+.mcase .srcs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.mcase .src-chip {
+  font-size: 0.46em; padding: 4px 10px; border-radius: 999px;
+  background: var(--panel); color: var(--muted); white-space: nowrap;
+}
+.mcase .src-chip b { color: var(--ink); font-weight: 500; }
+.mcase .verdict-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.mcase .edge { font-size: 0.74em; font-weight: 700; color: var(--navy); }
+.mcase .out { font-size: 0.58em; font-weight: 700; }
+.mcase.agree .out { color: var(--act); }
+.mcase.clash .out { color: var(--rep); }
+.mcase .why { font-size: 0.5em; color: var(--muted); margin-top: 5px; }
+
+/* the selection funnel — the one number this slide is actually about -------- */
+.funnel {
+  display: grid; grid-template-columns: auto auto auto;
+  align-items: center; gap: 20px;
+  margin: 26px 0 20px;
+}
+.funnel .step { display: flex; flex-direction: column; }
+.funnel .v { font-size: 1.05em; font-weight: 700; color: var(--faint); line-height: 1; }
+.funnel .l { font-size: 0.52em; color: var(--muted); margin-top: 6px; }
+.funnel .to { font-size: 1.1em; color: var(--rule); line-height: 1; }
+.funnel .keep .v { font-size: 1.9em; color: var(--brick); }
+.funnel .keep .l { color: var(--navy-soft); }
+
+/* key-number callouts ------------------------------------------------------ */
+.stat-row { display: flex; gap: 38px; flex-wrap: wrap; }
+.stat .val {
+  font-size: 1.5em; font-weight: 700; color: var(--brick);
+  font-variant-numeric: tabular-nums; line-height: 1;
+}
+.stat .lab { font-size: 0.58em; color: var(--muted); margin-top: 6px; line-height: 1.3; }
+
+/* takeaway list ------------------------------------------------------------ */
+.takeaways { counter-reset: t; display: flex; flex-direction: column; gap: 20px; }
+.takeaways li { padding-left: 52px; position: relative; font-size: 0.9em; line-height: 1.34; }
+.takeaways li::before {
+  counter-increment: t; content: counter(t);
+  position: absolute; left: 0; top: -2px;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--navy); color: #fff;
+  display: grid; place-items: center;
+  font-size: 0.62em; font-weight: 700;
+}
+
+/* legend shared by every network figure ------------------------------------ */
+.legend { display: flex; gap: 24px; flex-wrap: wrap; font-size: 0.55em; color: var(--muted); }
+.legend .item { display: flex; align-items: center; gap: 8px; }
+.legend .swatch { width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid rgba(0,0,0,.16); }
+.legend .swatch.up   { background: var(--up); }
+.legend .swatch.down { background: var(--down); }
+.legend .swatch.neu  { background: var(--neutral); }
+.legend .line { width: 30px; height: 0; border-top: 3px solid var(--act); }
+.legend .line.rep { border-top-color: var(--rep); }
+.legend .line.uns { border-top: 3px dashed var(--unsigned); }
+
+/* ------------------------------------------------------- formula (anim 1) - */
+/* Equations are real LaTeX, rendered to SVG by MathJax. Highlighting works
+   through `currentColor`: MathJax fills every glyph with it, so setting `color`
+   on a \class{}-tagged group recolours exactly that term and nothing else. */
+.formula { color: var(--ink); line-height: 1.2; }
+.formula mjx-container { margin: 0 !important; }
+.formula mjx-container[display] { text-align: left; }
+.formula mjx-container svg { transition: color 220ms ease; }
+.formula-sub mjx-container svg { font-size: 0.78em; }
+
+.formula .tok { transition: color 220ms ease, opacity 220ms ease; }
+/* dim the whole equation, then bring the focused term back */
+.formula.focusing mjx-container svg { color: var(--faint); }
+.formula.focusing .tok:not(.lit) { opacity: 0.75; }
+.formula .tok.lit           { opacity: 1; }
+.formula .tok.lit.c-navy    { color: var(--navy); }
+.formula .tok.lit.c-act     { color: var(--act); }
+.formula .tok.lit.c-rep     { color: var(--rep); }
+.formula .tok.lit.c-brick   { color: var(--brick); }
+
+/* The caption box is a fixed-height stack: every caption occupies the same
+   region and only one is visible, so revealing the next one can never move the
+   equation above it. */
+.formula-caption {
+  position: relative;
+  height: 5.1em;
+  font-size: 0.74em; line-height: 1.34;
+  color: var(--ink);
+  border-left: 3px solid var(--brick);
+  padding-left: 16px;
+}
+.formula-caption .cap {
+  position: absolute; top: 0; left: 16px; right: 0;
+}
+.formula-caption .who { display: block; font-size: 0.72em; color: var(--muted); margin-bottom: 3px; }
+
+.constraints {
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--rule);
+  font-size: 0.55em; color: var(--muted); line-height: 1.5;
+}
+.constraints code {
+  font-family: 'Google Sans', sans-serif;
+  background: var(--panel); border: 1px solid var(--rule);
+  border-radius: 4px; padding: 1px 6px; color: var(--ink);
+}
+
+/* hill curve ---------------------------------------------------------------- */
+/* No controls: an audience cannot reach them, so the curve animates itself in
+   step with the captions instead. The caption box is fixed-height so a sweep
+   never nudges the plot. */
+.hill-panel { display: flex; flex-direction: column; gap: 14px; width: 100%; }
+.hill-caption {
+  min-height: 2.6em; margin: 0;
+  font-size: 0.6em; line-height: 1.35; color: var(--muted);
+  border-left: 3px solid var(--rule); padding-left: 14px;
+  transition: color 200ms ease;
+}
+
+/* ------------------------------------------------------- network (anim 2) - */
+/* One font for the whole figure, matching the deck body text. */
+.grn-svg { font-family: 'Google Sans', 'Lato', system-ui, sans-serif; }
+
+/* column headers — one per hop, so the wavefront reads left to right */
+.net-col-label {
+  font-size: 14px; font-weight: 500; fill: var(--faint);
+  letter-spacing: 0.11em; text-transform: uppercase; text-anchor: middle;
+  transition: fill 220ms ease;
+}
+.net-col-rule {
+  stroke: var(--rule); stroke-width: 1; stroke-dasharray: 3 5;
+  transition: stroke 220ms ease;
+}
+.net-col.active .net-col-label { fill: var(--brick); font-weight: 700; }
+.net-col.active .net-col-rule  { stroke: var(--brick); stroke-dasharray: none; opacity: .4; }
+
+/* nodes */
+.net-node { transition: opacity 240ms ease; }
+.net-node circle.body {
+  stroke: rgba(18,23,43,.26); stroke-width: 1.4;
+  transition: fill 340ms ease, stroke 200ms ease, stroke-width 200ms ease;
+}
+.net-node.seed circle.ring {
+  fill: none; stroke: var(--navy); stroke-width: 2.2; stroke-dasharray: 5 4;
+}
+.net-node text.name {
+  font-size: 13px; font-weight: 500; fill: var(--ink);
+  text-anchor: middle; dominant-baseline: middle;
+  paint-order: stroke;                 /* halo keeps labels legible over edges */
+  stroke: var(--paper); stroke-width: 3.5px; stroke-linejoin: round;
+  transition: font-weight 200ms ease, fill 200ms ease;
+}
+
+/* genes moving against the prevailing direction — the derepression beat.
+   Carries the emphasis so the colour scale does not have to exaggerate. */
+.net-node circle.flipring { fill: none; stroke: none; stroke-width: 2.8; }
+.net-node.flip circle.flipring {
+  stroke: var(--up);
+  animation: flip-pulse 1.5s ease-in-out infinite;
+}
+@keyframes flip-pulse {
+  0%, 100% { opacity: 1;    stroke-width: 2.8; }
+  50%      { opacity: 0.42; stroke-width: 4.6; }
+}
+
+/* edges */
+.net-edge-g { transition: opacity 240ms ease; }
+.net-edge {
+  fill: none; stroke-linecap: round; stroke-width: 1.7;
+  transition: stroke 300ms ease, stroke-width 200ms ease;
+}
+.net-edge.act { stroke: var(--act); }
+.net-edge.rep { stroke: var(--rep); }
+.net-edge.uns { stroke: var(--unsigned); stroke-dasharray: 6 5; }
+
+.net-glyph { transition: opacity 200ms ease; }
+.net-glyph.act { fill: var(--act); stroke: none; }
+.net-glyph.rep { fill: none; stroke: var(--rep); stroke-width: 2.8; stroke-linecap: round; }
+.net-glyph.uns { fill: var(--unsigned); stroke: var(--unsigned); opacity: .55; }
+
+/* per-hop emphasis: bold exactly what carries this hop, mute the rest */
+.net-edge-g.carrying .net-edge { stroke-width: 4.4; }
+.net-edge-g.carrying .net-glyph.rep { stroke-width: 4; }
+.net-edge-g.muted { opacity: 0.11; }
+.net-node.carrying circle.body { stroke: var(--navy); stroke-width: 2.8; }
+.net-node.carrying text.name { font-weight: 700; fill: var(--navy); }
+.net-node.muted { opacity: 0.2; }
+
+@media (prefers-reduced-motion: reduce) {
+  .net-node.flip circle.flipring { animation: none; }
+}
+
+.net-tag {
+  font-size: 12px; font-weight: 700; fill: var(--navy);
+  text-anchor: middle; letter-spacing: 0.06em;
+}
+.net-readout {
+  font-size: 14.5px; fill: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.net-readout tspan.k { fill: var(--brick); font-weight: 700; }
+
+/* whole-network overview — canvas, because 8,543 edges as DOM nodes stutter */
+.fullnet-canvas { display: block; width: 100%; height: 100%; }
+.L-stage > .stage-canvas:has(> .fullnet-canvas) { align-items: stretch; }
+
+/* playback controls -------------------------------------------------------- */
+.stage-controls { display: flex; gap: 10px; align-items: center; }
+.stage-controls button {
+  font-family: inherit; font-size: 15px; font-weight: 500;
+  padding: 9px 17px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--rule); background: #fff; color: var(--navy);
+  transition: background 160ms ease, border-color 160ms ease;
+}
+.stage-controls button:hover  { background: var(--panel); border-color: var(--navy-soft); }
+.stage-controls button.primary { background: var(--navy); color: #fff; border-color: var(--navy); }
+.stage-controls button.primary:hover { background: var(--navy-soft); }
+.stage-controls button:disabled { opacity: 0.4; cursor: default; }
+.stage-controls .hopcount {
+  font-size: 14px; color: var(--muted); margin-left: 6px;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+
+/* edge-contribution panel (the interpretability click) --------------------- */
+.contrib { font-size: 0.6em; }
+.contrib .head { color: var(--muted); margin-bottom: 6px; }
+.contrib table { border-collapse: collapse; }
+.contrib td { padding: 2px 12px 2px 0; font-variant-numeric: tabular-nums; }
+.contrib td.g   { font-weight: 700; color: var(--navy); }
+.contrib td.arr { color: var(--act); font-weight: 700; }
+.contrib td.arr.rep { color: var(--rep); }
+
+/* results table ------------------------------------------------------------ */
+table.results {
+  border-collapse: collapse; font-size: 0.62em; width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+table.results th, table.results td {
+  padding: 8px 14px; text-align: right; border-bottom: 1px solid var(--rule);
+}
+table.results th:first-child, table.results td:first-child { text-align: left; }
+table.results thead th { color: var(--muted); font-weight: 500; font-size: 0.9em; }
+table.results tr.ours td { background: rgba(155,58,58,.07); font-weight: 700; color: var(--navy); }
+table.results td.win { color: var(--brick); font-weight: 700; }
+
+/* fragments: keep layout stable — never let a fragment resize its container - */
+.reveal .slides section .fragment.fade-in-then-semi-out.visible { opacity: 1; }
+
+/* speaker-note time budget marker (never rendered on the slide) ------------- */
+.notes-budget { display: none; }
+
+/* print / PDF fallback ----------------------------------------------------- */
+@media print {
+  .stage-controls { display: none !important; }
+}

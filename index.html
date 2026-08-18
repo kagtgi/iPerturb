@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iPerturb — CIBB 2026</title>
+<link rel="stylesheet" href="lib/reveal/reset.css">
+<link rel="stylesheet" href="lib/reveal/reveal.css">
+<link rel="stylesheet" href="css/iperturb.css">
+<script>
+// MathJax renders the equations from real LaTeX. The `html` package gives us
+// \class{}{}, which tags individual symbols so the talk can light them one at a
+// time without hand-building the markup. SVG output keeps them crisp on a
+// projector and needs no web fonts. Everything is served from lib/, so this
+// still works with no network.
+window.MathJax = {
+  loader: { load: ['[tex]/html'], paths: { mathjax: 'lib/mathjax' } },
+  tex: {
+    packages: { '[+]': ['html'] },
+    inlineMath: [['\\(', '\\)']],
+    displayMath: [['\\[', '\\]']]
+  },
+  svg: { fontCache: 'global', displayAlign: 'left', displayIndent: '0' },
+  options: { enableMenu: false },
+  startup: { typeset: false }        // deck.js typesets once reveal is ready
+};
+</script>
+<script src="lib/mathjax/tex-svg.js"></script>
+</head>
+<body>
+<!--
+  iPerturb — CIBB 2026 talk.  https://github.com/kagtgi/iPerturb
+  Public build: speaker notes and presenter-only slides removed.
+-->
+
+<div class="reveal"><div class="slides">
+
+<!-- ══════════════════════════════════════════════════ 1 · TITLE ═══════ -->
+<section class="title-slide" data-t="0:30">
+  <div class="logo-row">
+    <img class="fulbright" src="assets/logos/fulbright.png" alt="Fulbright University Vietnam">
+    <img class="cibb" src="assets/logos/cibb.png" alt="CIBB 2026, Rome">
+  </div>
+
+  <h1 class="title-main">iPerturb</h1>
+  <div class="title-sub">Predicting gene expression changes under perturbation —
+    and being able to say <em>why</em></div>
+
+  <div class="byline">
+    <strong>Khang Ta</strong> and Linh Huynh<br>
+    <span class="affil">AI Institute, Fulbright University Vietnam · Ho Chi Minh City</span>
+  </div>
+
+  <div class="venue">
+    <span>CIBB 2026 · Sapienza University of Rome · 2–4 September 2026</span>
+    <span>github.com/kagtgi/iPerturb</span>
+  </div>
+
+</section>
+
+<!-- ═════════════════════════════════════════════════ 2 · AGENDA ═══════ -->
+<section class="L-statement" data-t="0:20">
+  <div class="slide-head">
+    <h2>Where we are going</h2>
+  </div>
+
+  <ol class="agenda">
+    <li><div><span class="t">Introduction &amp; motivation</span>
+      <span class="d">why we predict perturbation responses — and why a number is not enough</span></div></li>
+    <li><div><span class="t">Methods</span>
+      <span class="d">a real regulatory network · kinetics learned on it · multi-hop propagation</span></div></li>
+    <li><div><span class="t">Experimental results</span>
+      <span class="d">two human cell lines, five deep-learning baselines</span></div></li>
+    <li><div><span class="t">Conclusion &amp; discussion</span>
+      <span class="d">what explainability buys, and what it costs</span></div></li>
+  </ol>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════ 4 · THE PROBLEM ═ -->
+<section class="has-fn-lg L-split" data-t="1:15">
+  <div class="slide-head">
+    <span class="eyebrow">The problem</span>
+    <h2>Predicting a perturbation response</h2>
+  </div>
+
+  <div class="split-body" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="camp">
+      <h4>Kinetic models</h4>
+      <ul class="small">
+        <li>Every parameter means something<sup class="fn">2,3</sup></li>
+      </ul>
+      <div class="verdict">&hellip;but need measured rate constants &mdash; toy systems only.</div>
+    </div>
+
+    <div class="camp">
+      <h4>Deep networks</h4>
+      <ul class="small">
+        <li>CPA<sup class="fn">4</sup> &middot; GEARS<sup class="fn">5</sup> &middot; scGPT<sup class="fn">6</sup> &middot; Cell2Sentence<sup class="fn">7</sup> &middot; STATE<sup class="fn">8</sup></li>
+      </ul>
+      <div class="verdict">&hellip;but almost none expose a readable signed mechanism.</div>
+    </div>
+
+    <div class="camp">
+      <h4>Network propagation<sup class="fn">11</sup></h4>
+      <ul class="small">
+        <li>A proven amplifier &mdash; disease genes, GWAS, cancer drivers</li>
+      </ul>
+      <div class="verdict">&hellip;but assumes an undirected graph &mdash; the wrong shape for
+        signed regulation.</div>
+    </div>
+  </div>
+
+  <p class="fragment" style="margin-top:22px;font-size:0.95em;color:var(--navy);font-weight:700">
+    We want propagation&rsquo;s simplicity, without giving up direction, sign, or a readable mechanism.</p>
+
+    <span class="sec-tag"><span class="n">1</span>Motivation</span>
+
+  <div class="slide-footnote"><span class="n">2</span>Karr et al., <i>Cell</i> 2012<span class="sep">&middot;</span><span class="n">3</span>Hu et al., <i>Metab. Eng.</i> 2023<span class="sep">&middot;</span><span class="n">4</span>Lotfollahi et al., <i>Mol. Syst. Biol.</i> 2023<span class="sep">&middot;</span><span class="n">5</span>Roohani et al., <i>Nat. Biotechnol.</i> 2024<br><span class="n">6</span>Cui et al., <i>Nat. Methods</i> 2024<span class="sep">&middot;</span><span class="n">7</span>Levine et al., <i>ICML</i> 2024<span class="sep">&middot;</span><span class="n">8</span>Adduri et al., <i>bioRxiv</i> 2025<span class="sep">&middot;</span><span class="n">11</span>Cowen et al., <i>Nat. Rev. Genet.</i> 2017</div>
+
+</section>
+
+<!-- ══════════════════════════════════════════ 5 · A CELL IS A CIRCUIT ═ -->
+<section class="L-statement" data-t="0:45">
+  <div class="slide-head">
+    <span class="eyebrow">The idea</span>
+  </div>
+  <div class="lede">A cell is not a bag of genes.<br>It is a circuit.</div>
+  <p class="sub fragment">Silence one gene and the change does not stop there — it travels
+    along regulatory wiring and re-settles the whole transcriptome.</p>
+
+    <span class="sec-tag"><span class="n">2</span>Methods</span>
+
+</section>
+
+<!-- ═════════════════════════════════════ 5 · iPERTURB IN ONE SENTENCE ═ -->
+<section class="L-full" data-t="1:00">
+  <div class="slide-head">
+    <span class="eyebrow">The idea</span>
+    <h2>The regulatory network <em>is</em> the model</h2>
+  </div>
+
+  <div class="figure-area">
+    <svg viewBox="0 0 1360 400" style="max-height:100%">
+      <defs>
+        <marker id="fw-arrow" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#33477E"/>
+        </marker>
+      </defs>
+
+      <!-- stage 1 -->
+      <g class="fragment fade-in" data-fragment-index="0">
+        <text x="170" y="26" text-anchor="middle" font-size="17" font-weight="700" fill="#0A1F5C">1 · Real regulatory knowledge</text>
+        <text x="170" y="50" text-anchor="middle" font-size="14" fill="#5F6980">curated, cell-line specific</text>
+        <g stroke="#C6CDDC" stroke-width="2.2">
+          <line x1="90"  y1="150" x2="190" y2="110"/>
+          <line x1="90"  y1="150" x2="180" y2="215"/>
+          <line x1="190" y1="110" x2="270" y2="180"/>
+          <line x1="180" y1="215" x2="270" y2="180"/>
+          <line x1="190" y1="110" x2="180" y2="215"/>
+        </g>
+        <g fill="#EEF1F7" stroke="#98A2B3" stroke-width="1.8">
+          <circle cx="90"  cy="150" r="19"/><circle cx="190" cy="110" r="19"/>
+          <circle cx="180" cy="215" r="19"/><circle cx="270" cy="180" r="19"/>
+        </g>
+        <text x="170" y="300" text-anchor="middle" font-size="14.5" fill="#5F6980">
+          who regulates whom</text>
+      </g>
+
+      <path class="fragment fade-in" data-fragment-index="1"
+            d="M330 175 L410 175" stroke="#33477E" stroke-width="2.2" marker-end="url(#fw-arrow)"/>
+
+      <!-- stage 2 -->
+      <g class="fragment fade-in" data-fragment-index="1">
+        <text x="620" y="26" text-anchor="middle" font-size="17" font-weight="700" fill="#0A1F5C">2 · Learned kinetics</text>
+        <text x="620" y="50" text-anchor="middle" font-size="14" fill="#5F6980">one signed edge at a time</text>
+        <g stroke-width="3">
+          <line x1="540" y1="150" x2="640" y2="110" stroke="#1B7F4B"/>
+          <line x1="540" y1="150" x2="630" y2="215" stroke="#B4531F"/>
+          <line x1="640" y1="110" x2="720" y2="180" stroke="#1B7F4B"/>
+          <line x1="630" y1="215" x2="720" y2="180" stroke="#1B7F4B"/>
+          <line x1="640" y1="110" x2="630" y2="215" stroke="#B4531F"/>
+        </g>
+        <g fill="#EEF1F7" stroke="#98A2B3" stroke-width="1.8">
+          <circle cx="540" cy="150" r="19"/><circle cx="640" cy="110" r="19"/>
+          <circle cx="630" cy="215" r="19"/><circle cx="720" cy="180" r="19"/>
+        </g>
+        <text x="620" y="300" text-anchor="middle" font-size="14.5" fill="#5F6980">
+          direction · strength · threshold</text>
+      </g>
+
+      <path class="fragment fade-in" data-fragment-index="2"
+            d="M790 175 L870 175" stroke="#33477E" stroke-width="2.2" marker-end="url(#fw-arrow)"/>
+
+      <!-- stage 3 -->
+      <g class="fragment fade-in" data-fragment-index="2">
+        <text x="1090" y="26" text-anchor="middle" font-size="17" font-weight="700" fill="#0A1F5C">3 · Multi-hop propagation</text>
+        <text x="1090" y="50" text-anchor="middle" font-size="14" fill="#5F6980">for a perturbation never seen</text>
+        <g stroke-width="3">
+          <line x1="1010" y1="150" x2="1110" y2="110" stroke="#1B7F4B"/>
+          <line x1="1010" y1="150" x2="1100" y2="215" stroke="#B4531F"/>
+          <line x1="1110" y1="110" x2="1190" y2="180" stroke="#1B7F4B"/>
+          <line x1="1100" y1="215" x2="1190" y2="180" stroke="#1B7F4B"/>
+          <line x1="1110" y1="110" x2="1100" y2="215" stroke="#B4531F"/>
+        </g>
+        <g stroke="rgba(18,23,43,.28)" stroke-width="1.8">
+          <circle cx="1010" cy="150" r="19" fill="#2166AC"/>
+          <circle cx="1110" cy="110" r="19" fill="#7EA6CE"/>
+          <circle cx="1100" cy="215" r="19" fill="#D98A80"/>
+          <circle cx="1190" cy="180" r="19" fill="#AFC5DC"/>
+        </g>
+        <circle cx="1010" cy="150" r="26" fill="none" stroke="#0A1F5C"
+                stroke-width="2.2" stroke-dasharray="5 4"/>
+        <text x="1090" y="300" text-anchor="middle" font-size="14.5" fill="#5F6980">
+          iterate to a new steady state</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="caption-bar">
+    No latent vectors anywhere. Every prediction decomposes into named signed edges with
+    readable kinetic parameters — <strong>that is what makes it explainable.</strong>
+  </div>
+
+    <span class="sec-tag"><span class="n">2</span>Methods</span>
+
+</section>
+
+<!-- ═════════════════════════════════ 6 · WHERE THE WIRING COMES FROM ══ -->
+<section class="has-fn-lg L-split wide-right" data-t="1:00">
+  <div class="slide-head">
+    <span class="eyebrow">Pillar 1 · step 1 of 3</span>
+    <h2>Where the wiring comes from</h2>
+  
+    <div class="steprail"><span class="on"><span class="k">1</span>Harvest</span><span class="arr">&rarr;</span><span><span class="k">2</span>Merge</span><span class="arr">&rarr;</span><span><span class="k">3</span>Select</span></div>
+  </div>
+
+  <div class="split-body">
+    <div class="pane-text">
+      <p class="small muted">Five kinds of evidence for the same claim. Most direct wins;
+        disagreement leaves the edge unsigned for the model to resolve.</p>
+
+      <div class="funnel fragment">
+        <div class="step">
+          <span class="v num">~180,000</span>
+          <span class="l">candidate edges</span>
+        </div>
+        <div class="to">→</div>
+        <div class="step keep">
+          <span class="v num">8,543</span>
+          <span class="l">selected, across 2,239 genes</span>
+        </div>
+      </div>
+
+      <p class="tiny fragment">A parameter budget<sup class="fn">20</sup> controls capacity and keeps the network from
+        becoming severely underconstrained — about 3.8 regulators per gene.</p>
+    </div>
+
+    <div class="pane-text">
+      <div class="tiers">
+        <div class="tier signed fragment" data-tier="1">
+          <div class="badge">L1</div>
+          <div>
+            <div class="say">A TF is <em>known</em> to regulate this gene</div>
+            <div class="src">TRRUST<sup class="fn">12</sup> · CollecTRI<sup class="fn">13</sup> · OmniPath<sup class="fn">14</sup> — 1,114,846
+              <span class="sign-tag">signed</span></div>
+          </div>
+        </div>
+        <div class="tier unsigned fragment" data-tier="2">
+          <div class="badge">L2</div>
+          <div>
+            <div class="say">An enhancer <em>active in this cell line</em> links them</div>
+            <div class="src">GeneHancer<sup class="fn">15</sup> v5.26 — 1,019,746
+              <span class="sign-tag">unsigned</span></div>
+          </div>
+        </div>
+        <div class="tier unsigned fragment" data-tier="3">
+          <div class="badge">L3</div>
+          <div>
+            <div class="say">Its protein partner reaches the same target</div>
+            <div class="src">STRING<sup class="fn">16</sup> PPI ≥ 700 — 93,562
+              <span class="sign-tag">unsigned</span></div>
+          </div>
+        </div>
+        <div class="tier unsigned fragment" data-tier="4">
+          <div class="badge">L4</div>
+          <div>
+            <div class="say">They move together across conditions</div>
+            <div class="src">COXPRESdb<sup class="fn">17</sup> — 78,341, top-5 partners
+              <span class="sign-tag">unsigned</span></div>
+          </div>
+        </div>
+        <div class="tier signed fragment" data-tier="5">
+          <div class="badge">L5</div>
+          <div>
+            <div class="say">Silencing one gene <em>moved</em> another</div>
+            <div class="src">Replogle<sup class="fn">18</sup> — response edges, not established regulation
+              <span class="sign-tag">signed</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <span class="sec-tag"><span class="n">2</span>Methods</span>
+
+  <div class="slide-footnote"><span class="n">12</span>Han et al., <i>NAR</i> 2018<span class="sep">·</span><span class="n">13</span>Müller-Dott et al., <i>NAR</i> 2023<span class="sep">·</span><span class="n">14</span>Türei et al., <i>Nat. Methods</i> 2016<span class="sep">·</span><span class="n">15</span>Fishilevich et al., <i>Database</i> 2017<br><span class="n">16</span>Szklarczyk et al., <i>NAR</i> 2023<span class="sep">·</span><span class="n">17</span>Obayashi et al., <i>NAR</i> 2023<span class="sep">·</span><span class="n">20</span>Alwosheel et al., <i>J. Choice Model.</i> 2018</div>
+
+</section>
+
+<!-- ============================ 6c . MERGE AND RESOLVE ================ -->
+<section class="L-split wide-right has-fn" data-t="0:40" data-cut="15">
+  <div class="slide-head">
+    <span class="eyebrow">Pillar 1 &middot; step 2 of 3</span>
+    <h2>The same edge, seen by several sources</h2>
+  
+    <div class="steprail"><span><span class="k">1</span>Harvest</span><span class="arr">&rarr;</span><span class="on"><span class="k">2</span>Merge</span><span class="arr">&rarr;</span><span><span class="k">3</span>Select</span></div>
+  </div>
+
+  <div class="split-body">
+    <div class="pane-text">
+      <p class="small muted">Group every duplicate by (source, target), then:</p>
+      <ul class="small" style="margin-top:14px">
+        <li><strong>Level</strong> &mdash; keep the most direct evidence</li>
+        <li><strong>Sign</strong> &mdash; unanimous, or leave it unsigned</li>
+        <li><strong>Provenance</strong> &mdash; keep every source that saw it</li>
+      </ul>
+      <p class="tiny fragment" style="margin-top:20px">
+        <strong>70%</strong> of curated edges end up unsigned this way. Those are exactly
+        the edges the model has to learn a direction for.</p>
+    </div>
+
+    <div class="merge">
+      <div class="mcase agree">
+        <div class="srcs">
+          <span class="src-chip"><b>TRRUST</b> activates</span>
+          <span class="src-chip"><b>CollecTRI</b> activates</span>
+          <span class="src-chip"><b>OmniPath</b> activates</span>
+        </div>
+        <div class="verdict-row">
+          <span class="edge">GATA1 &rarr; GYPB</span>
+          <span class="out">Level 1 &middot; activating</span>
+        </div>
+        <div class="why">All three agree, so we keep the sign.</div>
+      </div>
+
+      <div class="mcase clash fragment">
+        <div class="srcs">
+          <span class="src-chip"><b>TRRUST</b> activates</span>
+          <span class="src-chip"><b>CollecTRI</b> ?</span>
+          <span class="src-chip"><b>OmniPath</b> ?</span>
+        </div>
+        <div class="verdict-row">
+          <span class="edge">GATA1 &rarr; ALAS2</span>
+          <span class="out">Level 1 &middot; unsigned</span>
+        </div>
+        <div class="why">Same three sources, no consensus &mdash; the model decides the
+          direction from data.</div>
+      </div>
+    </div>
+  </div>
+
+  <span class="sec-tag"><span class="n">2</span>Methods</span>
+  <div class="slide-footnote">Real edges from the shipped K562 network. Both are backed by
+    the same three databases; only their agreement differs.</div>
+
+</section>
+
+<!-- ========================= 6d . SELECT WITHIN A BUDGET ============== -->
+<section class="L-split has-fn" data-t="0:40" data-cut="15">
+  <div class="slide-head">
+    <span class="eyebrow">Pillar 1 &middot; step 3 of 3</span>
+    <h2>Keep only the edges we can actually identify</h2>
+  
+    <div class="steprail"><span><span class="k">1</span>Harvest</span><span class="arr">&rarr;</span><span><span class="k">2</span>Merge</span><span class="arr">&rarr;</span><span class="on"><span class="k">3</span>Select</span></div>
+  </div>
+
+  <div class="split-body">
+    <div class="pane-text">
+      <p class="small">Three kinetic parameters per edge. Fit ~180,000 of them against
+        2,000 perturbations and nothing is identifiable.</p>
+      <p class="small muted" style="margin-top:16px">So we cap capacity with a
+        <strong>parameter budget</strong><sup class="fn">20</sup> and fill it in two passes:</p>
+      <ul class="small" style="margin-top:14px">
+        <li><strong>Coverage first</strong> &mdash; walk the candidates by confidence so no gene
+          is left without a regulator.</li>
+        <li class="fragment"><strong>Then greedy fill</strong> &mdash; repeatedly take the
+          best-supported remaining edge, but each pick <em>penalises</em> its own source and
+          target, so no hub can swallow the budget.</li>
+      </ul>
+    </div>
+
+    <div class="pane-figure">
+      <svg viewBox="0 0 460 300" style="max-height:100%">
+        <text x="112" y="18" text-anchor="middle" font-size="14" font-weight="700" fill="#98A2B3">greedy alone</text>
+        <text x="348" y="18" text-anchor="middle" font-size="14" font-weight="700" fill="#9B3A3A">with diversity penalty</text>
+
+        <g stroke="#C6CDDC" stroke-width="2.4" fill="none">
+          <path d="M60 90 L164 52"/><path d="M60 90 L164 78"/><path d="M60 90 L164 104"/>
+          <path d="M60 90 L164 130"/><path d="M60 90 L164 156"/>
+        </g>
+        <g fill="#EEF1F7" stroke="#98A2B3" stroke-width="1.6">
+          <circle cx="60" cy="90" r="15"/>
+          <circle cx="164" cy="52" r="8"/><circle cx="164" cy="78" r="8"/>
+          <circle cx="164" cy="104" r="8"/><circle cx="164" cy="130" r="8"/>
+          <circle cx="164" cy="156" r="8"/>
+        </g>
+        <g fill="#DDE2ED" stroke="#DDE2ED">
+          <circle cx="60" cy="196" r="8"/><circle cx="112" cy="222" r="8"/>
+          <circle cx="164" cy="196" r="8"/><circle cx="112" cy="248" r="8"/>
+        </g>
+        <text x="112" y="286" text-anchor="middle" font-size="12.5" fill="#98A2B3">one hub, the rest orphaned</text>
+
+        <g stroke="#9B3A3A" stroke-width="2.4" fill="none" opacity=".85">
+          <path d="M296 90 L400 60"/><path d="M296 90 L400 118"/>
+          <path d="M296 196 L400 170"/><path d="M296 196 L400 226"/>
+          <path d="M348 143 L400 118"/>
+        </g>
+        <g fill="#EEF1F7" stroke="#9B3A3A" stroke-width="1.6">
+          <circle cx="296" cy="90" r="13"/><circle cx="296" cy="196" r="13"/>
+          <circle cx="348" cy="143" r="11"/>
+        </g>
+        <g fill="#EEF1F7" stroke="#98A2B3" stroke-width="1.6">
+          <circle cx="400" cy="60" r="8"/><circle cx="400" cy="118" r="8"/>
+          <circle cx="400" cy="170" r="8"/><circle cx="400" cy="226" r="8"/>
+        </g>
+        <text x="348" y="286" text-anchor="middle" font-size="12.5" fill="#9B3A3A">coverage spread across regulators</text>
+      </svg>
+    </div>
+  </div>
+
+  <span class="sec-tag"><span class="n">2</span>Methods</span>
+  <div class="slide-footnote"><span class="n">20</span><b>A. Alwosheel et al.</b>, &quot;Is your
+    dataset big enough? Sample size requirements when using artificial neural networks for
+    discrete choice analysis,&quot; <i>J. Choice Modelling</i>, 28:167&ndash;182, 2018.</div>
+
+</section>
+
+<!-- ══════════════════════════════ 7 · ★ ANIMATION 1 — THE HILL EQUATION -->
+<section class="has-fn L-split" data-t="1:45">
+  <div class="slide-head">
+    <span class="eyebrow">Pillar 2 · learned kinetics</span>
+    <h2>Regulation as a saturating switch<sup class="fn">21</sup></h2>
+  </div>
+
+  <div class="split-body">
+    <div class="pane-text">
+      <div class="formula" data-tex style="margin-bottom:18px">
+        \[
+          \class{tok tok-x}{x_i} \;=\;
+          \frac{\class{tok tok-V}{V_i}\bigl(1+\class{tok tok-h}{h_i}\bigr)
+                + \class{tok tok-b}{b_i}}
+               {1+\class{tok tok-alpha}{\alpha_i}+\class{tok tok-r}{r_i}}
+        \]
+      </div>
+
+      <div class="formula formula-sub" data-tex style="margin-bottom:16px">
+        \[
+          \class{tok tok-h}{h_i}=\sum_{k\in\mathcal{N}_i}
+            \class{tok tok-max}{\max}\Bigl(0,\;
+            \frac{\class{tok tok-w}{w_{ki}}\,x_k^{\class{tok tok-n}{n_{ki}}}}
+                 {\class{tok tok-K}{K_{ki}}^{\class{tok tok-n}{n_{ki}}}
+                  +x_k^{\class{tok tok-n}{n_{ki}}}}\Bigr)
+        \]
+        \[
+          \class{tok tok-r}{r_i}=\sum_{k\in\mathcal{N}_i}
+            \class{tok tok-max}{\max}\Bigl(0,\;
+            \frac{-\class{tok tok-w}{w_{ki}}\,x_k^{\class{tok tok-n}{n_{ki}}}}
+                 {\class{tok tok-K}{K_{ki}}^{\class{tok tok-n}{n_{ki}}}
+                  +x_k^{\class{tok tok-n}{n_{ki}}}}\Bigr)
+        \]
+      </div>
+
+      <div class="formula-caption">
+        <span class="cap fragment current-visible" data-focus="" data-tone="">
+          <span class="who">the equation</span>One gene's expression at equilibrium.</span>
+        <span class="cap fragment current-visible" data-focus="V" data-tone="c-navy">
+          <span class="who">\(V_i\) — maximal transcription rate</span>
+          How loud this gene <em>can</em> be shouted.</span>
+        <span class="cap fragment current-visible" data-focus="b" data-tone="c-navy">
+          <span class="who">\(b_i\) — basal expression</span>
+          A leaky baseline. The gene is never perfectly silent.</span>
+        <span class="cap fragment current-visible" data-focus="alpha" data-tone="c-navy">
+          <span class="who">\(\alpha_i\) — mRNA decay</span>
+          The cell is always clearing transcript.</span>
+        <span class="cap fragment current-visible" data-focus="h" data-tone="c-act">
+          <span class="who">\(h_i\) — activators, in the numerator</span>
+          Activators push <strong>up</strong> — they multiply the ceiling.</span>
+        <span class="cap fragment current-visible" data-focus="r" data-tone="c-rep">
+          <span class="who">\(r_i\) — repressors, in the denominator</span>
+          Repressors push <strong>down</strong> — they divide it away.</span>
+        <span class="cap fragment current-visible" data-focus="w" data-tone="c-brick">
+          <span class="who">\(w_{ki}\) — regulatory weight</span>
+          Sign says activate or repress; magnitude says how strongly. <strong>Learned.</strong></span>
+        <span class="cap fragment current-visible" data-focus="K" data-tone="c-brick">
+          <span class="who">\(K_{ki}\) — dissociation constant</span>
+          How much regulator you need for half an effect: the switch's threshold.</span>
+        <span class="cap fragment current-visible" data-focus="n" data-tone="c-brick">
+          <span class="who">\(n_{ki}\) — Hill coefficient</span>
+          How sharp the switch is — a graded dial, or an on/off toggle.</span>
+        <span class="cap fragment current-visible" data-focus="max" data-tone="c-navy">
+          <span class="who">the max(0, ·) pair</span>
+          One edge cannot both activate and repress. Its sign routes it to h or to r.</span>
+      </div>
+
+      <div class="constraints">
+        \(w\in(-1,1)\) via sigmoid / tanh &nbsp;&middot;&nbsp; \(n\in(1,4)\) &nbsp;&middot;&nbsp; \(K,V,b>0\) &mdash;
+        every fitted parameter stays in a bounded, readable range.
+      </div>
+    </div>
+
+    <div class="pane-figure">
+      <div class="hill-panel">
+        <div class="hill-plot"></div>
+        <p class="hill-caption">Occupancy is exactly ½ when the regulator sits at its
+          threshold — whatever K and n are.</p>
+      </div>
+    </div>
+  </div>
+
+    <span class="sec-tag"><span class="n">2</span>Methods</span>
+
+  <div class="slide-footnote"><span class="n">21</span><b>T. Kuhlman et al.</b>, "Combinatorial transcriptional control of the lactose operon of <i>Escherichia coli</i>," <i>PNAS</i>, 104(14):6043–6048, 2007.</div>
+
+</section>
+
+<!-- ══════════════════════ 8 · ★ ANIMATION 2 — PROPAGATION ON A REAL GRN -->
+<section class="L-stage" id="slide-propagation" data-t="2:00">
+  <div class="slide-head">
+    <span class="eyebrow">Pillar 3 · multi-hop propagation</span>
+    <h2>Knock down <span style="color:var(--brick)">GATA1</span> in K562 and watch it spread<sup class="fn">11</sup></h2>
+  </div>
+
+  <div class="stage-canvas" id="grn-stage"></div>
+
+  <div class="stage-strip">
+    <div class="strip-caption">
+      <span id="grn-lead">Loading the K562 network…</span>
+      <span class="footnote" id="grn-note"></span>
+      <span class="footnote">
+        Real K562 topology and signs (<span class="num">8,543</span> edges); kinetics use the
+        model's initialisation, not a fitted checkpoint.
+        <span class="n">11</span>Cowen et al., <i>Nat. Rev. Genet.</i> 2017.
+      </span>
+    </div>
+
+    <div>
+      <div class="stage-controls">
+        <button id="grn-play" class="primary">▶ Play</button>
+        <button id="grn-step">Step ›</button>
+        <button id="grn-back">‹ Back</button>
+        <button id="grn-reset">Reset</button>
+        <span class="hopcount" id="grn-hops"></span>
+      </div>
+      <div class="legend" style="margin-top:12px">
+        <span class="item"><span class="line"></span> activates</span>
+        <span class="item"><span class="line rep"></span> represses</span>
+        <span class="item"><span class="line uns"></span> unsigned in databases</span>
+        <span class="item"><span class="swatch down"></span> down</span>
+        <span class="item"><span class="swatch up"></span> up</span>
+      </div>
+    </div>
+  </div>
+
+    <span class="sec-tag"><span class="n">2</span>Methods</span>
+
+</section>
+
+<!-- ═════════════════════ 8b · THE WHOLE NETWORK ══════════════════════ -->
+<section class="L-stage" id="slide-fullnet" data-t="0:45" data-cut="15">
+  <div class="slide-head">
+    <span class="eyebrow">Pillar 3 · at full scale</span>
+    <h2>The same knockdown, across all <span class="num">2,239</span> genes</h2>
+  </div>
+
+  <div class="stage-canvas" id="fullnet-stage"></div>
+
+  <div class="stage-strip">
+    <div class="strip-caption">
+      <span id="fullnet-lead">The complete K562 network at rest.</span>
+      <span class="footnote" id="fullnet-note"></span>
+      <span class="footnote">
+        Every edge of the published network — <span class="num">8,543</span> of them.
+        Same solver as the previous slide, run live; layout is force-directed.
+      </span>
+    </div>
+
+    <div>
+      <div class="stage-controls">
+        <button id="fullnet-play" class="primary">▶ Play</button>
+        <button id="fullnet-step">Step ›</button>
+        <button id="fullnet-back">‹ Back</button>
+        <button id="fullnet-reset">Reset</button>
+        <span class="hopcount" id="fullnet-hops"></span>
+      </div>
+      <div class="legend" style="margin-top:12px">
+        <span class="item"><span class="swatch" style="background:#DDE2ED"></span> not reached</span>
+        <span class="item"><span class="swatch" style="background:#A9C0DC"></span> reached earlier</span>
+        <span class="item"><span class="swatch" style="background:#9B3A3A"></span> reached this hop</span>
+      </div>
+    </div>
+  </div>
+
+    <span class="sec-tag"><span class="n">2</span>Methods</span>
+
+</section>
+
+<!-- =============== 11b . WHY THIS UPDATE IS THE BIOLOGY =============== -->
+<section class="L-split wide-left has-fn" data-t="0:45">
+  <div class="slide-head">
+    <span class="eyebrow">Pillar 3 &middot; why the update is biological</span>
+    <h2>What one hop actually claims about a cell</h2>
+  </div>
+
+  <div class="split-body">
+    <div class="pane-text">
+      <ul class="small">
+        <li><strong>Clamp, do not relax.</strong> CRISPRi holds the target down for the whole
+          experiment, so the silenced gene is a boundary condition &mdash; not something the
+          network is allowed to restore.</li>
+        <li class="fragment"><strong>Every other gene recomputes from its regulators.</strong>
+          Transcription is fast relative to the readout, so each gene sits at the level its
+          current regulator occupancy dictates.</li>
+        <li class="fragment"><strong>Iterate until nothing moves.</strong> The fixed point is
+          the new steady state &mdash; which is exactly what a Perturb-seq profile measures,
+          days after the knockdown.</li>
+      </ul>
+    </div>
+
+    <div class="pane-text">
+      <div class="camp" style="background:rgba(155,58,58,.06);border-color:rgba(155,58,58,.22)">
+        <h4 style="color:var(--brick)">And this is why it must be nonlinear</h4>
+        <ul class="small">
+          <li><strong>Saturation.</strong> Doubling a transcription factor does not double its
+            target &mdash; the promoter fills up. The Hill term has a ceiling; a linear operator
+            does not.</li>
+          <li><strong>Signed composition.</strong> Activation through one path and repression
+            through another must survive being combined.</li>
+        </ul>
+        <div class="verdict fragment" style="font-style:normal">
+          GATA1 &rarr; BACH1 &#8867; NQO1 is precisely the loop from the motivation &mdash; and two
+          slides ago you watched it resolve correctly.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <span class="sec-tag"><span class="n">2</span>Methods</span>
+  <div class="slide-footnote">Iteration stops at
+    \(\|x^{(t+1)}-x^{(t)}\|_2 < 10^{-5}\),
+    capped at 100 hops. Median <b>13</b> hops, no non-convergent case on either cell line.</div>
+
+</section>
+
+<!-- ═══════════════════════════════════════ 9 · HOW WE LEARN ═══════════ -->
+<section class="has-fn L-split" data-t="1:00">
+  <div class="slide-head">
+    <span class="eyebrow">Fitting</span>
+    <h2>How we learn</h2>
+  </div>
+
+  <div class="split-body">
+    <div class="pane-text">
+      <div class="formula formula-sub" data-tex style="margin-bottom:18px">
+        \[
+          \begin{aligned}
+          \mathcal{L}(\Theta) = {} &
+          \class{tok tok-wmse}{\lambda_1\mathcal{L}_{\mathrm{WMSE}}} +
+          \class{tok tok-afda}{\lambda_2\mathcal{L}_{\mathrm{AFDA}}} +
+          \class{tok tok-bal}{\lambda_3\mathcal{L}_{\mathrm{bal}}} \\[2pt]
+          {} + {} &
+          \class{tok tok-delta}{\lambda_4\mathcal{L}_{\Delta}} +
+          \class{tok tok-deg}{\lambda_5\mathcal{L}_{\mathrm{DEG}}}
+          \end{aligned}
+        \]
+      </div>
+
+      <div class="formula-caption">
+        <span class="cap fragment current-visible" data-focus="" data-tone="">
+          <span class="who">the objective</span>Five terms, jointly minimised across every training perturbation.</span>
+        <span class="cap fragment current-visible" data-focus="wmse" data-tone="c-navy">
+          <span class="who">\(\mathcal{L}_{\mathrm{WMSE}}\) — change-weighted reconstruction</span>
+          Get magnitude right, <strong>weighted by how much a gene actually moved</strong>.</span>
+        <span class="cap fragment current-visible" data-focus="afda" data-tone="c-act">
+          <span class="who">\(\mathcal{L}_{\mathrm{AFDA}}\) — direction-aware focal loss</span>
+          Penalise <strong>wrong-sign</strong> predictions hardest — direction before magnitude.</span>
+        <span class="cap fragment current-visible" data-focus="bal" data-tone="c-navy">
+          <span class="who">\(\mathcal{L}_{\mathrm{bal}}\) — balance regulariser</span>
+          Guards against <strong>systematic up/down bias</strong> across the genome.</span>
+        <span class="cap fragment current-visible" data-focus="delta" data-tone="c-navy">
+          <span class="who">\(\mathcal{L}_{\Delta}\) — change-vector reconstruction</span>
+          Fit the <strong>whole perturbation-response vector</strong>, not just the endpoint.</span>
+        <span class="cap fragment current-visible" data-focus="deg" data-tone="c-brick">
+          <span class="who">\(\mathcal{L}_{\mathrm{DEG}}\) — DEG-weighted</span>
+          Spend capacity on the <strong>genes that actually responded</strong>.</span>
+      </div>
+    </div>
+
+    <div class="pane-text">
+      <p class="small muted">Adam, 50 epochs, cosine annealing.</p>
+      <p class="small" style="margin-top:14px"><strong>(&lambda;&#8321;&hellip;&lambda;&#8325;) = (1, 1, 0.5, 1, 2)</strong></p>
+      <p class="tiny" style="margin-top:20px">Dropping any of the three reconstruction terms
+        degrades both directional accuracy and MSE (backup). The two regularisers are kept
+        for what they guard against, not for this table's numbers.</p>
+    </div>
+  </div>
+
+    <span class="sec-tag"><span class="n">2</span>Methods</span>
+
+</section>
+
+<!-- =================== 6b . WHAT MAKES IT CELL-TYPE SPECIFIC ========== -->
+<section class="L-split has-fn" data-t="0:40">
+  <div class="slide-head">
+    <span class="eyebrow">Result 1</span>
+    <h2>Only two of the five know which cell you are in</h2>
+  </div>
+
+  <div class="split-body">
+    <div class="origin" style="grid-column:1 / -1">
+      <div class="col generic">
+        <h4>Generic human knowledge</h4>
+        <div class="row"><span class="lv">L1</span><span class="what">Curated TF&ndash;target interactions &mdash; true of any human cell</span></div>
+        <div class="row"><span class="lv">L3</span><span class="what">Protein interaction partners &mdash; from STRING, cell-agnostic</span></div>
+        <div class="row"><span class="lv">L4</span><span class="what">Co-expression across many public datasets</span></div>
+      </div>
+      <div class="col specific">
+        <h4>This cell line only</h4>
+        <div class="row"><span class="lv">L2</span><span class="what"><strong>Enhancers active in K562</strong> &mdash; GeneHancer filtered by tissue</span></div>
+        <div class="row"><span class="lv">L5</span><span class="what"><strong>K562&rsquo;s own Perturb-seq</strong> &mdash; which genes responded when we silenced others here</span></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="fragment" style="margin-top:20px;font-size:0.8em;color:var(--navy);font-weight:700">
+    Swap K562 for RPE1 and only these two change &mdash; that is the whole of the
+    context specificity.</p>
+
+  <span class="sec-tag"><span class="n">3</span>Results</span>
+  <div class="slide-footnote"><span class="n">15</span><b>S. Fishilevich et al.</b>, &quot;GeneHancer:
+    genome-wide integration of enhancers and target genes in GeneCards,&quot; <i>Database</i>,
+    2017:bax028, 2017.</div>
+
+</section>
+
+<!-- ═════════════════════════════ 10 · THE NETWORK IS REAL BIOLOGY ═════ -->
+<section class="has-fn-lg L-split wide-left" data-t="1:00">
+  <div class="slide-head">
+    <span class="eyebrow">Result 1</span>
+    <h2>No cell-type embedding is learned &mdash; context enters through the graph</h2>
+  </div>
+
+  <div class="split-body">
+    <div class="pane-figure">
+      <img src="assets/figs/fig2_tf_scatter.png"
+           alt="Transcription factor target counts, K562 versus RPE1">
+    </div>
+
+    <div class="pane-text">
+      <table class="results">
+        <thead><tr><th>TF</th><th>K562</th><th>RPE1</th><th style="text-align:left">Context</th></tr></thead>
+        <tbody>
+          <tr><td>TRIM24<sup class="fn">22</sup></td><td>476</td><td>0</td><td style="text-align:left">CML</td></tr>
+          <tr><td>ATF4<sup class="fn">23</sup></td><td>100</td><td>833</td><td style="text-align:left">stress / retinal</td></tr>
+          <tr><td>ZEB2<sup class="fn">24</sup></td><td>331</td><td>4</td><td style="text-align:left">haematopoiesis</td></tr>
+          <tr><td>REST<sup class="fn">25</sup></td><td>107</td><td>8</td><td style="text-align:left">neuronal / epith.</td></tr>
+          <tr><td>REL<sup class="fn">26</sup></td><td>36</td><td>110</td><td style="text-align:left">NF-κB / retinal</td></tr>
+        </tbody>
+      </table>
+      <p class="small fragment" style="margin-top:18px">
+        Same procedure, two cell lines. Context enters as <strong>evidence in the graph</strong>,
+        not as a learned cell-line vector.</p>
+    </div>
+  </div>
+
+    <span class="sec-tag"><span class="n">3</span>Results</span>
+
+  <div class="slide-footnote"><span class="n">22</span>Quintás-Cardama et al., <i>Cancer</i> 2012<span class="sep">·</span><span class="n">23</span>Bhootada et al., <i>PLoS One</i> 2016<span class="sep">·</span><span class="n">24</span>Goossens et al., <i>Blood</i> 2011<br><span class="n">25</span>Rockowitz et al., <i>PLoS Comput. Biol.</i> 2014<span class="sep">·</span><span class="n">26</span>Sun et al., <i>Cell Death Dis.</i> 2017</div>
+
+</section>
+
+<!-- ═══════════════════════════ 11 · IT BEATS THE DEEP NETS ════════════ -->
+<section class="has-fn-lg L-full" data-t="1:15">
+  <div class="slide-head">
+    <span class="eyebrow">Result 2</span>
+    <h2>Against five deep-learning baselines<sup class="fn">4–8</sup></h2>
+    <p class="tiny muted" style="margin-top:8px">4,452 perturbations<sup class="fn">18</sup> across K562 and RPE1 — held out for evaluation.</p>
+  </div>
+
+  <div class="figure-area">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:56px;width:100%;align-items:start">
+      <div>
+        <h3 style="margin-bottom:6px">Directional accuracy <span class="tiny">higher is better</span></h3>
+        <div data-chart="directional" data-vmax="1"></div>
+      </div>
+      <div class="fragment">
+        <h3 style="margin-bottom:6px">Mean squared error <span class="tiny">lower is better</span></h3>
+        <div data-chart="mse" data-lower="true" data-vmax="1"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="caption-bar">
+    Directional accuracy and mean squared error on held-out perturbations.
+    <span class="fragment">Top-20 Pearson reaches 0.61 on K562 against 0.50 for STATE.
+      Mean-shift direction &mdash; whether the transcriptome moves the right way overall &mdash;
+      is also highest for iPerturb (0.61 / 0.62).</span>
+  </div>
+
+    <span class="sec-tag"><span class="n">3</span>Results</span>
+
+  <div class="slide-footnote"><span class="n">4–8</span>CPA, GEARS, scGPT, Cell2Sentence and STATE — baseline values as reported in their original publications, so evaluation protocols are not identical to ours.<span class="sep">·</span><span class="n">18</span>Replogle et al., <i>Cell</i> 2022.</div>
+
+</section>
+
+<!-- ═════════════════════ 12 · NONLINEARITY IS DOING THE WORK ══════════ -->
+<section class="has-fn L-split" data-t="0:45" data-cut="15">
+  <div class="slide-head">
+    <span class="eyebrow">Result 3</span>
+    <h2>Is it the network, or the kinetics?<sup class="fn">11</sup></h2>
+  </div>
+
+  <div class="split-body">
+    <div class="pane-text">
+      <p style="font-size:0.86em">Keep the <strong>same GRN</strong>. Replace the Hill
+        dynamics with linear signed propagation — a random walk with restart.</p>
+      <p class="small muted">If the graph alone carried the signal, this should hold up.</p>
+    </div>
+
+    <div class="pane-text">
+      <table class="results">
+        <thead><tr><th></th><th>iPerturb</th><th>linear RWR</th></tr></thead>
+        <tbody>
+          <tr><td>Directional acc. — K562</td><td class="win">0.68</td><td>0.53</td></tr>
+          <tr><td>Directional acc. — RPE1</td><td class="win">0.87</td><td>0.61</td></tr>
+          <tr><td>Top-20 Pearson — K562</td><td class="win">0.58</td><td>0.07</td></tr>
+          <tr><td>Top-20 Pearson — RPE1</td><td class="win">0.78</td><td>0.11</td></tr>
+          <tr class="ours"><td>Change-vector MSE</td><td>≈18× / ≈10× lower</td><td>—</td></tr>
+        </tbody>
+      </table>
+      <p class="tiny">Held-out subsample protocol — deliberately distinct from the
+        full-set evaluation on the previous slide.</p>
+    </div>
+  </div>
+
+  <p class="fragment" style="margin-top:20px;font-size:0.9em;color:var(--navy);font-weight:700">
+    The curated graph is necessary. It is nowhere near sufficient.</p>
+
+    <span class="sec-tag"><span class="n">3</span>Results</span>
+
+  <div class="slide-footnote"><span class="n">11</span><b>L. Cowen et al.</b>, "Network propagation: a universal amplifier of genetic associations," <i>Nat. Rev. Genet.</i>, 18(9):551–562, 2017.</div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════ 13 · TAKE-HOME ═════════ -->
+<section class="L-statement" data-t="0:40">
+  <div class="slide-head">
+    <span class="eyebrow">In summary</span>
+    <h2>iPerturb</h2>
+  </div>
+
+  <ul class="takeaways" style="margin-top:20px">
+    <li><strong>Real regulatory knowledge</strong> as the foundation — a curated,
+      cell-line-specific GRN, not a learned graph.</li>
+    <li><strong>Kinetics learned on it</strong>, then propagated <strong>multi-hop</strong> to
+      a steady state.</li>
+    <li>So iPerturb <strong>predicts through a mechanism</strong> rather than explaining a
+      prediction after the fact — and the paths it uses are testable hypotheses.</li>
+  </ul>
+
+  <div style="margin-top:auto;padding-top:22px;border-top:1px solid var(--rule);
+              display:flex;justify-content:space-between;align-items:baseline;font-size:0.62em">
+    <span class="muted">Code, figure scripts and a Colab notebook —
+      <strong style="color:var(--brick)">github.com/kagtgi/iPerturb</strong></span>
+    <span class="muted">khangta@fulbright.edu.vn</span>
+  </div>
+
+    <span class="sec-tag"><span class="n">4</span>Conclusion</span>
+
+</section>
+
+<!-- ═══════════════════════════════════════ 13b · THANK YOU ═══════════ -->
+<section class="L-statement" data-t="0:15">
+  <div class="lede">Thank you for listening.</div>
+  <p class="sub">Happy to take questions.</p>
+
+  <div style="margin-top:auto;padding-top:22px;border-top:1px solid var(--rule);
+              display:flex;justify-content:space-between;align-items:baseline;font-size:0.62em">
+    <span class="muted">Code, figure scripts and a Colab notebook —
+      <strong style="color:var(--brick)">github.com/kagtgi/iPerturb</strong></span>
+    <span class="muted">khangta@fulbright.edu.vn</span>
+  </div>
+
+    <span class="sec-tag"><span class="n">4</span>Conclusion</span>
+
+</section>
+
+<!-- ============================= LIMITATIONS ========================== -->
+<!-- ============================== FUTURE WORK ========================= -->
+<section class="L-split" data-t="0:40">
+  <div class="slide-head">
+    <span class="eyebrow">Discussion</span>
+    <h2>Where this goes next</h2>
+  </div>
+
+  <div class="split-body" style="grid-template-columns:1fr">
+    <div class="pane-text" style="grid-column:1/-1">
+      <ul>
+        <li><strong>Mine mechanisms from the literature.</strong> Build a large database of
+          regulatory mechanisms extracted from primary papers, and assemble the GRN from
+          that rather than from aggregated interaction tables.</li>
+        <li><strong>Add direct binding evidence.</strong> ChIP-seq and related assays, so an
+          edge can be grounded in measured occupancy rather than inferred association.</li>
+        <li><strong>Beyond CRISPRi.</strong> Genetic <em>and</em> chemical perturbations &mdash;
+          a compound acting on a pathway is the same propagation problem with a different
+          entry point.</li>
+        <li><strong>Make it fast.</strong> Architectural work on the propagation solve, so
+          the model scales to more cell lines and larger networks.</li>
+      </ul>
+    </div>
+  </div>
+
+  <span class="sec-tag"><span class="n">4</span>Discussion</span>
+
+</section>
+
+<!-- ══════════════════════════════════════════════ REFERENCES ═════════ -->
+<section class="L-full" data-t="0:00">
+  <div class="slide-head">
+    <span class="eyebrow">References</span>
+    <h2>Sources</h2>
+  </div>
+
+  <div class="figure-area" style="align-items:flex-start">
+    <div class="refs">
+      <div><span class="n">1</span><span><b>C. Bunne, Y. Roohani, Y. Rosen, A. Gupta, et al.</b>, "How to build the virtual cell with artificial intelligence," <i>Cell</i>, 187(25):7045–7063, 2024.</span></div>
+      <div><span class="n">2</span><span><b>J. R. Karr, J. C. Sanghvi, D. N. Macklin, et al.</b>, "A whole-cell computational model predicts phenotype from genotype," <i>Cell</i>, 150(2):389–401, 2012.</span></div>
+      <div><span class="n">3</span><span><b>M. Hu, H. V. Dinh, Y. Shen, et al.</b>, "Comparative study of two Saccharomyces cerevisiae strains with kinetic models at genome-scale," <i>Metabolic Engineering</i>, 76:1–17, 2023.</span></div>
+      <div><span class="n">4</span><span><b>M. Lotfollahi, A. K. Susmelj, C. De Donno, et al.</b>, "Predicting cellular responses to complex perturbations in high-throughput screens," <i>Molecular Systems Biology</i>, 19(6):e11517, 2023.</span></div>
+      <div><span class="n">5</span><span><b>Y. Roohani, K. Huang, and J. Leskovec</b>, "Predicting transcriptional outcomes of novel multigene perturbations with GEARS," <i>Nature Biotechnology</i>, 42(6):927–935, 2024.</span></div>
+      <div><span class="n">6</span><span><b>H. Cui, C. Wang, H. Maan, K. Pang, F. Luo, and B. Wang</b>, "scGPT: toward building a foundation model for single-cell multi-omics using generative AI," <i>Nature Methods</i>, 21(8):1470–1480, 2024.</span></div>
+      <div><span class="n">7</span><span><b>D. Levine, S. A. Rizvi, S. Lévy, et al.</b>, "Cell2Sentence: teaching large language models the language of biology," <i>ICML</i>, pp. 27299–27325, PMLR, 2024.</span></div>
+      <div><span class="n">8</span><span><b>A. K. Adduri, D. Gautam, B. Bevilacqua, et al.</b>, "Predicting cellular responses to perturbation across diverse contexts with STATE," <i>bioRxiv</i>, 2025.</span></div>
+      <div><span class="n">9</span><span><b>N. Fortelny and C. Bock</b>, "Knowledge-primed neural networks enable biologically interpretable deep learning on single-cell sequencing data," <i>Genome Biology</i>, 21(1):190, 2020.</span></div>
+      <div><span class="n">10</span><span><b>M. Lotfollahi, S. Rybakov, K. Hrovatin, et al.</b>, "Biologically informed deep learning to query gene programs in single-cell atlases," <i>Nature Cell Biology</i>, 25(2):337–350, 2023.</span></div>
+      <div><span class="n">11</span><span><b>L. Cowen, T. Ideker, B. J. Raphael, and R. Sharan</b>, "Network propagation: a universal amplifier of genetic associations," <i>Nature Reviews Genetics</i>, 18(9):551–562, 2017.</span></div>
+      <div><span class="n">12</span><span><b>H. Han, J.-W. Cho, S. Lee, et al.</b>, "TRRUST v2: an expanded reference database of human and mouse transcriptional regulatory interactions," <i>Nucleic Acids Research</i>, 46(D1):D380–D386, 2018.</span></div>
+      <div><span class="n">13</span><span><b>S. Müller-Dott, E. Tsirvouli, M. Vazquez, et al.</b>, "Expanding the coverage of regulons from high-confidence prior knowledge for accurate estimation of transcription factor activities," <i>Nucleic Acids Research</i>, 51(20):10934–10949, 2023.</span></div>
+      <div><span class="n">14</span><span><b>D. Türei, T. Korcsmáros, and J. Saez-Rodriguez</b>, "OmniPath: guidelines and gateway for literature-curated signaling pathway resources," <i>Nature Methods</i>, 13(12):966–967, 2016.</span></div>
+      <div><span class="n">15</span><span><b>S. Fishilevich, R. Nudel, N. Rappaport, et al.</b>, "GeneHancer: genome-wide integration of enhancers and target genes in GeneCards," <i>Database</i>, 2017:bax028, 2017.</span></div>
+      <div><span class="n">16</span><span><b>D. Szklarczyk, R. Kirsch, M. Koutrouli, et al.</b>, "The STRING database in 2023: protein–protein association networks and functional enrichment analyses for any sequenced genome of interest," <i>Nucleic Acids Research</i>, 51(D1):D638–D646, 2023.</span></div>
+      <div><span class="n">17</span><span><b>T. Obayashi, S. Kodate, H. Hibara, Y. Kagaya, and K. Kinoshita</b>, "COXPRESdb v8: an animal gene coexpression database navigating from a global view to detailed investigations," <i>Nucleic Acids Research</i>, 51(D1):D80–D87, 2023.</span></div>
+      <div><span class="n">18</span><span><b>J. M. Replogle, R. A. Saunders, M. C. Pogson, et al.</b>, "Mapping information-rich genotype–phenotype landscapes with genome-scale Perturb-seq," <i>Cell</i>, 185(14):2559–2575, 2022.</span></div>
+      <div><span class="n">19</span><span><b>R. Viñas Torné, M. Wiatrak, Z. Piran, et al.</b>, "Systema: a framework for evaluating genetic perturbation response prediction beyond systematic variation," <i>Nature Biotechnology</i>, pp. 1–10, 2025.</span></div>
+      <div><span class="n">20</span><span><b>A. Alwosheel, S. van Cranenburgh, and C. G. Chorus</b>, "Is your dataset big enough? Sample size requirements when using artificial neural networks for discrete choice analysis," <i>Journal of Choice Modelling</i>, 28:167–182, 2018.</span></div>
+      <div><span class="n">21</span><span><b>T. Kuhlman, Z. Zhang, M. H. Saier Jr, and T. Hwa</b>, "Combinatorial transcriptional control of the lactose operon of Escherichia coli," <i>PNAS</i>, 104(14):6043–6048, 2007.</span></div>
+      <div><span class="n">22</span><span><b>A. Quintás-Cardama, Y. H. Qiu, S. M. Post, et al.</b>, "Reverse phase protein array profiling reveals distinct proteomic signatures associated with chronic myeloid leukemia progression," <i>Cancer</i>, 118(21):5283–5292, 2012.</span></div>
+      <div><span class="n">23</span><span><b>Y. Bhootada, P. Kotla, S. Zolotukhin, et al.</b>, "Limited ATF4 expression in degenerating retinas with ongoing ER stress promotes photoreceptor survival," <i>PLoS One</i>, 11(5):e0154779, 2016.</span></div>
+      <div><span class="n">24</span><span><b>S. Goossens, V. Janzen, S. Bartunkova, et al.</b>, "The EMT regulator ZEB2/SIP1 is essential for murine embryonic hematopoietic stem/progenitor cell differentiation and mobilization," <i>Blood</i>, 117(21):5620–5630, 2011.</span></div>
+      <div><span class="n">25</span><span><b>S. Rockowitz, W.-H. Lien, E. Pedrosa, et al.</b>, "Comparison of REST cistromes across human cell types reveals common and context-specific functions," <i>PLoS Computational Biology</i>, 10(6):e1003671, 2014.</span></div>
+      <div><span class="n">26</span><span><b>J. Sun, P. Huang, J. Liang, et al.</b>, "Cooperation of REL family members in regulating Aβ1-40-mediated pro-inflammatory cytokine secretion by retinal pigment epithelial cells," <i>Cell Death & Disease</i>, 8(10):e3115, 2017.</span></div>
+    </div>
+  </div>
+
+  <div class="caption-bar">
+    Code, figure scripts and a reproducibility notebook —
+    <strong style="color:var(--brick)">github.com/kagtgi/iPerturb</strong>
+    <span class="sep" style="margin:0 10px;opacity:.4">·</span>
+    khangta@fulbright.edu.vn
+  </div>
+
+  <span class="sec-tag"><span class="n">4</span>Conclusion</span>
+
+</section>
+
+<!-- ============== APPENDIX . WHAT IT COMPUTES, AND WHERE IT BREAKS ==== -->
+<section class="L-split has-fn" data-t="0:00">
+  <div class="slide-head">
+    <span class="eyebrow">Appendix</span>
+    <h2>Why it cannot answer a perturbation question</h2>
+  </div>
+
+  <div class="split-body">
+    <div class="pane-text">
+      <p class="small"><strong>Linear propagation is not a heuristic.</strong> It is exactly
+        the steady-state <em>linear response</em> of a kinetic model:</p>
+      <div class="formula formula-sub" data-tex style="margin:14px 0 4px">
+        \[ \delta x^{*} = -J^{-1}B\,\delta u,
+            \qquad -J^{-1}=(\gamma I-A)^{-1}=\tfrac{1}{\gamma}\sum_{k\ge 0}(A/\gamma)^{k} \]
+      </div>
+      <p class="tiny">&mdash; the random-walk-with-restart operator, recovered exactly.</p>
+      <p class="small" style="margin-top:18px">That derivation is also its
+        <strong>boundary</strong>: a first-order sensitivity, valid near the operating point
+        and <em>blind to saturation, cooperativity and signed feedback</em>.</p>
+    </div>
+
+    <div class="pane-figure">
+      <svg viewBox="0 0 440 310" style="max-height:100%">
+        <defs>
+          <marker id="ffl-arw2" viewBox="0 0 10 10" refX="9.5" refY="5"
+                  markerWidth="5.5" markerHeight="5.5" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="#1B7F4B"/>
+          </marker>
+          <marker id="ffl-bar2" viewBox="0 0 10 10" refX="8" refY="5"
+                  markerWidth="5" markerHeight="5" orient="auto">
+            <path d="M8 0 L8 10" stroke="#B4531F" stroke-width="3.2" fill="none"/>
+          </marker>
+        </defs>
+
+        <text x="112" y="20" text-anchor="middle" font-size="13.5" font-weight="700" fill="#0A1F5C">directed, signed</text>
+        <text x="340" y="20" text-anchor="middle" font-size="13.5" font-weight="700" fill="#98A2B3">after symmetrising</text>
+
+        <g stroke-width="2.6" fill="none">
+          <path d="M58 78 L58 128" stroke="#1B7F4B" marker-end="url(#ffl-arw2)"/>
+          <path d="M72 68 L168 208" stroke="#1B7F4B" marker-end="url(#ffl-arw2)"/>
+          <path d="M76 172 L164 226" stroke="#B4531F" marker-end="url(#ffl-bar2)"/>
+        </g>
+        <g fill="#fff" stroke="#0A1F5C" stroke-width="1.8">
+          <circle cx="58" cy="56" r="19"/><circle cx="58" cy="156" r="19"/><circle cx="186" cy="240" r="19"/>
+        </g>
+        <g font-size="15" font-weight="700" fill="#0A1F5C" text-anchor="middle">
+          <text x="58" y="62">A</text><text x="58" y="162">B</text><text x="186" y="246">C</text>
+        </g>
+        <text x="112" y="290" text-anchor="middle" font-size="12.5" fill="#5F6980">two routes to C, opposite signs</text>
+
+        <path d="M232 150 L268 150" stroke="#C6CDDC" stroke-width="2"/>
+        <text x="250" y="141" text-anchor="middle" font-size="11" fill="#98A2B3">sym</text>
+
+        <g stroke="#C6CDDC" stroke-width="2.6" fill="none">
+          <path d="M300 78 L300 132"/><path d="M312 70 L406 212"/><path d="M316 172 L404 228"/>
+        </g>
+        <g fill="#fff" stroke="#C6CDDC" stroke-width="1.8">
+          <circle cx="300" cy="56" r="19"/><circle cx="300" cy="156" r="19"/><circle cx="424" cy="240" r="19"/>
+        </g>
+        <g font-size="15" font-weight="700" fill="#98A2B3" text-anchor="middle">
+          <text x="300" y="62">A</text><text x="300" y="162">B</text><text x="424" y="246">C</text>
+        </g>
+        <text x="352" y="196" font-size="12.5" font-weight="700" fill="#B4531F">&minus;&frac12;</text>
+        <text x="352" y="290" text-anchor="middle" font-size="12.5" fill="#98A2B3">order of composition destroyed</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="slide-footnote"><span class="n">11</span><b>L. Cowen et al.</b>, &quot;Network
+    propagation: a universal amplifier of genetic associations,&quot; <i>Nat. Rev. Genet.</i>,
+    18(9):551&ndash;562, 2017.</div>
+
+</section>
+
+</div></div>
+
+<script src="lib/reveal/reveal.js"></script>
+<script src="lib/reveal/plugin/notes.js"></script>
+<!-- generated by tools/build_subgraph.py; a plain script, not fetch(), so the
+     deck runs from file:// with no server and no network -->
+<script src="data/k562-gata1.js"></script>
+<script src="data/k562-full.js"></script>
+<script src="js/formula-anim.js"></script>
+<script src="js/grn-anim.js"></script>
+<script src="js/fullnet-anim.js"></script>
+<script src="js/results-chart.js"></script>
+<script src="js/deck.js"></script>
+</body>
+</html>
