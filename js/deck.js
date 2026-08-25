@@ -34,9 +34,9 @@
 
   /**
    * The two animated slides (GATA1 propagation, whole-network) are driven by a
-   * bespoke Player object, not reveal's native fragments. Route Up/Down to
-   * whichever mechanism the current slide actually uses, and do nothing at
-   * either end rather than falling through to a slide change.
+   * bespoke Player object, not reveal's native fragments. This reports where
+   * that player currently sits so the navigation keys below can step it before
+   * falling through to reveal's own fragment/slide chain.
    */
   function currentAnim() {
     var s = deck.getCurrentSlide();
@@ -52,23 +52,28 @@
     return null;
   }
 
-  function stepAnimForward() {
+  function stepForward() {
     var a = currentAnim();
-    if (a) { if (a.at < a.last) { a.obj.stop(); a.obj.next(); } return; }
-    deck.nextFragment();
+    if (a && a.at < a.last) { a.obj.stop(); a.obj.next(); return; }
+    deck.next();
   }
-  function stepAnimBackward() {
+  function stepBackward() {
     var a = currentAnim();
-    if (a) { if (a.at > 0) { a.obj.stop(); a.obj.prev(); } return; }
-    deck.prevFragment();
+    if (a && a.at > 0) { a.obj.stop(); a.obj.prev(); return; }
+    deck.prev();
   }
 
   /**
-   * Left/Right/PageUp/PageDown/Space always change the slide, full stop —
-   * they never get intercepted to step a fragment or an animation first.
-   * Up/Down do the opposite: they only ever step whatever is animated on the
-   * current slide (a custom Player, or a native reveal fragment) and never
-   * change the slide themselves.
+   * One linear walk, driven from one clicker: forward steps the animation if
+   * the current slide has one with steps left, otherwise reveals the next
+   * fragment, otherwise moves to the next slide. Backward reverses it.
+   * `next`/`prev` are reveal's fragment-aware primitives, which is exactly the
+   * fall-through we want — do not reach for `{skipFragments: true}` or
+   * `nextFragment`/`prevFragment` here, they each break one leg of that chain.
+   *
+   * Up/Down are aliased onto the same walk rather than left unbound: with no
+   * vertical slides in this deck, handing those keys back to reveal's default
+   * vertical navigation makes them behave unpredictably.
    *
    * `addKeyBinding` (populating reveal's internal `this.bindings`) is the
    * mechanism that actually overrides a key's default behaviour in this
@@ -79,23 +84,10 @@
    * silently drops the whole override with no error, so verify with
    * `deck.getConfig().keyboard` after any reveal upgrade — if it isn't the
    * object you passed, bindings need to move (back) to `addKeyBinding`.
-   *
-   * `left`/`right` are fragment-aware by default in this reveal version —
-   * bare `deck.right()` on a slide with hidden fragments reveals the next
-   * fragment instead of changing slide. `{skipFragments: true}` forces pure
-   * slide navigation; it is the same option reveal's own default Alt+Arrow
-   * handling passes internally. `nextFragment`/`prevFragment` are the
-   * fragment-only primitives that no-op at the start/end of a slide instead
-   * of spilling into slide navigation.
    */
   function bindKeys() {
-    deck.addKeyBinding(37, function () { deck.left({ skipFragments: true }); });   // Left
-    deck.addKeyBinding(39, function () { deck.right({ skipFragments: true }); });  // Right
-    deck.addKeyBinding(33, function () { deck.left({ skipFragments: true }); });   // Page Up
-    deck.addKeyBinding(34, function () { deck.right({ skipFragments: true }); });  // Page Down
-    deck.addKeyBinding(32, function () { deck.right({ skipFragments: true }); });  // Space
-    deck.addKeyBinding(38, function () { stepAnimBackward(); });                   // Up
-    deck.addKeyBinding(40, function () { stepAnimForward(); });                    // Down
+    [39, 34, 32, 40].forEach(function (k) { deck.addKeyBinding(k, stepForward); });
+    [37, 33, 38].forEach(function (k) { deck.addKeyBinding(k, stepBackward); });
   }
 
   /* ---------------------------------------------------- the GRN animation */

@@ -340,6 +340,14 @@ sup.fn {
   font-size: 0.78em; color: var(--brick); font-style: italic;
 }
 .camp ul li::before { background: var(--faint); }
+/* strengths vs limits. Navy and brick are chrome colours on purpose: --act and
+   --rep belong to edge semantics, and a rust dot here would read as repression. */
+.camp ul.pros li::before { background: var(--navy-soft); }
+.camp ul.cons li::before { background: var(--brick); }
+.camp ul.cons {
+  margin-top: 12px; padding-top: 12px;
+  border-top: 1px dashed var(--rule); color: var(--muted);
+}
 
 /* evidence-tier list ------------------------------------------------------- */
 .tiers { display: flex; flex-direction: column; gap: 11px; }
@@ -485,6 +493,23 @@ sup.fn {
 .formula-sub mjx-container svg { font-size: 0.78em; }
 
 .formula .tok { transition: color 220ms ease, opacity 220ms ease; }
+
+/* At rest the equation is colour-coded by what each symbol IS: fitted from the
+   data, recomputed every hop, or fixed by the GRN. Scoped to :not(.focusing) on
+   purpose — `.focusing` dims by setting colour on the root <svg> and letting the
+   token groups inherit it, so an unscoped rule here would override the
+   inheritance and defeat the dimming the caption walk depends on. */
+.formula:not(.focusing) .tok-V,
+.formula:not(.focusing) .tok-b,
+.formula:not(.focusing) .tok-alpha,
+.formula:not(.focusing) .tok-w,
+.formula:not(.focusing) .tok-K,
+.formula:not(.focusing) .tok-n     { color: var(--brick); }
+.formula:not(.focusing) .tok-x,
+.formula:not(.focusing) .tok-h,
+.formula:not(.focusing) .tok-r     { color: var(--navy); }
+.formula:not(.focusing) .tok-N     { color: var(--faint); }
+
 /* dim the whole equation, then bring the focused term back */
 .formula.focusing mjx-container svg { color: var(--faint); }
 .formula.focusing .tok:not(.lit) { opacity: 0.75; }
@@ -519,6 +544,10 @@ sup.fn {
   background: var(--panel); border: 1px solid var(--rule);
   border-radius: 4px; padding: 1px 6px; color: var(--ink);
 }
+/* key for the at-rest colouring of the equation above */
+.role-learned { color: var(--brick); }
+.role-state   { color: var(--navy); }
+.role-fixed   { color: var(--faint); }
 
 /* hill curve ---------------------------------------------------------------- */
 /* No controls: an audience cannot reach them, so the curve animates itself in

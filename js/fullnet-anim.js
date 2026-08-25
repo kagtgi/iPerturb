@@ -26,10 +26,10 @@
    * 34-gene slide. Here: untouched, reached, and reaching-now. Three states.
    */
   var PAL = {
-    rest:    'rgba(10,31,92,0.05)',    // the whole network, at rest
+    rest:    'rgba(10,31,92,0.035)',   // the whole network, at rest
     spent:   'rgba(169,192,220,0.55)', // edges that carried an earlier hop
     carry:   'rgba(155,58,58,0.80)',   // edge carrying the current hop
-    node:    '#DDE2ED',                // not reached yet
+    node:    '#E8ECF4',                // not reached yet
     reached: '#A9C0DC',                // reached earlier: pale, not emphasised
     now:     '#9B3A3A',                // reached on this hop
     seed:    '#0A1F5C',
@@ -145,7 +145,7 @@
     if (!this.scale) return;
     var hop = this.hop,
         u = this.scale / 0.5,
-        rBase = Math.max(1.1, 1.7 * u),
+        rBase = Math.max(0.9, 1.3 * u),
         rMoved = Math.max(1.1, 1.7 * u),
         rHot = Math.max(2.6, 4.2 * u),
         live = hop >= 1 && hop <= this.lastWave;
@@ -153,9 +153,10 @@
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     ctx.lineCap = 'round';
 
-    // 1 — the whole network, one faint wash
+    // 1 — the whole network, one faint wash. Every edge is still drawn: the
+    // caption claims all 8,543, so thin the ink, never the edge list.
     ctx.strokeStyle = PAL.rest;
-    ctx.lineWidth = Math.max(0.5, 0.7 * u);
+    ctx.lineWidth = Math.max(0.4, 0.5 * u);
     ctx.beginPath();
     for (i = 0; i < D.es.length; i++) {
       ctx.moveTo(this.X(D.es[i]), this.Y(D.es[i]));

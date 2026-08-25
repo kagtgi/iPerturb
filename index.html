@@ -86,28 +86,39 @@ window.MathJax = {
 
   <div class="split-body" style="grid-template-columns:1fr 1fr 1fr">
     <div class="camp">
-      <h4>Kinetic models</h4>
-      <ul class="small">
-        <li>Every parameter means something<sup class="fn">2,3</sup></li>
+      <h4>Kinetic models<sup class="fn">2,3</sup></h4>
+      <ul class="small pros">
+        <li>Every parameter means something</li>
+        <li>Explains the mechanism, not just the outcome</li>
       </ul>
-      <div class="verdict">&hellip;but need measured rate constants &mdash; toy systems only.</div>
+      <ul class="small cons">
+        <li>Needs measured rate constants</li>
+        <li>Only tractable on small systems</li>
+      </ul>
     </div>
 
     <div class="camp">
       <h4>Deep networks</h4>
-      <ul class="small">
-        <li>CPA<sup class="fn">4</sup> &middot; GEARS<sup class="fn">5</sup> &middot; scGPT<sup class="fn">6</sup> &middot; Cell2Sentence<sup class="fn">7</sup> &middot; STATE<sup class="fn">8</sup></li>
+      <ul class="small pros">
+        <li>Scale to thousands of perturbations</li>
+        <li>Strong benchmark accuracy &mdash; CPA<sup class="fn">4</sup> &middot; GEARS<sup class="fn">5</sup> &middot; scGPT<sup class="fn">6</sup> &middot; Cell2Sentence<sup class="fn">7</sup> &middot; STATE<sup class="fn">8</sup></li>
       </ul>
-      <div class="verdict">&hellip;but almost none expose a readable signed mechanism.</div>
+      <ul class="small cons">
+        <li>The answer is a latent vector</li>
+        <li>Almost none expose a signed mechanism</li>
+      </ul>
     </div>
 
     <div class="camp">
       <h4>Network propagation<sup class="fn">11</sup></h4>
-      <ul class="small">
+      <ul class="small pros">
         <li>A proven amplifier &mdash; disease genes, GWAS, cancer drivers</li>
+        <li>Simple; nothing to train</li>
       </ul>
-      <div class="verdict">&hellip;but assumes an undirected graph &mdash; the wrong shape for
-        signed regulation.</div>
+      <ul class="small cons">
+        <li>Undirected, unsigned graph</li>
+        <li>Linear &mdash; cannot saturate or compose</li>
+      </ul>
     </div>
   </div>
 
@@ -147,18 +158,35 @@ window.MathJax = {
                 markerWidth="7" markerHeight="7" orient="auto-start-reverse">
           <path d="M0 0 L10 5 L0 10 z" fill="#33477E"/>
         </marker>
+        <!-- Edge glyphs. Marker ids are global across this single-page deck, so
+             these carry an `idea-` prefix; markerUnits defaults to strokeWidth,
+             so each scales with the stroke it is attached to. -->
+        <marker id="idea-arw-plain" viewBox="0 0 10 10" refX="9.5" refY="5"
+                markerWidth="5.5" markerHeight="5.5" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="#98A2B3"/>
+        </marker>
+        <marker id="idea-arw-act" viewBox="0 0 10 10" refX="9.5" refY="5"
+                markerWidth="5.5" markerHeight="5.5" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="#1B7F4B"/>
+        </marker>
+        <marker id="idea-bar-rep" viewBox="0 0 10 10" refX="8" refY="5"
+                markerWidth="5" markerHeight="5" orient="auto">
+          <path d="M8 0 L8 10" stroke="#B4531F" stroke-width="3.2" fill="none"/>
+        </marker>
       </defs>
 
       <!-- stage 1 -->
       <g class="fragment fade-in" data-fragment-index="0">
         <text x="170" y="26" text-anchor="middle" font-size="17" font-weight="700" fill="#0A1F5C">1 · Real regulatory knowledge</text>
         <text x="170" y="50" text-anchor="middle" font-size="14" fill="#5F6980">curated, cell-line specific</text>
-        <g stroke="#C6CDDC" stroke-width="2.2">
-          <line x1="90"  y1="150" x2="190" y2="110"/>
-          <line x1="90"  y1="150" x2="180" y2="215"/>
-          <line x1="190" y1="110" x2="270" y2="180"/>
-          <line x1="180" y1="215" x2="270" y2="180"/>
-          <line x1="190" y1="110" x2="180" y2="215"/>
+        <!-- Every target endpoint is pulled back r+4 = 23px along the edge so the
+             glyph lands clear of the node instead of under it. -->
+        <g stroke="#C6CDDC" stroke-width="2.2" marker-end="url(#idea-arw-plain)">
+          <line x1="90"  y1="150" x2="168.6" y2="118.5"/>
+          <line x1="90"  y1="150" x2="161.4" y2="201.5"/>
+          <line x1="190" y1="110" x2="252.7" y2="164.9"/>
+          <line x1="180" y1="215" x2="248.6" y2="188.3"/>
+          <line x1="190" y1="110" x2="182.2" y2="192.1"/>
         </g>
         <g fill="#EEF1F7" stroke="#98A2B3" stroke-width="1.8">
           <circle cx="90"  cy="150" r="19"/><circle cx="190" cy="110" r="19"/>
@@ -176,11 +204,11 @@ window.MathJax = {
         <text x="620" y="26" text-anchor="middle" font-size="17" font-weight="700" fill="#0A1F5C">2 · Learned kinetics</text>
         <text x="620" y="50" text-anchor="middle" font-size="14" fill="#5F6980">one signed edge at a time</text>
         <g stroke-width="3">
-          <line x1="540" y1="150" x2="640" y2="110" stroke="#1B7F4B"/>
-          <line x1="540" y1="150" x2="630" y2="215" stroke="#B4531F"/>
-          <line x1="640" y1="110" x2="720" y2="180" stroke="#1B7F4B"/>
-          <line x1="630" y1="215" x2="720" y2="180" stroke="#1B7F4B"/>
-          <line x1="640" y1="110" x2="630" y2="215" stroke="#B4531F"/>
+          <line x1="540" y1="150" x2="618.6" y2="118.5" stroke="#1B7F4B" marker-end="url(#idea-arw-act)"/>
+          <line x1="540" y1="150" x2="611.4" y2="201.5" stroke="#B4531F" marker-end="url(#idea-bar-rep)"/>
+          <line x1="640" y1="110" x2="702.7" y2="164.9" stroke="#1B7F4B" marker-end="url(#idea-arw-act)"/>
+          <line x1="630" y1="215" x2="698.6" y2="188.3" stroke="#1B7F4B" marker-end="url(#idea-arw-act)"/>
+          <line x1="640" y1="110" x2="632.2" y2="192.1" stroke="#B4531F" marker-end="url(#idea-bar-rep)"/>
         </g>
         <g fill="#EEF1F7" stroke="#98A2B3" stroke-width="1.8">
           <circle cx="540" cy="150" r="19"/><circle cx="640" cy="110" r="19"/>
@@ -198,11 +226,11 @@ window.MathJax = {
         <text x="1090" y="26" text-anchor="middle" font-size="17" font-weight="700" fill="#0A1F5C">3 · Multi-hop propagation</text>
         <text x="1090" y="50" text-anchor="middle" font-size="14" fill="#5F6980">for a perturbation never seen</text>
         <g stroke-width="3">
-          <line x1="1010" y1="150" x2="1110" y2="110" stroke="#1B7F4B"/>
-          <line x1="1010" y1="150" x2="1100" y2="215" stroke="#B4531F"/>
-          <line x1="1110" y1="110" x2="1190" y2="180" stroke="#1B7F4B"/>
-          <line x1="1100" y1="215" x2="1190" y2="180" stroke="#1B7F4B"/>
-          <line x1="1110" y1="110" x2="1100" y2="215" stroke="#B4531F"/>
+          <line x1="1010" y1="150" x2="1088.6" y2="118.5" stroke="#1B7F4B" marker-end="url(#idea-arw-act)"/>
+          <line x1="1010" y1="150" x2="1081.4" y2="201.5" stroke="#B4531F" marker-end="url(#idea-bar-rep)"/>
+          <line x1="1110" y1="110" x2="1172.7" y2="164.9" stroke="#1B7F4B" marker-end="url(#idea-arw-act)"/>
+          <line x1="1100" y1="215" x2="1168.6" y2="188.3" stroke="#1B7F4B" marker-end="url(#idea-arw-act)"/>
+          <line x1="1110" y1="110" x2="1102.2" y2="192.1" stroke="#B4531F" marker-end="url(#idea-bar-rep)"/>
         </g>
         <g stroke="rgba(18,23,43,.28)" stroke-width="1.8">
           <circle cx="1010" cy="150" r="19" fill="#2166AC"/>
@@ -241,20 +269,9 @@ window.MathJax = {
       <p class="small muted">Five kinds of evidence for the same claim. Most direct wins;
         disagreement leaves the edge unsigned for the model to resolve.</p>
 
-      <div class="funnel fragment">
-        <div class="step">
-          <span class="v num">~180,000</span>
-          <span class="l">candidate edges</span>
-        </div>
-        <div class="to">→</div>
-        <div class="step keep">
-          <span class="v num">8,543</span>
-          <span class="l">selected, across 2,239 genes</span>
-        </div>
-      </div>
-
-      <p class="tiny fragment">A parameter budget<sup class="fn">20</sup> controls capacity and keeps the network from
-        becoming severely underconstrained — about 3.8 regulators per gene.</p>
+      <p class="small fragment" style="margin-top:24px">Together they propose
+        <strong class="num">~180,000</strong> candidate edges &mdash; far more than we can fit.
+        Which ones survive is step 3.</p>
     </div>
 
     <div class="pane-text">
@@ -305,7 +322,7 @@ window.MathJax = {
 
     <span class="sec-tag"><span class="n">2</span>Methods</span>
 
-  <div class="slide-footnote"><span class="n">12</span>Han et al., <i>NAR</i> 2018<span class="sep">·</span><span class="n">13</span>Müller-Dott et al., <i>NAR</i> 2023<span class="sep">·</span><span class="n">14</span>Türei et al., <i>Nat. Methods</i> 2016<span class="sep">·</span><span class="n">15</span>Fishilevich et al., <i>Database</i> 2017<br><span class="n">16</span>Szklarczyk et al., <i>NAR</i> 2023<span class="sep">·</span><span class="n">17</span>Obayashi et al., <i>NAR</i> 2023<span class="sep">·</span><span class="n">20</span>Alwosheel et al., <i>J. Choice Model.</i> 2018</div>
+  <div class="slide-footnote"><span class="n">12</span>Han et al., <i>NAR</i> 2018<span class="sep">·</span><span class="n">13</span>Müller-Dott et al., <i>NAR</i> 2023<span class="sep">·</span><span class="n">14</span>Türei et al., <i>Nat. Methods</i> 2016<br><span class="n">15</span>Fishilevich et al., <i>Database</i> 2017<span class="sep">·</span><span class="n">16</span>Szklarczyk et al., <i>NAR</i> 2023<span class="sep">·</span><span class="n">17</span>Obayashi et al., <i>NAR</i> 2023</div>
 
 </section>
 
@@ -368,72 +385,158 @@ window.MathJax = {
 </section>
 
 <!-- ========================= 6d . SELECT WITHIN A BUDGET ============== -->
-<section class="L-split has-fn" data-t="0:40" data-cut="15">
+<!-- Three panels, one per fragment: the pool, the coverage pass, the greedy
+     fill. Node positions are defined once in <defs> and <use>d three times, so
+     the genes cannot drift between panels and only the edges change.
+     Typography note: this viewBox renders at ~1.0 scale, unlike the 460-unit
+     figures elsewhere which render at ~1.5 — hence 20/17px here, not 14/12.5. -->
+<section class="L-full has-fn" data-t="0:50" data-cut="15">
   <div class="slide-head">
     <span class="eyebrow">Pillar 1 &middot; step 3 of 3</span>
     <h2>Keep only the edges we can actually identify</h2>
-  
+
     <div class="steprail"><span><span class="k">1</span>Harvest</span><span class="arr">&rarr;</span><span><span class="k">2</span>Merge</span><span class="arr">&rarr;</span><span class="on"><span class="k">3</span>Select</span></div>
   </div>
 
-  <div class="split-body">
-    <div class="pane-text">
-      <p class="small">Three kinetic parameters per edge. Fit ~180,000 of them against
-        2,000 perturbations and nothing is identifiable.</p>
-      <p class="small muted" style="margin-top:16px">So we cap capacity with a
-        <strong>parameter budget</strong><sup class="fn">20</sup> and fill it in two passes:</p>
-      <ul class="small" style="margin-top:14px">
-        <li><strong>Coverage first</strong> &mdash; walk the candidates by confidence so no gene
-          is left without a regulator.</li>
-        <li class="fragment"><strong>Then greedy fill</strong> &mdash; repeatedly take the
-          best-supported remaining edge, but each pick <em>penalises</em> its own source and
-          target, so no hub can swallow the budget.</li>
-      </ul>
-    </div>
+  <div class="figure-area">
+    <svg viewBox="0 0 1360 470" style="max-height:100%">
+      <defs>
+        <marker id="grn3-nv" viewBox="0 0 10 8" refX="10" refY="4"
+                markerWidth="11" markerHeight="8.8" markerUnits="userSpaceOnUse" orient="auto">
+          <path d="M0 0 L10 4 L0 8 z" fill="#0A1F5C"/>
+        </marker>
+        <marker id="grn3-bk" viewBox="0 0 10 8" refX="10" refY="4"
+                markerWidth="11" markerHeight="8.8" markerUnits="userSpaceOnUse" orient="auto">
+          <path d="M0 0 L10 4 L0 8 z" fill="#9B3A3A"/>
+        </marker>
+        <marker id="grn3-fa" viewBox="0 0 10 8" refX="10" refY="4"
+                markerWidth="10" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+          <path d="M0 0 L10 4 L0 8 z" fill="#98A2B3"/>
+        </marker>
 
-    <div class="pane-figure">
-      <svg viewBox="0 0 460 300" style="max-height:100%">
-        <text x="112" y="18" text-anchor="middle" font-size="14" font-weight="700" fill="#98A2B3">greedy alone</text>
-        <text x="348" y="18" text-anchor="middle" font-size="14" font-weight="700" fill="#9B3A3A">with diversity penalty</text>
+        <!-- the gene universe: one definition, three identical placements -->
+        <g id="grn3-nodes" fill="#EEF1F7" stroke="#98A2B3" stroke-width="1.8">
+          <circle cx="48"  cy="40"  r="17"/>
+          <circle cx="150" cy="22"  r="17"/>
+          <circle cx="262" cy="52"  r="17"/>
+          <circle cx="360" cy="30"  r="17"/>
+          <circle cx="30"  cy="140" r="17"/>
+          <circle cx="140" cy="126" r="17"/>
+          <circle cx="250" cy="148" r="17"/>
+          <circle cx="364" cy="130" r="17"/>
+          <circle cx="60"  cy="240" r="17"/>
+          <circle cx="176" cy="234" r="17"/>
+          <circle cx="300" cy="238" r="17"/>
+        </g>
+      </defs>
 
-        <g stroke="#C6CDDC" stroke-width="2.4" fill="none">
-          <path d="M60 90 L164 52"/><path d="M60 90 L164 78"/><path d="M60 90 L164 104"/>
-          <path d="M60 90 L164 130"/><path d="M60 90 L164 156"/>
+      <!-- ══════════════ PANEL A · the pool ══════════════ -->
+      <g class="fragment fade-in" data-fragment-index="0">
+        <text x="215" y="26" text-anchor="middle" font-size="20" font-weight="700" fill="#5F6980">~180,000 candidates</text>
+        <g transform="translate(18,78)">
+          <g stroke="#C6CDDC" stroke-width="1.5" fill="none">
+            <path d="M48 40 L150 22"/>   <path d="M48 40 L262 52"/>   <path d="M48 40 L30 140"/>
+            <path d="M48 40 L140 126"/>  <path d="M48 40 L60 240"/>   <path d="M48 40 L176 234"/>
+            <path d="M150 22 L262 52"/>  <path d="M150 22 L360 30"/>  <path d="M150 22 L140 126"/>
+            <path d="M150 22 L250 148"/> <path d="M150 22 L176 234"/>
+            <path d="M262 52 L360 30"/>  <path d="M262 52 L140 126"/> <path d="M262 52 L250 148"/>
+            <path d="M262 52 L364 130"/> <path d="M262 52 L300 238"/>
+            <path d="M360 30 L250 148"/> <path d="M360 30 L364 130"/> <path d="M360 30 L300 238"/>
+            <path d="M30 140 L140 126"/> <path d="M30 140 L250 148"/> <path d="M30 140 L60 240"/>
+            <path d="M30 140 L176 234"/>
+            <path d="M140 126 L250 148"/><path d="M140 126 L364 130"/><path d="M140 126 L176 234"/>
+            <path d="M140 126 L300 238"/>
+            <path d="M250 148 L364 130"/><path d="M250 148 L176 234"/><path d="M250 148 L300 238"/>
+            <path d="M364 130 L300 238"/>
+            <path d="M60 240 L176 234"/> <path d="M60 240 L300 238"/> <path d="M176 234 L300 238"/>
+          </g>
+          <use href="#grn3-nodes"/>
         </g>
-        <g fill="#EEF1F7" stroke="#98A2B3" stroke-width="1.6">
-          <circle cx="60" cy="90" r="15"/>
-          <circle cx="164" cy="52" r="8"/><circle cx="164" cy="78" r="8"/>
-          <circle cx="164" cy="104" r="8"/><circle cx="164" cy="130" r="8"/>
-          <circle cx="164" cy="156" r="8"/>
-        </g>
-        <g fill="#DDE2ED" stroke="#DDE2ED">
-          <circle cx="60" cy="196" r="8"/><circle cx="112" cy="222" r="8"/>
-          <circle cx="164" cy="196" r="8"/><circle cx="112" cy="248" r="8"/>
-        </g>
-        <text x="112" y="286" text-anchor="middle" font-size="12.5" fill="#98A2B3">one hub, the rest orphaned</text>
+        <text x="215" y="372" text-anchor="middle" font-size="17" fill="#5F6980">everything the five evidence tiers proposed</text>
+      </g>
 
-        <g stroke="#9B3A3A" stroke-width="2.4" fill="none" opacity=".85">
-          <path d="M296 90 L400 60"/><path d="M296 90 L400 118"/>
-          <path d="M296 196 L400 170"/><path d="M296 196 L400 226"/>
-          <path d="M348 143 L400 118"/>
+      <path class="fragment fade-in" data-fragment-index="1"
+            d="M414 210 L478 210" stroke="#98A2B3" stroke-width="2.2" fill="none" marker-end="url(#grn3-fa)"/>
+
+      <!-- ══════════════ PANEL B · Phase I skeleton ══════════════ -->
+      <g class="fragment fade-in" data-fragment-index="1">
+        <text x="677" y="26" text-anchor="middle" font-size="20" font-weight="700" fill="#0A1F5C">Pass 1 &middot; coverage</text>
+        <g transform="translate(480,78)">
+          <g stroke="#0A1F5C" stroke-width="2.8" fill="none">
+            <path d="M65.7 36.9 L130.3 25.5"   marker-end="url(#grn3-nv)"/>
+            <path d="M44.8 57.7 L33.5 120.3"   marker-end="url(#grn3-nv)"/>
+            <path d="M167.4 26.7 L242.7 46.8"  marker-end="url(#grn3-nv)"/>
+            <path d="M148.3 39.9 L141.9 106.1" marker-end="url(#grn3-nv)"/>
+            <path d="M360.7 48.0 L363.2 110.0" marker-end="url(#grn3-nv)"/>
+            <path d="M259.8 69.9 L252.5 128.2" marker-end="url(#grn3-nv)"/>
+            <path d="M78.0 239.1 L156.0 235.0" marker-end="url(#grn3-nv)"/>
+            <path d="M258.7 163.7 L290.3 220.5" marker-end="url(#grn3-nv)"/>
+          </g>
+          <use href="#grn3-nodes"/>
         </g>
-        <g fill="#EEF1F7" stroke="#9B3A3A" stroke-width="1.6">
-          <circle cx="296" cy="90" r="13"/><circle cx="296" cy="196" r="13"/>
-          <circle cx="348" cy="143" r="11"/>
+        <text x="677" y="372" text-anchor="middle" font-size="17" fill="#0A1F5C">every target gene keeps its best regulator</text>
+      </g>
+
+      <path class="fragment fade-in" data-fragment-index="2"
+            d="M876 210 L940 210" stroke="#98A2B3" stroke-width="2.2" fill="none" marker-end="url(#grn3-fa)"/>
+
+      <!-- ══════════════ PANEL C · Phase II fill ══════════════ -->
+      <g class="fragment fade-in" data-fragment-index="2">
+        <text x="1139" y="26" text-anchor="middle" font-size="20" font-weight="700" fill="#9B3A3A">Pass 2 &middot; greedy fill</text>
+        <g transform="translate(942,78)">
+          <!-- the pass-1 skeleton, unchanged -->
+          <g stroke="#0A1F5C" stroke-width="2.8" fill="none">
+            <path d="M65.7 36.9 L130.3 25.5"   marker-end="url(#grn3-nv)"/>
+            <path d="M44.8 57.7 L33.5 120.3"   marker-end="url(#grn3-nv)"/>
+            <path d="M167.4 26.7 L242.7 46.8"  marker-end="url(#grn3-nv)"/>
+            <path d="M148.3 39.9 L141.9 106.1" marker-end="url(#grn3-nv)"/>
+            <path d="M360.7 48.0 L363.2 110.0" marker-end="url(#grn3-nv)"/>
+            <path d="M259.8 69.9 L252.5 128.2" marker-end="url(#grn3-nv)"/>
+            <path d="M78.0 239.1 L156.0 235.0" marker-end="url(#grn3-nv)"/>
+            <path d="M258.7 163.7 L290.3 220.5" marker-end="url(#grn3-nv)"/>
+          </g>
+          <!-- what pass 2 adds: eight edges, eight different sources -->
+          <g stroke="#9B3A3A" stroke-width="2.8" fill="none">
+            <path d="M61.1 52.3 L125.4 112.3"   marker-end="url(#grn3-bk)"/>
+            <path d="M161.2 36.1 L237.6 132.3"  marker-end="url(#grn3-bk)"/>
+            <path d="M276.3 62.9 L348.1 117.9"  marker-end="url(#grn3-bk)"/>
+            <path d="M45.1 149.7 L159.2 223.2"  marker-end="url(#grn3-bk)"/>
+            <path d="M155.4 116.7 L244.9 62.4"  marker-end="url(#grn3-bk)"/>
+            <path d="M267.8 145.2 L344.2 133.1" marker-end="url(#grn3-bk)"/>
+            <path d="M54.8 222.8 L35.7 159.2"   marker-end="url(#grn3-bk)"/>
+            <path d="M194.0 234.6 L280.0 237.4" marker-end="url(#grn3-bk)"/>
+          </g>
+          <use href="#grn3-nodes"/>
         </g>
-        <g fill="#EEF1F7" stroke="#98A2B3" stroke-width="1.6">
-          <circle cx="400" cy="60" r="8"/><circle cx="400" cy="118" r="8"/>
-          <circle cx="400" cy="170" r="8"/><circle cx="400" cy="226" r="8"/>
-        </g>
-        <text x="348" y="286" text-anchor="middle" font-size="12.5" fill="#9B3A3A">coverage spread across regulators</text>
-      </svg>
-    </div>
+        <text x="1139" y="372" text-anchor="middle" font-size="17" fill="#9B3A3A">each pick taxes its own source and target</text>
+      </g>
+
+      <!-- ══════════════ the ceiling never binds ══════════════ -->
+      <g class="fragment fade-in" data-fragment-index="3">
+        <text x="955"  y="407" text-anchor="start"  font-size="15" font-weight="700" fill="#9B3A3A">8,543 kept</text>
+        <text x="1157" y="410" text-anchor="middle" font-size="12" fill="#98A2B3">not to scale</text>
+        <text x="1323" y="407" text-anchor="end"    font-size="15" fill="#5F6980">budget ceiling</text>
+        <line x1="955" y1="428" x2="1323" y2="428" stroke="#DDE2ED" stroke-width="7" stroke-linecap="round"/>
+        <line x1="955" y1="428" x2="1058" y2="428" stroke="#9B3A3A" stroke-width="7" stroke-linecap="round"/>
+        <path d="M1146 420 L1156 436 M1158 420 L1168 436" stroke="#FCFCFE" stroke-width="4" fill="none"/>
+        <line x1="1323" y1="416" x2="1323" y2="440" stroke="#5F6980" stroke-width="2.4"/>
+        <text x="1139" y="458" text-anchor="middle" font-size="15" fill="#5F6980">the ceiling never binds &mdash; we stop sparser on purpose</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="caption-bar">
+    Fit ~180,000 candidates &mdash; three kinetic parameters each &mdash; against ~2,000
+    perturbations and nothing is identifiable. A parameter budget<sup class="fn">20</sup> sets
+    the ceiling, but we keep far fewer: <strong>8,543 edges over 2,239 K562 genes, about 3.8
+    regulators apiece.</strong>
   </div>
 
   <span class="sec-tag"><span class="n">2</span>Methods</span>
-  <div class="slide-footnote"><span class="n">20</span><b>A. Alwosheel et al.</b>, &quot;Is your
-    dataset big enough? Sample size requirements when using artificial neural networks for
-    discrete choice analysis,&quot; <i>J. Choice Modelling</i>, 28:167&ndash;182, 2018.</div>
+  <div class="slide-footnote"><span class="n">20</span><b>A. Alwosheel, S. van Cranenburgh, and
+    C. G. Chorus</b>, &quot;Is your dataset big enough? Sample size requirements when using
+    artificial neural networks for discrete choice analysis,&quot;
+    <i>J. Choice Modelling</i>, 28:167&ndash;182, 2018.</div>
 
 </section>
 
@@ -457,24 +560,25 @@ window.MathJax = {
 
       <div class="formula formula-sub" data-tex style="margin-bottom:16px">
         \[
-          \class{tok tok-h}{h_i}=\sum_{k\in\mathcal{N}_i}
+          \class{tok tok-h}{h_i}=\sum_{k\in\class{tok tok-N}{\mathcal{N}_i}}
             \class{tok tok-max}{\max}\Bigl(0,\;
-            \frac{\class{tok tok-w}{w_{ki}}\,x_k^{\class{tok tok-n}{n_{ki}}}}
+            \frac{\class{tok tok-w}{w_{ki}}\,\class{tok tok-x}{x_k}^{\class{tok tok-n}{n_{ki}}}}
                  {\class{tok tok-K}{K_{ki}}^{\class{tok tok-n}{n_{ki}}}
-                  +x_k^{\class{tok tok-n}{n_{ki}}}}\Bigr)
+                  +\class{tok tok-x}{x_k}^{\class{tok tok-n}{n_{ki}}}}\Bigr)
         \]
         \[
-          \class{tok tok-r}{r_i}=\sum_{k\in\mathcal{N}_i}
+          \class{tok tok-r}{r_i}=\sum_{k\in\class{tok tok-N}{\mathcal{N}_i}}
             \class{tok tok-max}{\max}\Bigl(0,\;
-            \frac{-\class{tok tok-w}{w_{ki}}\,x_k^{\class{tok tok-n}{n_{ki}}}}
+            \frac{-\class{tok tok-w}{w_{ki}}\,\class{tok tok-x}{x_k}^{\class{tok tok-n}{n_{ki}}}}
                  {\class{tok tok-K}{K_{ki}}^{\class{tok tok-n}{n_{ki}}}
-                  +x_k^{\class{tok tok-n}{n_{ki}}}}\Bigr)
+                  +\class{tok tok-x}{x_k}^{\class{tok tok-n}{n_{ki}}}}\Bigr)
         \]
       </div>
 
       <div class="formula-caption">
         <span class="cap fragment current-visible" data-focus="" data-tone="">
-          <span class="who">the equation</span>One gene's expression at equilibrium.</span>
+          <span class="who">the equation</span>One gene&rsquo;s expression at equilibrium &mdash;
+          everything in brick is fitted from data.</span>
         <span class="cap fragment current-visible" data-focus="V" data-tone="c-navy">
           <span class="who">\(V_i\) — maximal transcription rate</span>
           How loud this gene <em>can</em> be shouted.</span>
@@ -505,6 +609,9 @@ window.MathJax = {
       </div>
 
       <div class="constraints">
+        <b class="role-learned">learned</b> \(V, b, \alpha, w, K, n\) &nbsp;&middot;&nbsp;
+        <b class="role-state">computed each hop</b> \(x, h, r\) &nbsp;&middot;&nbsp;
+        <b class="role-fixed">fixed by the GRN</b> \(\mathcal{N}_i\)<br>
         \(w\in(-1,1)\) via sigmoid / tanh &nbsp;&middot;&nbsp; \(n\in(1,4)\) &nbsp;&middot;&nbsp; \(K,V,b>0\) &mdash;
         every fitted parameter stays in a bounded, readable range.
       </div>
@@ -521,7 +628,7 @@ window.MathJax = {
 
     <span class="sec-tag"><span class="n">2</span>Methods</span>
 
-  <div class="slide-footnote"><span class="n">21</span><b>T. Kuhlman et al.</b>, "Combinatorial transcriptional control of the lactose operon of <i>Escherichia coli</i>," <i>PNAS</i>, 104(14):6043–6048, 2007.</div>
+  <div class="slide-footnote"><span class="n">21</span><b>T. Kuhlman, Z. Zhang, M. H. Saier Jr, and T. Hwa</b>, "Combinatorial transcriptional control of the lactose operon of <i>Escherichia coli</i>," <i>PNAS</i>, 104(14):6043–6048, 2007.</div>
 
 </section>
 
@@ -595,7 +702,7 @@ window.MathJax = {
         <span class="hopcount" id="fullnet-hops"></span>
       </div>
       <div class="legend" style="margin-top:12px">
-        <span class="item"><span class="swatch" style="background:#DDE2ED"></span> not reached</span>
+        <span class="item"><span class="swatch" style="background:#E8ECF4"></span> not reached</span>
         <span class="item"><span class="swatch" style="background:#A9C0DC"></span> reached earlier</span>
         <span class="item"><span class="swatch" style="background:#9B3A3A"></span> reached this hop</span>
       </div>
@@ -616,15 +723,12 @@ window.MathJax = {
   <div class="split-body">
     <div class="pane-text">
       <ul class="small">
-        <li><strong>Clamp, do not relax.</strong> CRISPRi holds the target down for the whole
-          experiment, so the silenced gene is a boundary condition &mdash; not something the
-          network is allowed to restore.</li>
-        <li class="fragment"><strong>Every other gene recomputes from its regulators.</strong>
-          Transcription is fast relative to the readout, so each gene sits at the level its
-          current regulator occupancy dictates.</li>
-        <li class="fragment"><strong>Iterate until nothing moves.</strong> The fixed point is
-          the new steady state &mdash; which is exactly what a Perturb-seq profile measures,
-          days after the knockdown.</li>
+        <li><strong>Clamp, don&rsquo;t relax.</strong> CRISPRi holds the gene down &mdash; a
+          boundary condition, not something the network restores.</li>
+        <li class="fragment"><strong>Every other gene recomputes.</strong> Each sits where its
+          regulators put it.</li>
+        <li class="fragment"><strong>Iterate to a fixed point.</strong> That is what Perturb-seq
+          measures, days later.</li>
       </ul>
     </div>
 
@@ -632,15 +736,13 @@ window.MathJax = {
       <div class="camp" style="background:rgba(155,58,58,.06);border-color:rgba(155,58,58,.22)">
         <h4 style="color:var(--brick)">And this is why it must be nonlinear</h4>
         <ul class="small">
-          <li><strong>Saturation.</strong> Doubling a transcription factor does not double its
-            target &mdash; the promoter fills up. The Hill term has a ceiling; a linear operator
-            does not.</li>
-          <li><strong>Signed composition.</strong> Activation through one path and repression
-            through another must survive being combined.</li>
+          <li><strong>Saturation.</strong> Promoters fill up. Hill has a ceiling; a linear
+            operator does not.</li>
+          <li><strong>Signed composition.</strong> Activation and repression must survive being
+            combined.</li>
         </ul>
         <div class="verdict fragment" style="font-style:normal">
-          GATA1 &rarr; BACH1 &#8867; NQO1 is precisely the loop from the motivation &mdash; and two
-          slides ago you watched it resolve correctly.
+          GATA1 &rarr; BACH1 &#8867; NQO1 &mdash; the loop from the motivation, resolved.
         </div>
       </div>
     </div>
@@ -914,41 +1016,56 @@ window.MathJax = {
 
 </section>
 
-<!-- ══════════════════════════════════════════════ REFERENCES ═════════ -->
+<!-- ══════════════════════════════════════════════ REFERENCES (1 of 2) ═════════ -->
 <section class="L-full" data-t="0:00">
   <div class="slide-head">
     <span class="eyebrow">References</span>
-    <h2>Sources</h2>
+    <h2>Sources <span class="muted" style="font-size:.6em">1&ndash;13</span></h2>
   </div>
 
   <div class="figure-area" style="align-items:flex-start">
     <div class="refs">
-      <div><span class="n">1</span><span><b>C. Bunne, Y. Roohani, Y. Rosen, A. Gupta, et al.</b>, "How to build the virtual cell with artificial intelligence," <i>Cell</i>, 187(25):7045–7063, 2024.</span></div>
-      <div><span class="n">2</span><span><b>J. R. Karr, J. C. Sanghvi, D. N. Macklin, et al.</b>, "A whole-cell computational model predicts phenotype from genotype," <i>Cell</i>, 150(2):389–401, 2012.</span></div>
-      <div><span class="n">3</span><span><b>M. Hu, H. V. Dinh, Y. Shen, et al.</b>, "Comparative study of two Saccharomyces cerevisiae strains with kinetic models at genome-scale," <i>Metabolic Engineering</i>, 76:1–17, 2023.</span></div>
-      <div><span class="n">4</span><span><b>M. Lotfollahi, A. K. Susmelj, C. De Donno, et al.</b>, "Predicting cellular responses to complex perturbations in high-throughput screens," <i>Molecular Systems Biology</i>, 19(6):e11517, 2023.</span></div>
+      <div><span class="n">1</span><span><b>C. Bunne, Y. Roohani, Y. Rosen, A. Gupta, X. Zhang, M. Roed, et al.</b>, "How to build the virtual cell with artificial intelligence," <i>Cell</i>, 187(25):7045–7063, 2024.</span></div>
+      <div><span class="n">2</span><span><b>J. R. Karr, J. C. Sanghvi, D. N. Macklin, M. V. Gutschow, J. M. Jacobs, B. Bolival, N. Assad-Garcia, J. I. Glass, and M. W. Covert</b>, "A whole-cell computational model predicts phenotype from genotype," <i>Cell</i>, 150(2):389–401, 2012.</span></div>
+      <div><span class="n">3</span><span><b>M. Hu, H. V. Dinh, Y. Shen, P. F. Suthers, C. J. Foster, C. M. Call, X. Ye, J. Pratas, Z. Fatma, H. Zhao, J. D. Rabinowitz, and C. D. Maranas</b>, "Comparative study of two Saccharomyces cerevisiae strains with kinetic models at genome-scale," <i>Metabolic Engineering</i>, 76:1–17, 2023.</span></div>
+      <div><span class="n">4</span><span><b>M. Lotfollahi, A. Klimovskaia Susmelj, C. De Donno, L. Hetzel, Y. Ji, I. L. Ibarra, S. R. Srivatsan, M. Naghipourfar, R. M. Daza, B. Martin, J. Shendure, J. L. McFaline-Figueroa, P. Boyeau, F. A. Wolf, N. Yakubova, S. Günnemann, C. Trapnell, D. Lopez-Paz, and F. J. Theis</b>, "Predicting cellular responses to complex perturbations in high-throughput screens," <i>Molecular Systems Biology</i>, 19(6):e11517, 2023.</span></div>
       <div><span class="n">5</span><span><b>Y. Roohani, K. Huang, and J. Leskovec</b>, "Predicting transcriptional outcomes of novel multigene perturbations with GEARS," <i>Nature Biotechnology</i>, 42(6):927–935, 2024.</span></div>
       <div><span class="n">6</span><span><b>H. Cui, C. Wang, H. Maan, K. Pang, F. Luo, and B. Wang</b>, "scGPT: toward building a foundation model for single-cell multi-omics using generative AI," <i>Nature Methods</i>, 21(8):1470–1480, 2024.</span></div>
-      <div><span class="n">7</span><span><b>D. Levine, S. A. Rizvi, S. Lévy, et al.</b>, "Cell2Sentence: teaching large language models the language of biology," <i>ICML</i>, pp. 27299–27325, PMLR, 2024.</span></div>
-      <div><span class="n">8</span><span><b>A. K. Adduri, D. Gautam, B. Bevilacqua, et al.</b>, "Predicting cellular responses to perturbation across diverse contexts with STATE," <i>bioRxiv</i>, 2025.</span></div>
+      <div><span class="n">7</span><span><b>D. Levine, S. A. Rizvi, S. Lévy, N. Pallikkavaliyaveetil, D. Zhang, X. Chen, S. Ghadermarzi, R. Wu, Z. Zheng, I. Vrkic, A. Zhong, D. Raskin, I. Han, A. H. De Oliveira Fonseca, J. Ortega Caro, A. Karbasi, R. M. Dhodapkar, and D. Van Dijk</b>, "Cell2Sentence: teaching large language models the language of biology," <i>ICML</i>, pp. 27299–27325, PMLR, 2024.</span></div>
+      <div><span class="n">8</span><span><b>A. K. Adduri, D. Gautam, B. Bevilacqua, A. Imran, R. Shah, M. Naghipourfar, et al.</b>, "Predicting cellular responses to perturbation across diverse contexts with State," <i>bioRxiv</i>, 2025.</span></div>
       <div><span class="n">9</span><span><b>N. Fortelny and C. Bock</b>, "Knowledge-primed neural networks enable biologically interpretable deep learning on single-cell sequencing data," <i>Genome Biology</i>, 21(1):190, 2020.</span></div>
-      <div><span class="n">10</span><span><b>M. Lotfollahi, S. Rybakov, K. Hrovatin, et al.</b>, "Biologically informed deep learning to query gene programs in single-cell atlases," <i>Nature Cell Biology</i>, 25(2):337–350, 2023.</span></div>
+      <div><span class="n">10</span><span><b>M. Lotfollahi, S. Rybakov, K. Hrovatin, S. Hediyeh-Zadeh, C. Talavera-López, A. V. Misharin, and F. J. Theis</b>, "Biologically informed deep learning to query gene programs in single-cell atlases," <i>Nature Cell Biology</i>, 25(2):337–350, 2023.</span></div>
       <div><span class="n">11</span><span><b>L. Cowen, T. Ideker, B. J. Raphael, and R. Sharan</b>, "Network propagation: a universal amplifier of genetic associations," <i>Nature Reviews Genetics</i>, 18(9):551–562, 2017.</span></div>
-      <div><span class="n">12</span><span><b>H. Han, J.-W. Cho, S. Lee, et al.</b>, "TRRUST v2: an expanded reference database of human and mouse transcriptional regulatory interactions," <i>Nucleic Acids Research</i>, 46(D1):D380–D386, 2018.</span></div>
-      <div><span class="n">13</span><span><b>S. Müller-Dott, E. Tsirvouli, M. Vazquez, et al.</b>, "Expanding the coverage of regulons from high-confidence prior knowledge for accurate estimation of transcription factor activities," <i>Nucleic Acids Research</i>, 51(20):10934–10949, 2023.</span></div>
+      <div><span class="n">12</span><span><b>H. Han, J.-W. Cho, S. Lee, A. Yun, H. Kim, D. Bae, S. Yang, C. Y. Kim, M. Lee, E. Kim, S. Lee, B. Kang, D. Jeong, Y. Kim, H. Jeon, H. Jung, S. Nam, W. Chung, J. H. Kim, and I. Lee</b>, "TRRUST v2: an expanded reference database of human and mouse transcriptional regulatory interactions," <i>Nucleic Acids Research</i>, 46(D1):D380–D386, 2018.</span></div>
+      <div><span class="n">13</span><span><b>S. Müller-Dott, E. Tsirvouli, M. Vazquez, R. O. Ramirez Flores, P. Badia-i-Mompel, R. Fallegger, D. Türei, A. Lægreid, and J. Saez-Rodriguez</b>, "Expanding the coverage of regulons from high-confidence prior knowledge for accurate estimation of transcription factor activities," <i>Nucleic Acids Research</i>, 51(20):10934–10949, 2023.</span></div>
+    </div>
+  </div>
+
+<span class="sec-tag"><span class="n">4</span>Conclusion</span>
+</section>
+
+<!-- ══════════════════════════════════════════════ REFERENCES (2 of 2) ═════════ -->
+<section class="L-full" data-t="0:00">
+  <div class="slide-head">
+    <span class="eyebrow">References</span>
+    <h2>Sources <span class="muted" style="font-size:.6em">14&ndash;26</span></h2>
+  </div>
+
+  <div class="figure-area" style="align-items:flex-start">
+    <div class="refs">
       <div><span class="n">14</span><span><b>D. Türei, T. Korcsmáros, and J. Saez-Rodriguez</b>, "OmniPath: guidelines and gateway for literature-curated signaling pathway resources," <i>Nature Methods</i>, 13(12):966–967, 2016.</span></div>
-      <div><span class="n">15</span><span><b>S. Fishilevich, R. Nudel, N. Rappaport, et al.</b>, "GeneHancer: genome-wide integration of enhancers and target genes in GeneCards," <i>Database</i>, 2017:bax028, 2017.</span></div>
-      <div><span class="n">16</span><span><b>D. Szklarczyk, R. Kirsch, M. Koutrouli, et al.</b>, "The STRING database in 2023: protein–protein association networks and functional enrichment analyses for any sequenced genome of interest," <i>Nucleic Acids Research</i>, 51(D1):D638–D646, 2023.</span></div>
+      <div><span class="n">15</span><span><b>S. Fishilevich, R. Nudel, N. Rappaport, R. Hadar, I. Plaschkes, T. Iny Stein, N. Rosen, A. Kohn, M. Twik, M. Safran, D. Lancet, and D. Cohen</b>, "GeneHancer: genome-wide integration of enhancers and target genes in GeneCards," <i>Database</i>, 2017:bax028, 2017.</span></div>
+      <div><span class="n">16</span><span><b>D. Szklarczyk, R. Kirsch, M. Koutrouli, K. Nastou, F. Mehryary, R. Hachilif, A. L. Gable, T. Fang, N. T. Doncheva, S. Pyysalo, P. Bork, L. J. Jensen, and C. von Mering</b>, "The STRING database in 2023: protein–protein association networks and functional enrichment analyses for any sequenced genome of interest," <i>Nucleic Acids Research</i>, 51(D1):D638–D646, 2023.</span></div>
       <div><span class="n">17</span><span><b>T. Obayashi, S. Kodate, H. Hibara, Y. Kagaya, and K. Kinoshita</b>, "COXPRESdb v8: an animal gene coexpression database navigating from a global view to detailed investigations," <i>Nucleic Acids Research</i>, 51(D1):D80–D87, 2023.</span></div>
-      <div><span class="n">18</span><span><b>J. M. Replogle, R. A. Saunders, M. C. Pogson, et al.</b>, "Mapping information-rich genotype–phenotype landscapes with genome-scale Perturb-seq," <i>Cell</i>, 185(14):2559–2575, 2022.</span></div>
-      <div><span class="n">19</span><span><b>R. Viñas Torné, M. Wiatrak, Z. Piran, et al.</b>, "Systema: a framework for evaluating genetic perturbation response prediction beyond systematic variation," <i>Nature Biotechnology</i>, pp. 1–10, 2025.</span></div>
+      <div><span class="n">18</span><span><b>J. M. Replogle, R. A. Saunders, A. N. Pogson, J. A. Hussmann, A. Lenail, A. Guna, L. Mascibroda, E. J. Wagner, K. Adelman, G. Lithwick-Yanai, N. Iremadze, F. Oberstrass, D. Lipson, J. L. Bonnar, M. Jost, T. M. Norman, and J. S. Weissman</b>, "Mapping information-rich genotype–phenotype landscapes with genome-scale Perturb-seq," <i>Cell</i>, 185(14):2559–2575, 2022.</span></div>
+      <div><span class="n">19</span><span><b>R. Viñas Torné, M. Wiatrak, Z. Piran, S. Fan, L. Jiang, S. A. Teichmann, M. Nitzan, and M. Brbić</b>, "Systema: a framework for evaluating genetic perturbation response prediction beyond systematic variation," <i>Nature Biotechnology</i>, pp. 1–10, 2025.</span></div>
       <div><span class="n">20</span><span><b>A. Alwosheel, S. van Cranenburgh, and C. G. Chorus</b>, "Is your dataset big enough? Sample size requirements when using artificial neural networks for discrete choice analysis," <i>Journal of Choice Modelling</i>, 28:167–182, 2018.</span></div>
       <div><span class="n">21</span><span><b>T. Kuhlman, Z. Zhang, M. H. Saier Jr, and T. Hwa</b>, "Combinatorial transcriptional control of the lactose operon of Escherichia coli," <i>PNAS</i>, 104(14):6043–6048, 2007.</span></div>
-      <div><span class="n">22</span><span><b>A. Quintás-Cardama, Y. H. Qiu, S. M. Post, et al.</b>, "Reverse phase protein array profiling reveals distinct proteomic signatures associated with chronic myeloid leukemia progression," <i>Cancer</i>, 118(21):5283–5292, 2012.</span></div>
-      <div><span class="n">23</span><span><b>Y. Bhootada, P. Kotla, S. Zolotukhin, et al.</b>, "Limited ATF4 expression in degenerating retinas with ongoing ER stress promotes photoreceptor survival," <i>PLoS One</i>, 11(5):e0154779, 2016.</span></div>
-      <div><span class="n">24</span><span><b>S. Goossens, V. Janzen, S. Bartunkova, et al.</b>, "The EMT regulator ZEB2/SIP1 is essential for murine embryonic hematopoietic stem/progenitor cell differentiation and mobilization," <i>Blood</i>, 117(21):5620–5630, 2011.</span></div>
-      <div><span class="n">25</span><span><b>S. Rockowitz, W.-H. Lien, E. Pedrosa, et al.</b>, "Comparison of REST cistromes across human cell types reveals common and context-specific functions," <i>PLoS Computational Biology</i>, 10(6):e1003671, 2014.</span></div>
-      <div><span class="n">26</span><span><b>J. Sun, P. Huang, J. Liang, et al.</b>, "Cooperation of REL family members in regulating Aβ1-40-mediated pro-inflammatory cytokine secretion by retinal pigment epithelial cells," <i>Cell Death & Disease</i>, 8(10):e3115, 2017.</span></div>
+      <div><span class="n">22</span><span><b>A. Quintás-Cardama, Y. H. Qiu, S. M. Post, Y. Zhang, C. J. Creighton, J. Cortes, and S. M. Kornblau</b>, "Reverse phase protein array profiling reveals distinct proteomic signatures associated with chronic myeloid leukemia progression," <i>Cancer</i>, 118(21):5283–5292, 2012.</span></div>
+      <div><span class="n">23</span><span><b>Y. Bhootada, P. Kotla, S. Zolotukhin, O. Gorbatyuk, Z. Bebok, M. Athar, and M. Gorbatyuk</b>, "Limited ATF4 expression in degenerating retinas with ongoing ER stress promotes photoreceptor survival," <i>PLoS One</i>, 11(5):e0154779, 2016.</span></div>
+      <div><span class="n">24</span><span><b>S. Goossens, V. Janzen, S. Bartunkova, T. Yokomizo, B. Drogat, M. Crisan, K. Haigh, E. Seuntjens, L. Umans, T. Riedt, P. Bogaert, L. Haenebalcke, G. Berx, E. Dzierzak, D. Huylebroeck, and J. J. Haigh</b>, "The EMT regulator Zeb2/Sip1 is essential for murine embryonic hematopoietic stem/progenitor cell differentiation and mobilization," <i>Blood</i>, 117(21):5620–5630, 2011.</span></div>
+      <div><span class="n">25</span><span><b>S. Rockowitz, W.-H. Lien, E. Pedrosa, G. Wei, M. Lin, K. Zhao, H. M. Lachman, E. Fuchs, and D. Zheng</b>, "Comparison of REST cistromes across human cell types reveals common and context-specific functions," <i>PLoS Computational Biology</i>, 10(6):e1003671, 2014.</span></div>
+      <div><span class="n">26</span><span><b>J. Sun, P. Huang, J. Liang, J. Li, M. Shen, X. She, Y. Feng, X. Luo, T. Liu, and X. Sun</b>, "Cooperation of REL family members in regulating Aβ1-40-mediated pro-inflammatory cytokine secretion by retinal pigment epithelial cells," <i>Cell Death & Disease</i>, 8(10):e3115, 2017.</span></div>
     </div>
   </div>
 
@@ -959,8 +1076,7 @@ window.MathJax = {
     khangta@fulbright.edu.vn
   </div>
 
-  <span class="sec-tag"><span class="n">4</span>Conclusion</span>
-
+<span class="sec-tag"><span class="n">4</span>Conclusion</span>
 </section>
 
 <!-- ============== APPENDIX . WHAT IT COMPUTES, AND WHERE IT BREAKS ==== -->
