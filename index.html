@@ -78,10 +78,88 @@ window.MathJax = {
 </section>
 
 <!-- ═══════════════════════════════════════════════════ 4 · THE PROBLEM ═ -->
-<section class="has-fn-lg L-split" data-t="1:15">
+<!-- ══════════════════════════ 4 · THE EXPERIMENT TO PREDICT ═══════════ -->
+<section class="L-full" data-t="0:35">
   <div class="slide-head">
     <span class="eyebrow">The problem</span>
-    <h2>Predicting a perturbation response</h2>
+    <h2>The experiment we want to predict</h2>
+  </div>
+
+  <div class="figure-area">
+    <svg viewBox="0 0 1360 400" style="max-height:100%">
+      <defs>
+        <marker id="task-arrow" viewBox="0 0 10 8" refX="10" refY="4"
+                markerWidth="10" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+          <path d="M0 0 L10 4 L0 8 z" fill="#98A2B3"/>
+        </marker>
+        <!-- the same nine genes, drawn three times; only colour changes -->
+        <g id="task-grid">
+          <circle cx="70"  cy="20"  r="16"/><circle cx="200" cy="20"  r="16"/><circle cx="330" cy="20"  r="16"/>
+          <circle cx="70"  cy="140" r="16"/><circle cx="200" cy="140" r="16"/><circle cx="330" cy="140" r="16"/>
+          <circle cx="70"  cy="260" r="16"/><circle cx="200" cy="260" r="16"/><circle cx="330" cy="260" r="16"/>
+        </g>
+      </defs>
+
+      <!-- ══════════════ PANEL 1 · Control ══════════════ -->
+      <g class="fragment fade-in" data-fragment-index="0">
+        <text x="215" y="26" text-anchor="middle" font-size="20" font-weight="700" fill="#5F6980">Control</text>
+        <g transform="translate(18,78)">
+          <use href="#task-grid" fill="#EEF1F7" stroke="#98A2B3" stroke-width="1.8"/>
+        </g>
+        <text x="215" y="372" text-anchor="middle" font-size="17" fill="#5F6980">2,500 control cells &mdash; genes at their resting level</text>
+      </g>
+
+      <path class="fragment fade-in" data-fragment-index="1"
+            d="M414 218 L478 218" stroke="#98A2B3" stroke-width="2.2" fill="none" marker-end="url(#task-arrow)"/>
+      <text class="fragment fade-in" data-fragment-index="1" x="446" y="204" text-anchor="middle" font-size="13" fill="#98A2B3">CRISPRi</text>
+
+      <!-- ══════════════ PANEL 2 · Perturb ══════════════ -->
+      <g class="fragment fade-in" data-fragment-index="1">
+        <text x="677" y="26" text-anchor="middle" font-size="20" font-weight="700" fill="#0A1F5C">Perturb</text>
+        <g transform="translate(480,78)">
+          <use href="#task-grid" fill="#EEF1F7" stroke="#98A2B3" stroke-width="1.8"/>
+          <circle cx="200" cy="140" r="16" fill="#2166AC" stroke="rgba(18,23,43,.28)" stroke-width="1.8"/>
+          <circle cx="200" cy="140" r="23" fill="none" stroke="#0A1F5C" stroke-width="2.2" stroke-dasharray="5 4"/>
+        </g>
+        <text x="677" y="372" text-anchor="middle" font-size="17" fill="#0A1F5C">CRISPRi holds one gene down for the whole experiment</text>
+      </g>
+
+      <path class="fragment fade-in" data-fragment-index="2"
+            d="M876 218 L940 218" stroke="#98A2B3" stroke-width="2.2" fill="none" marker-end="url(#task-arrow)"/>
+      <text class="fragment fade-in" data-fragment-index="2" x="908" y="204" text-anchor="middle" font-size="13" fill="#98A2B3">days later</text>
+
+      <!-- ══════════════ PANEL 3 · Perturbed state ══════════════ -->
+      <g class="fragment fade-in" data-fragment-index="2">
+        <text x="1139" y="26" text-anchor="middle" font-size="20" font-weight="700" fill="#9B3A3A">Perturbed state</text>
+        <g transform="translate(942,78)">
+          <use href="#task-grid" fill="#EEF1F7" stroke="#98A2B3" stroke-width="1.8"/>
+          <circle cx="200" cy="20"  r="16" fill="#2166AC" stroke="rgba(18,23,43,.28)" stroke-width="1.8"/>
+          <circle cx="70"  cy="140" r="16" fill="#C0392B" stroke="rgba(18,23,43,.28)" stroke-width="1.8"/>
+          <circle cx="200" cy="260" r="16" fill="#2166AC" stroke="rgba(18,23,43,.28)" stroke-width="1.8"/>
+          <circle cx="200" cy="140" r="16" fill="#2166AC" stroke="rgba(18,23,43,.28)" stroke-width="1.8"/>
+          <circle cx="200" cy="140" r="23" fill="none" stroke="#0A1F5C" stroke-width="2.2" stroke-dasharray="5 4"/>
+        </g>
+        <text x="1139" y="372" text-anchor="middle" font-size="17" fill="#9B3A3A">read by Perturb-seq &mdash; this is what we want to predict</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="caption-bar">
+    CRISPRi Perturb-seq: silence one gene, read out the top 2,000 highly variable genes
+    across the rest. Replogle et al. ran this 4,452 times &mdash;
+    2,058 knockdowns in K562, 2,394 in RPE1 &mdash; but we still cannot run it for every
+    gene we care about. <strong>Predicting the perturbed state, without running the
+    experiment, is the problem.</strong>
+  </div>
+
+  <span class="sec-tag"><span class="n">1</span>Motivation</span>
+
+</section>
+
+<section class="has-fn-lg L-split" data-t="1:15">
+  <div class="slide-head">
+    <span class="eyebrow">The gap</span>
+    <h2>Three existing answers, each with a gap</h2>
   </div>
 
   <div class="split-body" style="grid-template-columns:1fr 1fr 1fr">
@@ -474,7 +552,7 @@ window.MathJax = {
           </g>
           <use href="#grn3-nodes"/>
         </g>
-        <text x="677" y="372" text-anchor="middle" font-size="17" fill="#0A1F5C">every target gene keeps its best regulator</text>
+        <text x="677" y="372" text-anchor="middle" font-size="17" fill="#0A1F5C">a connected frame &#8212; every target keeps a regulator</text>
       </g>
 
       <path class="fragment fade-in" data-fragment-index="2"
@@ -508,7 +586,7 @@ window.MathJax = {
           </g>
           <use href="#grn3-nodes"/>
         </g>
-        <text x="1139" y="372" text-anchor="middle" font-size="17" fill="#9B3A3A">each pick taxes its own source and target</text>
+        <text x="1139" y="372" text-anchor="middle" font-size="17" fill="#9B3A3A">fills in enough edges to actually learn from</text>
       </g>
 
       <!-- ══════════════ the ceiling never binds ══════════════ -->
