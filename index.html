@@ -79,80 +79,46 @@ window.MathJax = {
 
 <!-- ═══════════════════════════════════════════════════ 4 · THE PROBLEM ═ -->
 <!-- ══════════════════════════ 4 · THE EXPERIMENT TO PREDICT ═══════════ -->
-<section class="L-full" data-t="0:35">
+<section class="L-statement" data-t="0:35">
   <div class="slide-head">
     <span class="eyebrow">The problem</span>
-    <h2>The experiment we want to predict</h2>
+    <h2>What we want to predict</h2>
   </div>
 
-  <div class="figure-area">
-    <svg viewBox="0 0 1360 400" style="max-height:100%">
-      <defs>
-        <marker id="task-arrow" viewBox="0 0 10 8" refX="10" refY="4"
-                markerWidth="10" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
-          <path d="M0 0 L10 4 L0 8 z" fill="#98A2B3"/>
-        </marker>
-        <!-- the same nine genes, drawn three times; only colour changes -->
-        <g id="task-grid">
-          <circle cx="70"  cy="20"  r="16"/><circle cx="200" cy="20"  r="16"/><circle cx="330" cy="20"  r="16"/>
-          <circle cx="70"  cy="140" r="16"/><circle cx="200" cy="140" r="16"/><circle cx="330" cy="140" r="16"/>
-          <circle cx="70"  cy="260" r="16"/><circle cx="200" cy="260" r="16"/><circle cx="330" cy="260" r="16"/>
-        </g>
-      </defs>
-
-      <!-- ══════════════ PANEL 1 · Control ══════════════ -->
-      <g class="fragment fade-in" data-fragment-index="0">
-        <text x="215" y="26" text-anchor="middle" font-size="20" font-weight="700" fill="#5F6980">Control</text>
-        <g transform="translate(18,78)">
-          <use href="#task-grid" fill="#EEF1F7" stroke="#98A2B3" stroke-width="1.8"/>
-        </g>
-        <text x="215" y="372" text-anchor="middle" font-size="17" fill="#5F6980">2,500 control cells &mdash; genes at their resting level</text>
-      </g>
-
-      <path class="fragment fade-in" data-fragment-index="1"
-            d="M414 218 L478 218" stroke="#98A2B3" stroke-width="2.2" fill="none" marker-end="url(#task-arrow)"/>
-      <text class="fragment fade-in" data-fragment-index="1" x="446" y="204" text-anchor="middle" font-size="13" fill="#98A2B3">CRISPRi</text>
-
-      <!-- ══════════════ PANEL 2 · Perturb ══════════════ -->
-      <g class="fragment fade-in" data-fragment-index="1">
-        <text x="677" y="26" text-anchor="middle" font-size="20" font-weight="700" fill="#0A1F5C">Perturb</text>
-        <g transform="translate(480,78)">
-          <use href="#task-grid" fill="#EEF1F7" stroke="#98A2B3" stroke-width="1.8"/>
-          <circle cx="200" cy="140" r="16" fill="#2166AC" stroke="rgba(18,23,43,.28)" stroke-width="1.8"/>
-          <circle cx="200" cy="140" r="23" fill="none" stroke="#0A1F5C" stroke-width="2.2" stroke-dasharray="5 4"/>
-        </g>
-        <text x="677" y="372" text-anchor="middle" font-size="17" fill="#0A1F5C">CRISPRi holds one gene down for the whole experiment</text>
-      </g>
-
-      <path class="fragment fade-in" data-fragment-index="2"
-            d="M876 218 L940 218" stroke="#98A2B3" stroke-width="2.2" fill="none" marker-end="url(#task-arrow)"/>
-      <text class="fragment fade-in" data-fragment-index="2" x="908" y="204" text-anchor="middle" font-size="13" fill="#98A2B3">days later</text>
-
-      <!-- ══════════════ PANEL 3 · Perturbed state ══════════════ -->
-      <g class="fragment fade-in" data-fragment-index="2">
-        <text x="1139" y="26" text-anchor="middle" font-size="20" font-weight="700" fill="#9B3A3A">Perturbed state</text>
-        <g transform="translate(942,78)">
-          <use href="#task-grid" fill="#EEF1F7" stroke="#98A2B3" stroke-width="1.8"/>
-          <circle cx="200" cy="20"  r="16" fill="#2166AC" stroke="rgba(18,23,43,.28)" stroke-width="1.8"/>
-          <circle cx="70"  cy="140" r="16" fill="#C0392B" stroke="rgba(18,23,43,.28)" stroke-width="1.8"/>
-          <circle cx="200" cy="260" r="16" fill="#2166AC" stroke="rgba(18,23,43,.28)" stroke-width="1.8"/>
-          <circle cx="200" cy="140" r="16" fill="#2166AC" stroke="rgba(18,23,43,.28)" stroke-width="1.8"/>
-          <circle cx="200" cy="140" r="23" fill="none" stroke="#0A1F5C" stroke-width="2.2" stroke-dasharray="5 4"/>
-        </g>
-        <text x="1139" y="372" text-anchor="middle" font-size="17" fill="#9B3A3A">read by Perturb-seq &mdash; this is what we want to predict</text>
-      </g>
-    </svg>
+  <div class="formula" data-tex style="margin:26px 0 20px;font-size:1.15em">
+    \[
+      \class{tok tok-x0}{\mathbf{x}_0}
+      \;\xrightarrow{\;\class{tok tok-p}{p}\;}\;
+      \class{tok tok-xstar}{\mathbf{x}^*}
+    \]
+    \[
+      \class{tok tok-delta}{\Delta^*} \;=\; \mathbf{x}^* - \mathbf{x}_0
+    \]
   </div>
 
-  <div class="caption-bar">
-    CRISPRi Perturb-seq: silence one gene, read out the top 2,000 highly variable genes
-    across the rest. Replogle et al. ran this 4,452 times &mdash;
-    2,058 knockdowns in K562, 2,394 in RPE1 &mdash; but we still cannot run it for every
-    gene we care about. <strong>Predicting the perturbed state, without running the
-    experiment, is the problem.</strong>
+  <div class="formula-caption" style="max-width:34em">
+    <span class="cap fragment current-visible" data-focus="" data-tone="">
+      <span class="who">the task</span>One perturbation in, one prediction out.</span>
+    <span class="cap fragment current-visible" data-focus="x0" data-tone="c-navy">
+      <span class="who">\(\mathbf{x}_0\) &mdash; control</span>
+      2,500 unperturbed cells, RNA-seq&rsquo;d. The baseline everything is measured against.</span>
+    <span class="cap fragment current-visible" data-focus="p" data-tone="c-brick">
+      <span class="who">\(p\) &mdash; the perturbation</span>
+      CRISPRi holds one gene down for the whole experiment.</span>
+    <span class="cap fragment current-visible" data-focus="xstar" data-tone="c-navy">
+      <span class="who">\(\mathbf{x}^*\) &mdash; the perturbed state</span>
+      What Perturb-seq reads out, days later &mdash; and what we want to predict, <em>without</em>
+      running the experiment.</span>
+    <span class="cap fragment current-visible" data-focus="delta" data-tone="c-brick">
+      <span class="who">\(\Delta^*=\mathbf{x}^*-\mathbf{x}_0\)</span>
+      Equivalently: the change vector. Every result later in this talk is scored on it.</span>
   </div>
 
-  <span class="sec-tag"><span class="n">1</span>Motivation</span>
+  <p class="sub fragment" style="margin-top:20px;max-width:32em">
+    Replogle et al. measured this <strong>4,452</strong> times &mdash; 2,058 knockdowns in
+    K562, 2,394 in RPE1. It is still not every gene we care about.</p>
+
+    <span class="sec-tag"><span class="n">1</span>Motivation</span>
 
 </section>
 
@@ -545,10 +511,12 @@ window.MathJax = {
             <path d="M44.8 57.7 L33.5 120.3"   marker-end="url(#grn3-nv)"/>
             <path d="M167.4 26.7 L242.7 46.8"  marker-end="url(#grn3-nv)"/>
             <path d="M148.3 39.9 L141.9 106.1" marker-end="url(#grn3-nv)"/>
-            <path d="M360.7 48.0 L363.2 110.0" marker-end="url(#grn3-nv)"/>
+            <path d="M279.6 48.1 L340.5 34.4"  marker-end="url(#grn3-nv)"/>
             <path d="M259.8 69.9 L252.5 128.2" marker-end="url(#grn3-nv)"/>
-            <path d="M78.0 239.1 L156.0 235.0" marker-end="url(#grn3-nv)"/>
-            <path d="M258.7 163.7 L290.3 220.5" marker-end="url(#grn3-nv)"/>
+            <path d="M360.7 48.0 L363.2 110.0" marker-end="url(#grn3-nv)"/>
+            <path d="M129.7 140.7 L71.5 223.6" marker-end="url(#grn3-nv)"/>
+            <path d="M238.3 161.6 L189.0 218.8" marker-end="url(#grn3-nv)"/>
+            <path d="M354.8 145.5 L310.2 220.8" marker-end="url(#grn3-nv)"/>
           </g>
           <use href="#grn3-nodes"/>
         </g>
@@ -568,21 +536,23 @@ window.MathJax = {
             <path d="M44.8 57.7 L33.5 120.3"   marker-end="url(#grn3-nv)"/>
             <path d="M167.4 26.7 L242.7 46.8"  marker-end="url(#grn3-nv)"/>
             <path d="M148.3 39.9 L141.9 106.1" marker-end="url(#grn3-nv)"/>
-            <path d="M360.7 48.0 L363.2 110.0" marker-end="url(#grn3-nv)"/>
+            <path d="M279.6 48.1 L340.5 34.4"  marker-end="url(#grn3-nv)"/>
             <path d="M259.8 69.9 L252.5 128.2" marker-end="url(#grn3-nv)"/>
-            <path d="M78.0 239.1 L156.0 235.0" marker-end="url(#grn3-nv)"/>
-            <path d="M258.7 163.7 L290.3 220.5" marker-end="url(#grn3-nv)"/>
+            <path d="M360.7 48.0 L363.2 110.0" marker-end="url(#grn3-nv)"/>
+            <path d="M129.7 140.7 L71.5 223.6" marker-end="url(#grn3-nv)"/>
+            <path d="M238.3 161.6 L189.0 218.8" marker-end="url(#grn3-nv)"/>
+            <path d="M354.8 145.5 L310.2 220.8" marker-end="url(#grn3-nv)"/>
           </g>
           <!-- what pass 2 adds: eight edges, eight different sources -->
           <g stroke="#9B3A3A" stroke-width="2.8" fill="none">
             <path d="M61.1 52.3 L125.4 112.3"   marker-end="url(#grn3-bk)"/>
             <path d="M161.2 36.1 L237.6 132.3"  marker-end="url(#grn3-bk)"/>
             <path d="M276.3 62.9 L348.1 117.9"  marker-end="url(#grn3-bk)"/>
-            <path d="M45.1 149.7 L159.2 223.2"  marker-end="url(#grn3-bk)"/>
-            <path d="M155.4 116.7 L244.9 62.4"  marker-end="url(#grn3-bk)"/>
-            <path d="M267.8 145.2 L344.2 133.1" marker-end="url(#grn3-bk)"/>
-            <path d="M54.8 222.8 L35.7 159.2"   marker-end="url(#grn3-bk)"/>
-            <path d="M194.0 234.6 L280.0 237.4" marker-end="url(#grn3-bk)"/>
+            <path d="M355.0 47.3 L305.5 218.8"  marker-end="url(#grn3-bk)"/>
+            <path d="M35.2 157.2 L54.3 220.8"   marker-end="url(#grn3-bk)"/>
+            <path d="M145.7 143.1 L169.7 215.0" marker-end="url(#grn3-bk)"/>
+            <path d="M232.0 147.3 L50.0 140.7"  marker-end="url(#grn3-bk)"/>
+            <path d="M73.2 227.7 L247.4 65.6"   marker-end="url(#grn3-bk)"/>
           </g>
           <use href="#grn3-nodes"/>
         </g>
