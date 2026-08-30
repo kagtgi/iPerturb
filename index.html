@@ -93,12 +93,58 @@ window.MathJax = {
     \]
   </div>
 
+  <!-- p is not a global input: it grabs one gene and holds it down. Same clamp
+       glyph (navy dashed ring, down-blue fill) as the propagation animation. -->
+  <svg viewBox="0 0 780 250" style="width:700px;max-width:100%;margin-bottom:8px" aria-hidden="true">
+    <defs>
+      <marker id="pv-fa" viewBox="0 0 10 8" refX="10" refY="4"
+              markerWidth="10" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+        <path d="M0 0 L10 4 L0 8 z" fill="#98A2B3"/>
+      </marker>
+      <marker id="pv-bk" viewBox="0 0 10 8" refX="10" refY="4"
+              markerWidth="11" markerHeight="8.8" markerUnits="userSpaceOnUse" orient="auto">
+        <path d="M0 0 L10 4 L0 8 z" fill="#9B3A3A"/>
+      </marker>
+      <g id="pv-grid">
+        <circle cx="13"  cy="13"  r="13"/><circle cx="69"  cy="13"  r="13"/><circle cx="125" cy="13"  r="13"/>
+        <circle cx="13"  cy="69"  r="13"/><circle cx="69"  cy="69"  r="13"/><circle cx="125" cy="69"  r="13"/>
+        <circle cx="13"  cy="125" r="13"/><circle cx="69"  cy="125" r="13"/><circle cx="125" cy="125" r="13"/>
+      </g>
+    </defs>
+
+    <!-- x0: the transcriptome at rest -->
+    <g transform="translate(30,55)">
+      <use href="#pv-grid" fill="#EEF1F7" stroke="#98A2B3" stroke-width="1.8"/>
+    </g>
+    <text x="99" y="228" text-anchor="middle" font-size="19" font-weight="700" fill="#0A1F5C"
+          font-style="italic">x<tspan dy="5" font-size="13">0</tspan></text>
+
+    <path d="M210 124 L560 124" stroke="#98A2B3" stroke-width="2.2" fill="none" marker-end="url(#pv-fa)"/>
+
+    <!-- p strikes exactly one gene -->
+    <text x="652" y="34" text-anchor="end" font-size="17" font-weight="700" fill="#9B3A3A"
+          font-style="italic">p<tspan font-style="normal" font-weight="500" font-size="14"> &#183; CRISPRi</tspan></text>
+    <path d="M669 22 L669 96" stroke="#9B3A3A" stroke-width="2.6" fill="none" marker-end="url(#pv-bk)"/>
+
+    <!-- x*: that gene held down, everything else re-settled -->
+    <g transform="translate(600,55)">
+      <use href="#pv-grid" fill="#EEF1F7" stroke="#98A2B3" stroke-width="1.8"/>
+      <circle cx="69"  cy="13"  r="13" fill="#D98A80" stroke="rgba(18,23,43,.28)" stroke-width="1.8"/>
+      <circle cx="13"  cy="69"  r="13" fill="#7EA6CE" stroke="rgba(18,23,43,.28)" stroke-width="1.8"/>
+      <circle cx="125" cy="125" r="13" fill="#AFC5DC" stroke="rgba(18,23,43,.28)" stroke-width="1.8"/>
+      <circle cx="69"  cy="69"  r="13" fill="#2166AC" stroke="rgba(18,23,43,.28)" stroke-width="1.8"/>
+      <circle cx="69"  cy="69"  r="20" fill="none" stroke="#0A1F5C" stroke-width="2.2" stroke-dasharray="5 4"/>
+    </g>
+    <text x="669" y="228" text-anchor="middle" font-size="19" font-weight="700" fill="#0A1F5C"
+          font-style="italic">x<tspan dy="-7" font-size="14">*</tspan></text>
+  </svg>
+
   <div class="formula-caption" style="max-width:34em">
     <span class="cap fragment current-visible" data-focus="" data-tone="">
       <span class="who">the task</span>One perturbation in, one prediction out.</span>
     <span class="cap fragment current-visible" data-focus="x0" data-tone="c-navy">
       <span class="who">\(\mathbf{x}_0\) &mdash; control</span>
-      2,500 unperturbed cells, RNA-seq&rsquo;d. The baseline everything is measured against.</span>
+      2,500 control cells per dataset, RNA-seq&rsquo;d. The baseline everything is measured against.</span>
     <span class="cap fragment current-visible" data-focus="p" data-tone="c-brick">
       <span class="who">\(p\) &mdash; the perturbation</span>
       CRISPRi holds one gene down for the whole experiment.</span>
@@ -157,7 +203,7 @@ window.MathJax = {
   </div>
 
   <p class="fragment" style="margin-top:22px;font-size:0.95em;color:var(--navy);font-weight:700">
-    We want a learnable method for data fitting, without giving up direction, sign, or a readable mechanism.</p>
+    We want a scalable, learnable method for data fitting, without giving up direction, sign, or a readable mechanism.</p>
 
     <span class="sec-tag"><span class="n">1</span>Motivation</span>
 
@@ -378,7 +424,7 @@ window.MathJax = {
         <li><strong>Provenance</strong> &mdash; keep every source that saw it</li>
       </ul>
       <p class="tiny fragment" style="margin-top:20px">
-        <strong>70%</strong> of curated edges end up unsigned this way. Those are exactly
+        <strong>Most</strong> curated edges end up unsigned this way &mdash; exactly
         the edges the model has to learn a direction for.</p>
     </div>
 
@@ -935,6 +981,9 @@ window.MathJax = {
     <span class="fragment">Top-20 Pearson reaches 0.61 on K562 against 0.50 for STATE.
       Mean-shift direction &mdash; whether the transcriptome moves the right way overall &mdash;
       is also highest for iPerturb (0.61 / 0.62).</span>
+    <span class="fragment">The one metric lost &mdash; RPE1 top-20 correlation,
+      <strong>0.72 vs 0.74</strong> for STATE &mdash; is a deliberate trade-off: foundation
+      models inflate rank correlation on the most variable genes.</span>
   </div>
 
     <span class="sec-tag"><span class="n">3</span>Results</span>
@@ -1002,7 +1051,7 @@ window.MathJax = {
               display:flex;justify-content:space-between;align-items:baseline;font-size:0.62em">
     <span class="muted">Code, figure scripts and a Colab notebook —
       <strong style="color:var(--brick)">github.com/kagtgi/iPerturb</strong></span>
-    <span class="muted">khangta@fulbright.edu.vn</span>
+    <span class="muted">khang.ta@fulbright.edu.vn &middot; linh.huynh@fulbright.edu.vn</span>
   </div>
 
     <span class="sec-tag"><span class="n">4</span>Conclusion</span>
@@ -1018,7 +1067,7 @@ window.MathJax = {
               display:flex;justify-content:space-between;align-items:baseline;font-size:0.62em">
     <span class="muted">Code, figure scripts and a Colab notebook —
       <strong style="color:var(--brick)">github.com/kagtgi/iPerturb</strong></span>
-    <span class="muted">khangta@fulbright.edu.vn</span>
+    <span class="muted">khang.ta@fulbright.edu.vn &middot; linh.huynh@fulbright.edu.vn</span>
   </div>
 
     <span class="sec-tag"><span class="n">4</span>Conclusion</span>
@@ -1111,7 +1160,7 @@ window.MathJax = {
     Code, figure scripts and a reproducibility notebook —
     <strong style="color:var(--brick)">github.com/kagtgi/iPerturb</strong>
     <span class="sep" style="margin:0 10px;opacity:.4">·</span>
-    khangta@fulbright.edu.vn
+    khang.ta@fulbright.edu.vn &middot; linh.huynh@fulbright.edu.vn
   </div>
 
 <span class="sec-tag"><span class="n">4</span>Conclusion</span>
