@@ -93,51 +93,6 @@ window.MathJax = {
     \]
   </div>
 
-  <!-- p is not a global input: it grabs one gene and holds it down. Same clamp
-       glyph (navy dashed ring, down-blue fill) as the propagation animation. -->
-  <svg viewBox="0 0 780 250" style="width:700px;max-width:100%;margin-bottom:8px" aria-hidden="true">
-    <defs>
-      <marker id="pv-fa" viewBox="0 0 10 8" refX="10" refY="4"
-              markerWidth="10" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
-        <path d="M0 0 L10 4 L0 8 z" fill="#98A2B3"/>
-      </marker>
-      <marker id="pv-bk" viewBox="0 0 10 8" refX="10" refY="4"
-              markerWidth="11" markerHeight="8.8" markerUnits="userSpaceOnUse" orient="auto">
-        <path d="M0 0 L10 4 L0 8 z" fill="#9B3A3A"/>
-      </marker>
-      <g id="pv-grid">
-        <circle cx="13"  cy="13"  r="13"/><circle cx="69"  cy="13"  r="13"/><circle cx="125" cy="13"  r="13"/>
-        <circle cx="13"  cy="69"  r="13"/><circle cx="69"  cy="69"  r="13"/><circle cx="125" cy="69"  r="13"/>
-        <circle cx="13"  cy="125" r="13"/><circle cx="69"  cy="125" r="13"/><circle cx="125" cy="125" r="13"/>
-      </g>
-    </defs>
-
-    <!-- x0: the transcriptome at rest -->
-    <g transform="translate(30,55)">
-      <use href="#pv-grid" fill="#EEF1F7" stroke="#98A2B3" stroke-width="1.8"/>
-    </g>
-    <text x="99" y="228" text-anchor="middle" font-size="19" font-weight="700" fill="#0A1F5C"
-          font-style="italic">x<tspan dy="5" font-size="13">0</tspan></text>
-
-    <path d="M210 124 L560 124" stroke="#98A2B3" stroke-width="2.2" fill="none" marker-end="url(#pv-fa)"/>
-
-    <!-- p strikes exactly one gene -->
-    <text x="652" y="34" text-anchor="end" font-size="17" font-weight="700" fill="#9B3A3A"
-          font-style="italic">p<tspan font-style="normal" font-weight="500" font-size="14"> &#183; CRISPRi</tspan></text>
-    <path d="M669 22 L669 96" stroke="#9B3A3A" stroke-width="2.6" fill="none" marker-end="url(#pv-bk)"/>
-
-    <!-- x*: that gene held down, everything else re-settled -->
-    <g transform="translate(600,55)">
-      <use href="#pv-grid" fill="#EEF1F7" stroke="#98A2B3" stroke-width="1.8"/>
-      <circle cx="69"  cy="13"  r="13" fill="#D98A80" stroke="rgba(18,23,43,.28)" stroke-width="1.8"/>
-      <circle cx="13"  cy="69"  r="13" fill="#7EA6CE" stroke="rgba(18,23,43,.28)" stroke-width="1.8"/>
-      <circle cx="125" cy="125" r="13" fill="#AFC5DC" stroke="rgba(18,23,43,.28)" stroke-width="1.8"/>
-      <circle cx="69"  cy="69"  r="13" fill="#2166AC" stroke="rgba(18,23,43,.28)" stroke-width="1.8"/>
-      <circle cx="69"  cy="69"  r="20" fill="none" stroke="#0A1F5C" stroke-width="2.2" stroke-dasharray="5 4"/>
-    </g>
-    <text x="669" y="228" text-anchor="middle" font-size="19" font-weight="700" fill="#0A1F5C"
-          font-style="italic">x<tspan dy="-7" font-size="14">*</tspan></text>
-  </svg>
 
   <div class="formula-caption" style="max-width:34em">
     <span class="cap fragment current-visible" data-focus="" data-tone="">
