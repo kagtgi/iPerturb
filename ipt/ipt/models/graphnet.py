@@ -51,13 +51,20 @@ class GraphNet(nn.Module):
         k = self.k(); k = k if k.numel() == 1 else k[None, :]
         return hill4(x, k, self.n)
 
+    def _prep(self, w):
+        return w
+
+    def _inflow(self, hd, w):
+        """Edge-wise gather/scatter reference: inflow_i = sum_j w_ji * hd_j."""
+        return torch.zeros(hd.shape[0], self.G, device=hd.device, dtype=hd.dtype).index_add_(1, self.dst, hd[:, self.src] * w[None, :])
+
     def equilibrium(self, tgt, zeta):
         B = len(tgt); x0 = self.x0[None, :].expand(B, -1)
-        M = torch.zeros(B, self.G, dtype=torch.bool); M[torch.arange(B), tgt] = True
+        M = torch.zeros(B, self.G, dtype=torch.bool, device=self.x0.device); M[torch.arange(B, device=self.x0.device), tgt] = True
         cv = ((1 - zeta) * self.x0[tgt]).clamp(EPS, 1 - EPS)[:, None].expand(B, self.G)
         w = self.weights(); base = logit(x0); h0 = self.T(x0)
-        step = lambda x: torch.where(M, cv, torch.sigmoid(base + torch.zeros(B, self.G).index_add_(
-            1, self.dst, (self.T(x) - h0)[:, self.src] * w[None, :])))
+        wp = self._prep(w)
+        step = lambda x: torch.where(M, cv, torch.sigmoid(base + self._inflow(self.T(x) - h0, wp)))
         x = torch.where(M, cv, x0)
         for _ in range(self.steps):
             x = torch.where(M, cv, (1 - self.damping) * x + self.damping * step(x))
