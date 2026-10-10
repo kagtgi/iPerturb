@@ -368,3 +368,23 @@ def paired_bootstrap(
         "n": n,
         "win_frac": win_frac,
     }
+
+
+def pcc_delta_resid(pred: np.ndarray, obs: np.ndarray, train_mean: np.ndarray, target_idx: np.ndarray) -> np.ndarray:
+    """Pearson after projecting the train-mean direction out of both rows (target gene excluded).
+
+    Removes response-magnitude along the shared direction; a gain that survives is perturbation-specific."""
+    P, G = obs.shape
+    out = np.zeros(P)
+    for p in range(P):
+        m = np.ones(G, bool)
+        if target_idx[p] >= 0:
+            m[target_idx[p]] = False
+        u = train_mean[m].astype(np.float64)
+        uu = float(u @ u)
+        x, y = pred[p, m].astype(np.float64), obs[p, m].astype(np.float64)
+        if uu > 0:
+            x = x - (x @ u) / uu * u
+            y = y - (y @ u) / uu * u
+        out[p] = pearson_rows(x[None, :], y[None, :])[0]
+    return out
