@@ -18,3 +18,10 @@ PASS iff for H2 vs B3 AND H2 vs B2, mean primary-metric difference > 0 with 95% 
 
 ## Not allowed after seeing results
 Changing metric, gate rule, fallback, or graph definition. Any added analysis is labelled exploratory.
+
+---
+# Addendum A (written 2026-10-10 AFTER seeing G2 fold-0 result, before running anything in it; labelled EXPLORATORY-PRE-REGISTERED)
+
+Observed on K562 fold 0: graph residual models collapsed to B2 (validation MSE identical to 5 digits); an oracle one-hop readout with its scale fitted on the test targets also adds nothing (kappa=0.014); only ~1% of the strongest residual genes are L1 one-hop targets. Gate G2 therefore likely fails; the remaining G2 folds are still run as registered.
+
+Association-channel ablation (plan Go/no-go #1 allows this, labelled non-causal): graph-smoothed target embedding in the B2 model. e_p = (1-alpha) G[p] + alpha * mean_{j in N(p)} G[j]; alpha in {0,0.25,0.5,0.75} and k in {5,10,20,40} selected on validation (alpha=0 is B2, so the family nests B2). Layers (undirected, unsigned): L1 curated, L3 STRING>=700, L4 COXPRESdb top-20 partners per gene (cached). Variants: none, L1, L1+L3, L1+L3+L4, each with a degree-preserving rewired control selected with the same grid. All 3 folds x 2 lines, ALL test targets. Primary metric unchanged (centered Pearson); decision: graph helps only if real-minus-rewired paired bootstrap CI excludes 0 at the same budget. L5 stays off. Claim wording if positive: "association prior improves low-rank embedding", never "regulatory mechanism".
