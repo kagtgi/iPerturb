@@ -25,3 +25,16 @@ Changing metric, gate rule, fallback, or graph definition. Any added analysis is
 Observed on K562 fold 0: graph residual models collapsed to B2 (validation MSE identical to 5 digits); an oracle one-hop readout with its scale fitted on the test targets also adds nothing (kappa=0.014); only ~1% of the strongest residual genes are L1 one-hop targets. Gate G2 therefore likely fails; the remaining G2 folds are still run as registered.
 
 Association-channel ablation (plan Go/no-go #1 allows this, labelled non-causal): graph-smoothed target embedding in the B2 model. e_p = (1-alpha) G[p] + alpha * mean_{j in N(p)} G[j]; alpha in {0,0.25,0.5,0.75} and k in {5,10,20,40} selected on validation (alpha=0 is B2, so the family nests B2). Layers (undirected, unsigned): L1 curated, L3 STRING>=700, L4 COXPRESdb top-20 partners per gene (cached). Variants: none, L1, L1+L3, L1+L3+L4, each with a degree-preserving rewired control selected with the same grid. All 3 folds x 2 lines, ALL test targets. Primary metric unchanged (centered Pearson); decision: graph helps only if real-minus-rewired paired bootstrap CI excludes 0 at the same budget. L5 stays off. Claim wording if positive: "association prior improves low-rank embedding", never "regulatory mechanism".
+
+---
+# Addendum B (written 2026-10-10 after seeing Addendum-A results; before running these controls)
+
+Addendum A: STRING (L3) smoothing lifted centered Pearson by ~+0.10 (K562, RPE1) over no-graph and over degree-preserving rewired. Before any claim, these controls decide whether the gain is perturbation-specific:
+1. **Magnitude-residualised metric** `pcc_resid`: project the train-mean direction out of both pred and obs rows (target gene excluded), then Pearson. If the gain disappears here, it only predicted response strength.
+2. **Self-target zeroing**: set each training row's own-target entry of Delta to the training column mean before the SVD (and before the ridge fit) for no-graph, L3 and L1+L3 (real and rewired). If the gain collapses, it is imported neighbour knockdown profiles; if it survives, it is not.
+3. **Neighbour-mean baseline** (no SVD): pred = (1-a) B2 + a * mean training Delta of the test gene's STRING neighbours that are training targets (a in {0,.25,.5,.75,1}, selected on validation; fallback B2 if none).
+4. **Data-only kNN graph**: cosine kNN among gene loadings (k=20 PCs, training data only) with per-gene degree matched to the STRING graph, same smoothing grid. If it matches STRING, the external prior adds nothing.
+5. **Unit of analysis**: per-unique-target means across folds, then paired bootstrap over unique targets.
+6. Report selected (k, alpha) per fold; the grid is NOT extended post hoc. Save test prediction arrays (float16) so metrics can be recomputed without refitting.
+7. DEG-AUPRC caveat: labels are dominated by the shared response (no-change has the best DEG AUPRC on RPE1); report with that note.
+Decision rule: the "association prior" claim is made only if the gain survives (1), (2) real-vs-rewired, and beats (4) or is reported as equal to it.
