@@ -11,9 +11,9 @@ apply_style()
 MODELS = [  # (mid, label, color)
     ("B0_nochange|-|-", "No change (B0)", GRED_L), ("B1_trainmean|-|-", "Train mean (B1)", GRED_L),
     ("B2_linear|-|-", "Linear low-rank (B2)", GRED), ("B4_gears|-|-", "GEARS (B4)", GRED),
-    ("smooth_L1+L3|rewired|self", "iPerturb, rewired", GGREY_L), ("smooth_dataknn|real|self", "iPerturb, data-kNN", GGREY_L),
-    ("smooth_L3|real|self", "iPerturb, STRING only", GBLUE_L), ("smooth_L1+L3|real|self", "iPerturb (L1+L3 GRN)", GBLUE),
-    ("B5_gcn|real|self", "GCN on GRN (B5)", GGREEN), ("nbrmean_L3|real|self", "GRN neighbour mean", GYELLOW),
+    ("smooth_L1+L3|rewired|self", "Smoothing, rewired GRN", GGREY_L), ("smooth_dataknn|real|self", "Smoothing, data-kNN", GGREY_L),
+    ("smooth_L3|real|self", "Smoothing, STRING only", GBLUE_L), ("smooth_L1+L3|real|self", "iPerturb: smoothing head", GBLUE),
+    ("B5_gcn|real|self", "iPerturb: GCN head (B5)", GGREEN), ("nbrmean_L3|real|self", "iPerturb: neighbour-mean head", GYELLOW),
 ]
 PANELS = [("pcc_c", "Centered Pearson"), ("pcc_resid", "Residualised Pearson"),
           ("top20_c", "Top-20 Pearson"), ("cent_rank", "Centroid rank")]

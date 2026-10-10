@@ -22,8 +22,18 @@ def put(k, v, fmt=None):
     N[k] = v if fmt is None else fmt.format(v)
 
 
+def _f(v, d):
+    t = f"{v:+.{d}f}"
+    return f"{abs(v):.{d}f}" if float(t) == 0 else t
+
+
 def ci(r, d=3):
-    return f"{r['mean_diff']:+.{d}f} [{r['ci_low']:+.{d}f}, {r['ci_high']:+.{d}f}]"
+    return f"{_f(r['mean_diff'], d)} [{_f(r['ci_low'], d)}, {_f(r['ci_high'], d)}]"
+
+
+def sci(v, d=1):
+    m, e = f"{v:.{d}e}".split("e")
+    return "$" + m + chr(92) + "times10^{" + str(int(e)) + "}$"
 
 
 # ---- data / graph counts
@@ -50,6 +60,7 @@ for line in LINES:
     s = SHORT[line]
     U = unique_target_scores(line)
     put(f"{s}_nuniq", U.target.nunique(), "{:,}")
+    put(f"{s}_b1_raw", U[U.mid == "B1_trainmean|-|-"].pcc.mean(), "{:.2f}")
 
     def m(mid, met):
         return mean_ci(U[U.mid == mid][met])[0]
@@ -108,7 +119,7 @@ for line in LINES:
     s, r = SHORT[line], scc[line]
     put(f"{s}_scc_largest", r["largest_scc"])
     put(f"{s}_scc_speed", r["median_speedup"], "{:.1f}")
-    put(f"{s}_scc_diff", r["max_diff"], "{:.0e}")
+    put(f"{s}_scc_diff", sci(r["max_diff"], 0))
     put(f"{s}_scc_nodes", r["n_nodes"], "{:,}")
 
 # ---- explanation faithfulness
@@ -135,9 +146,20 @@ for dev in ("cpu", "gpu"):
                 if dev == "gpu":
                     put(f"bench_{dev}_{graph}_{B}_{impl.split('_')[0]}_mb", sub.loc[impl, "mem_mb"], "{:.0f}")
     for k, v in b["equivalence"].items():
-        put(f"eq_{k}_dx", v["max_dx"], "{:.1e}")
-        put(f"eq_{k}_dd", v["max_ddelta"], "{:.1e}")
+        put(f"eq_{k}_dx", sci(v["max_dx"]))
+        put(f"eq_{k}_dd", sci(v["max_ddelta"]))
     put("eq_scale", b["equivalence"]["cheb16_spmm"]["delta_scale"], "{:.3f}")
+
+# ---- per-edge shapes (Addendum H)
+pp = ART / "bench_peredge_gpu.json"
+if pp.exists():
+    pe = pd.DataFrame(json.load(open(pp))["timing"])
+    pe = pe[pe.graph == "assoc"]
+    for r in (8, 16):
+        for B in (32, 128, 512):
+            for impl in ("edge", "spmm"):
+                v = pe[(pe.r == r) & (pe.B == B) & (pe.impl == impl)].mem_mb.iloc[0]
+                put(f"pe_{impl}_r{r}_{B}_gb", "OOM" if np.isnan(v) else f"{v / 1024:.1f}")
 
 # ---- context-specific L2 (Addendum F)
 if (S / "g7_K562.tsv").exists():

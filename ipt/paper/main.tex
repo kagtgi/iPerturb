@@ -1,0 +1,43 @@
+\documentclass[runningheads]{llncs}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+\renewcommand\UrlFont{\color{blue}\rmfamily}
+
+% every number in the text is generated from the result files (scripts/build_numbers.py)
+\input{numbers.tex}
+\newcommand{\datanum}[1]{\ifcsname data@#1\endcsname\csname data@#1\endcsname\else\textbf{??\detokenize{#1}}\fi}
+\newcommand{\datanumif}[2]{\ifcsname data@#1\endcsname #2\fi}
+
+\begin{document}
+\title{iPerturb: A Biologically Informed and Explainable Framework for Context-Specific Single-Cell Perturbation Response Modelling}
+\titlerunning{iPerturb}
+\author{Khang Ta\inst{1} \and Linh Huynh\inst{1}\thanks{Corresponding author: linh.huynh@fulbright.edu.vn}}
+\authorrunning{K. Ta and L. Huynh}
+\institute{AI Institute, Fulbright University Vietnam, Ho Chi Minh City, Vietnam}
+\maketitle
+
+\begin{abstract}
+Building an interpretable model that predicts genome-wide transcriptional responses to genetic perturbations remains a grand challenge in biology. Mechanistic kinetic models are difficult to scale to the genome, whereas deep neural network--based models often lack interpretability. To bridge this gap, we propose iPerturb, a biologically informed and explainable framework for context-specific single-cell perturbation response modelling. iPerturb first integrates five tiers of regulatory and association evidence into a cell-line-specific gene regulatory network (GRN); then propagates a perturbation through it with a learnable transfer function that follows the Hill function of gene regulation, whose Chebyshev-basis form turns propagation into matrix multiplication; and finally explains each prediction through the named neighbours that support it. Evaluated on held-out CRISPRi targets in two human cell lines (\datanum{k562_nuniq} in K562 and \datanum{rpe1_nuniq} in RPE1), the context-specific GRN raises the centred correlation of the predicted response over a linear baseline by \datanum{k562_d_ip_b2_rc} and \datanum{rpe1_d_ip_b2_rc} (95\% intervals), whereas degree-preserving rewired and data-derived graphs give none. The Hill-form operator reproduces exact Hill propagation to \datanum{eq_cheb16_spmm_dx} and, on a dense graph, lowers peak memory six- to eight-fold while making edge-specific learnable shapes feasible. On the curated signed core, which reaches \datanum{k562_signed_out_pct}--\datanum{rpe1_signed_out_pct}\% of the perturbed genes, Hill-form propagation matches but does not exceed linear propagation.
+\keywords{gene expression prediction \and genetic perturbation \and gene regulatory network \and biologically informed neural network \and Hill function \and interpretable AI}
+\end{abstract}
+
+\input{sections/intro.tex}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig1_overview.pdf}
+\caption{\textbf{Overview of the iPerturb framework.} (1)~A cell line and a CRISPRi target are the inputs; the response is the perturbation-conditioned mean expression change. (2)~A context-specific GRN is assembled from five evidence tiers (L1 curated signed regulation; L2 enhancers and binding sites active in the cell line; L3 protein association; L4 co-expression; L5 training-perturbation response), with association evidence kept undirected and unsigned. (3)~The perturbation is propagated by a learnable transfer function of Hill form, evaluated in a Chebyshev basis as a matrix product, with the perturbed gene clamped. (4)~The predicted expression change is (5)~explained by supporting neighbours and edges, tested by ablation. Graphs and bars are illustrative.}
+\label{fig:overview}
+\end{figure}
+\input{sections/methods.tex}
+\input{sections/results.tex}
+\input{sections/discussion.tex}
+
+\bibliographystyle{splncs04}
+\bibliography{references}
+\input{sections/appendix.tex}
+\end{document}

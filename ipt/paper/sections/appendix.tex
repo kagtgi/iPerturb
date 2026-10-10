@@ -1,0 +1,17 @@
+\appendix
+\section{Additional protocol details}
+\label{app:protocol}
+\paragraph{Splits and fitting.} Three target-held-out folds per line (70/15/15\%, stratified by TF status, control-expression tertile and curated out-degree bin; seed 42, fold-specific seeds). The smoothing head selects $k\in\{5,10,20,40\}$ and $\alpha\in\{0,0.25,0.5,0.75\}$ on validation perturbations (selected settings: K562, \datanum{k562_cfg}; RPE1, \datanum{rpe1_cfg}); the ridge penalty is $10^{-2}$. The GCN has two layers, hidden size 64, residual self-weights, AdamW (learning rate $10^{-3}$ or $3\times10^{-3}$, weight decay $10^{-3}$), at most 200 epochs, patience 20, three seeds. Hill-form models use $n=2$, damping 0.5, 24 updates, learning rates $\{0.003,0.01\}$ and penalties $\{10^{-3},10^{-1}\}$ on the per-gene decoder offset, selected on validation reachable targets; the clamp strength $\zeta$ is the median training knockdown.
+\paragraph{Pre-registration.} The evaluation protocol was written and hashed before any graph model was fitted. Later analyses (association smoothing, controls, GCN, explanations, context-specific tier, efficiency study, neighbour-free fallback) were added as dated addenda before they were run; the fallback analysis is exploratory and is not part of the headline numbers.
+\paragraph{GEARS.} Trained with the official package on at most 100 cells per perturbation and 3,000 control cells, log1p of counts per $10^4$, 10 epochs, hidden size 64, with its default gene-ontology graph; targets absent from its ontology set are excluded from its evaluation.
+
+\section{Efficiency measurements}
+\label{app:bench}
+\begin{table}[h]
+\centering
+\caption{Time per forward and backward step (ms) and peak memory (MB) of the regulator-shared Hill operator (24 updates, A100 40\,GB). E0: exact Hill, edge gather/scatter; E1: exact Hill, sparse matrix product; E2: dense product; C1: degree-16 Chebyshev form, sparse product.}
+\label{tab:bench}
+\footnotesize
+\input{tables/bench.tex}
+\end{table}
+On the CPU, the edge-wise form was the fastest for the sparse curated graph at every batch size (\datanum{bench_cpu_l1_128_E0_ms}\,ms at batch 128 against \datanum{bench_cpu_l1_128_E1_ms}\,ms for the sparse product), and on the association graph the dense product matched it (\datanum{bench_cpu_assoc_128_E2_ms}\,ms vs.\ \datanum{bench_cpu_assoc_128_E0_ms}\,ms).

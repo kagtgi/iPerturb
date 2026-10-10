@@ -12,9 +12,9 @@ from ipt.viz.load import LINES, LINE_NAME, mean_ci, unique_target_scores
 OUT = Path(__file__).parents[1] / "paper" / "tables"
 OUT.mkdir(parents=True, exist_ok=True)
 ROWS = [("B0_nochange|-|-", "No change (B0)"), ("B1_trainmean|-|-", "Train mean (B1)"), ("B2_linear|-|-", "Linear low-rank (B2)"),
-        ("B4_gears|-|-", "GEARS (B4)"), ("smooth_L1+L3|rewired|self", "iPerturb, rewired GRN"), ("smooth_dataknn|real|self", "iPerturb, data-kNN graph"),
-        ("smooth_L3|real|self", "iPerturb, STRING only"), ("smooth_L1+L3|real|self", "\\textbf{iPerturb (L1+L3 GRN)}"),
-        ("B5_gcn|real|self", "GCN on GRN (B5)"), ("nbrmean_L3|real|self", "GRN neighbour mean")]
+        ("B4_gears|-|-", "GEARS (B4)"), ("smooth_L1+L3|rewired|self", "Smoothing, rewired GRN"), ("smooth_dataknn|real|self", "Smoothing, data-kNN graph"),
+        ("smooth_L3|real|self", "Smoothing, STRING only"), ("smooth_L1+L3|real|self", "iPerturb: smoothing head"),
+        ("B5_gcn|real|self", "iPerturb: GCN head (B5)"), ("nbrmean_L3|real|self", "iPerturb: neighbour-mean head")]
 MET = [("pcc_c", "$\\rho_c$"), ("pcc_resid", "$\\rho_r$"), ("top20_c", "$\\rho_{20}$"), ("cent_rank", "Cent."), ("deg_ap", "AUPRC")]
 U = {l: unique_target_scores(l) for l in LINES}
 
