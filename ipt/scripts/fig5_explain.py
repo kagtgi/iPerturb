@@ -86,8 +86,8 @@ for L, kind, name in cases:
 
 # ---------- figure
 mm = 1 / 25.4
-fig = plt.figure(figsize=(122 * mm, 108 * mm))
-gs = fig.add_gridspec(2, 2, left=0.095, right=0.99, top=0.90, bottom=0.095, wspace=0.34, hspace=0.80)
+fig = plt.figure(figsize=(122 * mm, 112 * mm))
+gs = fig.add_gridspec(2, 2, left=0.115, right=0.985, top=0.885, bottom=0.165, wspace=0.40, hspace=0.95)
 axa = fig.add_subplot(gs[0, 0])
 for line, col, lab, dx in (("K562_essential", GBLUE, "K562", -0.07), ("rpe1", GGREEN, "RPE1", 0.07)):
     m, lo, hi, n = zip(*resa[line]); m, lo, hi = map(np.array, (m, lo, hi))
@@ -95,7 +95,7 @@ for line, col, lab, dx in (("K562_essential", GBLUE, "K562", -0.07), ("rpe1", GG
     axa.errorbar(x, m, yerr=[m - lo, hi - m], fmt="o-", color=col, ms=3.5, lw=1.1, capsize=2, label=f"{lab} (n={n[0]})")
 axa.axhline(0, color=GGREY, lw=0.9, ls="--")
 axa.set_xticks(Ks); axa.set_xlabel("K removed neighbours")
-axa.set_ylabel("drop in centered Pearson:\ntop-K minus random-K removal", fontsize=7.5)
+axa.set_ylabel("drop in centered Pearson:\ntop-K minus random-K\nremoval", fontsize=7)
 axa.legend(loc="upper left", fontsize=7, handlelength=1.4, borderaxespad=0.1)
 axa.set_title("Faithfulness (mean, 95% CI)", fontsize=7.5, loc="left", pad=4)
 for ax_, L in zip([fig.add_subplot(gs[0, 1]), fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[1, 1])], "bcd"):
@@ -114,11 +114,11 @@ for ax_, L in zip([fig.add_subplot(gs[0, 1]), fig.add_subplot(gs[1, 0]), fig.add
     globals()["ax" + L] = ax_
 axb.legend(loc="lower right", fontsize=6.5, handletextpad=0.1, borderaxespad=0.1, markerscale=1.2)
 for ax_, L in ((axa, "a"), (axb, "b"), (axc, "c"), (axd, "d")):
-    ax_.text(-0.30 if L in "ac" else -0.27, 1.0 + (0.30 if L != "a" else 0.12), f"({L})", transform=ax_.transAxes,
+    ax_.text(-0.36 if L in "ac" else -0.30, 1.0 + (0.34 if L in "cd" else 0.30 if L=="b" else 0.14), f"({L})", transform=ax_.transAxes,
              fontsize=10, fontweight="bold", va="bottom", ha="left", clip_on=False)
-fig.text(0.99, 0.995, "Case rule (K562, fold 0): gain = Pearson(L1+L3) - Pearson(B2); (b) max gain, (c) min gain,\n"
-         "(d) alphabetically first test target without neighbours. Scatter: 40 genes with largest |observed|.",
-         fontsize=6.5, ha="right", va="top", color=GREY700, linespacing=1.15)
+fig.text(0.01, 0.005, "Case rule (K562, fold 0): gain = Pearson(L1+L3) - Pearson(B2); (b) max gain, (c) min gain,\n"
+         "(d) alphabetically first test target without neighbours. \nScatter: 40 genes with largest |observed| delta, perturbed gene excluded.",
+         fontsize=7, ha="left", va="bottom", color=GREY700, linespacing=1.15)
 fig.savefig(OUT / "fig5_explain.pdf"); fig.savefig(OUT / "fig5_explain.png", dpi=600)
 json.dump({L: dict(name=d["name"], gain=d["gain"], n_nb=d["nn"], top=d["top"], r_b2=d["rb"], r_sm=d["rs"]) for L, d in info.items()},
           open(OUT / "fig5_explain.provenance.json", "w"), indent=1)

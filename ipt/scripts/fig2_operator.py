@@ -31,7 +31,7 @@ def letter(ax, s, dx=-0.20, dy=1.04):
 fig = plt.figure(figsize=(122 * MM, 132 * MM))
 gs = fig.add_gridspec(3, 1, left=0.095, right=0.985, top=0.965, bottom=0.125,
                       hspace=0.62, height_ratios=[1, 0.95, 1])
-gs0 = gs[0].subgridspec(1, 3, width_ratios=[1.3, 0.85, 1.0], wspace=0.75)
+gs0 = gs[0].subgridspec(1, 3, width_ratios=[1.2, 0.8, 0.9], wspace=0.95)
 gs2 = gs[2].subgridspec(1, 2, wspace=0.95)
 
 # ------------------------------------------------------------------ (a)
@@ -49,7 +49,7 @@ axa.set_xlim(0, 1); axa.set_ylim(0, 1.02)
 axa.set_xlabel("input $x$"); axa.set_ylabel("$H(x;k)$")
 hl = axa.get_legend_handles_labels()
 axl = fig.add_subplot(gs0[0, 1]); axl.axis("off"); axl.grid(False)
-axl.legend(*hl, loc="center left", bbox_to_anchor=(-0.12, 0.5), fontsize=7, handlelength=1.6,
+axl.legend(*hl, loc="center left", bbox_to_anchor=(-0.2, 0.5), fontsize=7, handlelength=1.6,
            labelspacing=0.35, borderaxespad=0.0)
 letter(axa, "(a)", dx=-0.27)
 
@@ -139,15 +139,15 @@ axc2.tick_params(axis="y", colors="#1E7B3A", labelsize=7.5); axc2.grid(False)
 for g, ax, c in ((0, axc, GBLUE), (2, axc2, GGREEN)):
     ax.plot(its, tp[:, g], color=c, lw=1.5, ls="-")
     ax.plot(its, ts[:, g], color=c, lw=1.3, ls=(0, (3, 2)))
-axc.set_xlim(0, T); axc.set_ylim(0.05, 0.55)
-axc2.set_ylim(0.488, 0.502); axc2.set_yticks([0.49, 0.50])
+axc.set_xlim(0, T); axc.set_ylim(0.05, 0.85)
+axc2.set_ylim(0.4875, 0.5075); axc2.set_yticks([0.49, 0.50])
 axc.set_xlabel("iteration"); axc.set_ylabel("$x_0$ (target)", color=GBLUE)
 axc2.set_ylabel("$x_2$ (downstream)", color="#1E7B3A")
 from matplotlib.lines import Line2D
 axc.legend(handles=[Line2D([], [], color=GGREY, lw=1.5, ls="-"),
                     Line2D([], [], color=GGREY, lw=1.3, ls=(0, (3, 2)))],
            labels=["persistent clamp (iPT)", "single injection"],
-           loc="center right", bbox_to_anchor=(1.0, 0.60), fontsize=7, handlelength=2.0,
+           loc="upper center", bbox_to_anchor=(0.5, 1.0), fontsize=7, handlelength=2.0,
            labelspacing=0.2, borderaxespad=0.1)
 axc.set_title("0$\\to$1 (+), 1$\\to$2 (+), 2$\\to$3 (+), 3$\\to$1 ($-$)", fontsize=7, pad=2, color=GREY700)
 letter(axc, "(c)", dx=-0.27, dy=1.14)
@@ -163,12 +163,12 @@ for i, (key, lab) in enumerate(cells):
     axd.bar(i, b["median_speedup"], width=0.8, color=GBLUE, zorder=3)
     axd.text(i, b["median_speedup"] + 0.06, f"{b['median_speedup']:.2f}" + r"$\times$", ha="center",
              va="bottom", fontsize=7.5, color=GREY900, fontweight="bold")
-    axd.text(i, 1.12, f"max SCC {b['largest_scc']}" + "\n" + r"max|$\Delta x$|" + "\n" + f"{b['max_diff']:.1e}", ha="center",
-             va="bottom", fontsize=7, color="white", zorder=4, linespacing=1.15)
-axd.axhline(1.0, color=GRED, lw=1.0, ls="--", zorder=5, label=r"global solver (1$\times$)")
+    axd.text(i, 0.99, f"SCC {b['largest_scc']}" + "\n" + r"max|$\Delta x$|" + "\n" + f"{b['max_diff']:.1e}", ha="center",
+             va="bottom", fontsize=7, color="white", zorder=4, linespacing=1.05)
+axd.axhline(1.0, color=GRED, lw=1.0, ls="--", zorder=2, label=r"global solver (1$\times$)")
 axd.legend(loc="upper right", fontsize=7, handlelength=1.6, borderaxespad=0.1)
 axd.set_xticks(xp); axd.set_xticklabels([c[1] for c in cells])
-axd.set_xlim(-0.6, 1.6); axd.set_ylim(0, 3.7)
+axd.set_xlim(-0.6, 1.6); axd.set_ylim(0, 3.9)
 axd.set_ylabel("median speed-up")
 axd.grid(False)
 letter(axd, "(d)", dx=-0.3, dy=1.14)

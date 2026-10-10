@@ -1,0 +1,27 @@
+\begin{tabular}{lccccc}
+\toprule
+\multicolumn{6}{l}{\textbf{K562} (699 held-out targets)}\\
+Model & $\rho_c$ & $\rho_r$ & $\rho_{20}$ & Cent. & AUPRC\\\midrule
+No change (B0) & 0.096 & 0.000 & 0.116 & 0.503 & 0.099\\
+Train mean (B1) & 0.000 & 0.000 & 0.000 & 0.000 & 0.031\\
+Linear low-rank (B2) & 0.145 & 0.139 & 0.275 & 0.641 & 0.110\\
+iPerturb, rewired GRN & 0.141 & 0.134 & 0.268 & 0.633 & 0.110\\
+iPerturb, data-kNN graph & 0.147 & 0.141 & 0.277 & 0.640 & 0.112\\
+iPerturb, STRING only & 0.235 & 0.223 & 0.430 & 0.735 & 0.132\\
+\textbf{iPerturb (L1+L3 GRN)} & 0.238 & 0.221 & 0.434 & 0.737 & 0.132\\
+GCN on GRN (B5) & 0.267 & 0.240 & 0.454 & 0.755 & 0.140\\
+GRN neighbour mean & \textbf{0.285} & \textbf{0.276} & \textbf{0.511} & \textbf{0.791} & \textbf{0.162}\\
+\midrule
+\multicolumn{6}{l}{\textbf{RPE1} (743 held-out targets)}\\
+Model & $\rho_c$ & $\rho_r$ & $\rho_{20}$ & Cent. & AUPRC\\\midrule
+No change (B0) & 0.115 & 0.000 & 0.050 & 0.498 & \textbf{0.245}\\
+Train mean (B1) & 0.000 & 0.000 & 0.000 & 0.000 & 0.054\\
+Linear low-rank (B2) & 0.170 & 0.108 & 0.276 & 0.634 & 0.175\\
+iPerturb, rewired GRN & 0.163 & 0.108 & 0.260 & 0.631 & 0.174\\
+iPerturb, data-kNN graph & 0.172 & 0.109 & 0.271 & 0.630 & 0.175\\
+iPerturb, STRING only & 0.250 & 0.184 & 0.375 & 0.679 & 0.192\\
+\textbf{iPerturb (L1+L3 GRN)} & 0.252 & 0.179 & 0.374 & 0.680 & 0.191\\
+GCN on GRN (B5) & 0.299 & 0.201 & 0.422 & 0.711 & 0.191\\
+GRN neighbour mean & \textbf{0.302} & \textbf{0.254} & \textbf{0.440} & \textbf{0.737} & 0.204\\
+\bottomrule
+\end{tabular}

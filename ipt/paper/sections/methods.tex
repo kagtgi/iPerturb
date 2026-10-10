@@ -1,0 +1,48 @@
+\section{Data and Methods}
+\label{sec:methods}
+
+\subsection{Datasets}
+\label{sec:data}
+Public gene-regulation resources were curated from four complementary source types: (i)~transcription factor (TF)--target interactions from TRRUST~\cite{han2018trrust}, CollecTRI~\cite{mullerdott2023collectri} and OmniPath~\cite{turei2016omnipath} (\datanum{l1_unique} unique directed pairs, \datanum{l1_signed} of them with a defensible sign); (ii)~enhancer--gene and TF-binding annotations from GeneHancer v5.26~\cite{fishilevich2017genehancer}; (iii)~protein--protein association pairs from STRING~\cite{szklarczyk2023string} filtered at combined score $\ge 700$; and (iv)~co-expression pairs from COXPRESdb~\cite{obayashi2023coxpresdb}.
+Perturbation data are the genome-scale CRISPRi Perturb-seq screens of Replogle et al.~\cite{replogle2022mapping} in K562 (chronic myelogenous leukaemia) and RPE1 (retinal pigment epithelium) cells. Starting from the raw UMI counts, each cell was normalised to $10^4$ counts and log1p-transformed; the response of a perturbation $p$ is the \emph{mean-level} difference $\Delta_p=\overline{x}_p-\overline{x}_{0}$ between the mean log-normalised expression of its cells and of the control cells of the same gem groups (batch-matched), computed on the stored gene axis (\datanum{k562_genes} genes in K562, \datanum{rpe1_genes} in RPE1).
+Perturbations with fewer than 20 cells and targets absent from the gene axis were removed, leaving \datanum{k562_targets} (K562) and \datanum{rpe1_targets} (RPE1) targets. The data are single-cell, but the predicted endpoint is the perturbation-conditioned mean response; cell-resolved generation is outside the scope of this work.
+
+\subsection{Constructing the context-specific GRN}
+\label{sec:grn}
+iPerturb integrates evidence into a five-tier hierarchy ordered by strength (Level~1: curated, signed TF--target interactions; Level~2: GeneHancer enhancer--gene links whose enhancers are active in the target cell line and whose TF-binding sites match the TF; Level~3: STRING associations, added as undirected, unsigned pairs; Level~4: COXPRESdb co-expression, top partners per gene; Level~5: signed edges read from training perturbations only). Association evidence (Levels~3--4) is \emph{never} represented as a signed or directed regulatory arrow: it is stored as an undirected edge and used only by the association channel of Section~\ref{sec:model}.
+Cross-tier duplicates were resolved in favour of the lowest-numbered tier, and within-tier sign conflicts defaulted to unsigned, so an unknown sign is never promoted to activation. The graph is built separately for every cell line: Level~2 depends on the enhancers and TF-binding sites active in that line, and Level~5, when used, is fitted on the training perturbations of that line alone.
+
+\subsection{Learnable propagation that follows the Hill function}
+\label{sec:model}
+\paragraph{Hill-form regulatory propagation.}
+Let $x_i\in(\varepsilon,1-\varepsilon)$ be the regulatory activity of gene $i$ and $x^0_i=\sigma(z_i)$ its baseline, where $z_i$ is the standardised control expression (a fixed monotone map, so the graph cannot be bypassed by a learned encoder). A regulator $j$ passes its activity through a modified Hill transfer function
+\begin{equation}
+H(x;k,n)=\frac{k^{n}\,[\,1-(1-x)^{n}\,]}{(1-x)^{n}+k^{n}},\qquad H(0)=0,\;H(1)=1,
+\label{eq:hill}
+\end{equation}
+(the TF4 form of the logic-ODE literature~\cite{wittmann2009,eduati2017}) with $n=2$ and one learnable $k_j\in[0.05,1]$ \emph{per regulator}, shared by all of its outgoing edges. Signed messages are baseline-centred, so an unperturbed cell produces exactly zero response:
+\begin{equation}
+x_i^{t+1}=(1-\eta)\,x_i^{t}+\eta\,\sigma\!\Big(\mathrm{logit}\,x_i^{0}+\sum_{j\to i} w_{ji}\big[H(x_j^{t};k_j)-H(x_j^{0};k_j)\big]\Big),
+\label{eq:fp}
+\end{equation}
+with $w_{ji}=\rho\,s_{ji}\,c_{ji}\,\mathrm{softplus}(a)/\max\{1,\sum_{j'}|\cdot|\}$, where $s_{ji}\in\{-1,+1\}$ is the curated sign, $c_{ji}$ the evidence confidence, and $\rho,a$ are learnable scalars. A CRISPRi knockdown of gene $p$ is a \emph{persistent clamp}, $x_p^{t}=(1-\zeta)x_p^{0}$ at every iteration, where $\zeta$ is the median knockdown of the training perturbations. The fixed point $x^\ast$ is found by damped iteration ($\eta=0.5$, 24 steps) and the predicted response is $\hat\Delta_g=d_g\,(x^\ast_g-x^0_g)$ with a non-negative diagonal decoder $d_g$; no dense $G\times G$ decoder is used, so every prediction decomposes over named edges.
+
+\paragraph{Matrix-multiplication form.}
+Per-edge Hill evaluation requires gathering $x_j$ for every edge and scattering messages, which maps poorly to accelerators. We therefore approximate each regulator's Hill curve by a Chebyshev expansion of degree $r$,
+\begin{equation}
+H(x;k_j)\approx\sum_{b=0}^{r}a_b(k_j)\,T_b(2x-1),
+\label{eq:cheb}
+\end{equation}
+whose coefficients $a_b(k)$ are least-squares fitted to Eq.~\eqref{eq:hill} on a logarithmic grid of $k$ and linearly interpolated in $\log k$, so that $k_j$ stays learnable and differentiable. With $\mathbf h=\hat H(x)-\hat H(x^0)\in\mathbb{R}^{B\times G}$ for a batch of $B$ perturbations, the aggregation in Eq.~\eqref{eq:fp} is one sparse (or dense) matrix product $\mathbf h\,\mathbf W$, with $\mathbf W_{ji}=w_{ji}$, instead of an edge-wise gather and index-add. The same fixed-point equations are solved; only the arithmetic changes (equivalence is verified in Section~\ref{sec:results_hill}).
+
+\paragraph{Association channel.}
+Most perturbed genes are not curated TFs. Let $\mathbf G\in\mathbb{R}^{G\times k}$ be the top-$k$ gene loadings of the centred training responses, and $\hat A$ the row-normalised adjacency of the (undirected) context-specific GRN. The embedding of a perturbed gene $t$ is smoothed over its neighbours, $e_t=(1-\alpha)\mathbf G_t+\alpha\,(\hat A\mathbf G)_t$, and the response is $\hat\Delta_t=\bar\Delta+e_t\,\mathbf W_e\,\mathbf G^\top$ with a ridge-fitted $\mathbf W_e$; $k$ and $\alpha$ are chosen on the validation perturbations from fixed grids. For $\alpha=0$ this is the standard linear low-rank baseline, so the channel nests it.
+
+\paragraph{SCC-aware execution.}
+Feedback makes Eq.~\eqref{eq:fp} cyclic. For a frozen graph we compute strongly connected components once, order their condensation topologically, restrict the computation to the nodes reachable from the perturbed gene, settle acyclic singletons with a single forward update and iterate feedback components locally with their upstream inputs fixed. The predictions are those of the global solver (Section~\ref{sec:results_hill}); this is an execution strategy, not a different model.
+
+\subsection{Evaluating iPerturb}
+\label{sec:eval}
+For each cell line, targets were split into training, validation and test perturbations (70/15/15\%) in three folds stratified only by properties known without response data (TF status, control-expression tertile, curated out-degree bin); no target is shared across the splits of a fold. All graph-derived quantities, loadings, knockdown efficacy and hyper-parameters use training (and validation) perturbations only.
+Because the mean response of a perturbation is dominated by a response shared across perturbations~\cite{vinas2025systema}, the primary metric is the Pearson correlation of $\Delta$ \emph{centred} on the training-mean response ($\rho_c$), computed per perturbation without the perturbed gene and averaged over perturbations; we also report the same correlation after projecting the training-mean direction out of both profiles ($\rho_r$, which removes response magnitude), the top-20 centred correlation ($\rho_{20}$), the mean normalised rank of the correct perturbation among all test perturbations (Cent.; 0.5 is chance) and the area under the precision--recall curve for differentially expressed genes (|Welch $z|>4$, cell level, no biological replicates, prevalence-dominated by the shared response). Intervals are 95\% bootstrap intervals over unique held-out targets (each target averaged over the folds in which it is tested); paired differences use the same bootstrap.
+We compare against no change, the training-mean response, a ridge model on a low-rank gene embedding~\cite{ahlmanneltze2025comparison}, GEARS~\cite{roohani2024predicting} trained on the same folds (Section~\ref{sec:results_pred}), a two-layer graph convolutional network on the same GRN, and control GRNs with degree-preserving rewired edges or a graph learned from the training data alone. The full protocol was fixed in a hashed pre-registration file before fitting, and later analyses are labelled as such in the repository.
