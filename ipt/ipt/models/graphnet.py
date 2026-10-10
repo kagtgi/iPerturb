@@ -39,7 +39,7 @@ class GraphNet(nn.Module):
 
     def weights(self):
         wt = self.sign * self.conf * Fn.softplus(self.a + 0.5413)  # softplus(0.5413)=1 at init
-        inc = torch.zeros(self.G).index_add_(0, self.dst, wt.abs())
+        inc = torch.zeros(self.G, device=wt.device).index_add_(0, self.dst, wt.abs())
         wt = wt / torch.clamp(inc[self.dst], min=1.0)
         return torch.sigmoid(self.rho + 1.0) * 2.0 * wt     # rho_eff in (0,2), 1.46 at init
 

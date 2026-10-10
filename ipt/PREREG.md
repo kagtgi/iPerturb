@@ -67,3 +67,8 @@ User framing: iPerturb = context-specific GRN + learnable Hill-form propagation.
 ---
 # Addendum G (2026-10-11, EXPLORATORY, post hoc; prompted by the Fig-5 failure case with zero neighbours)
 For test targets with NO neighbour in the L1+L3 association graph, replace the smoothing model's prediction by the no-graph prediction (smooth_none, the linear low-rank model). Computed from the saved g4 prediction arrays (no refitting). Reported only as an exploratory improvement; the headline iPerturb numbers remain the registered, unmodified model.
+
+---
+# Addendum H (2026-10-11, computational; after seeing the GPU result of Addendum E)
+Observed (A100, K=24): replacing edge gather/index-add by SpMM/dense matmul is 3.3-4.6x faster and 6-8x lighter in memory on the large association graph (E=246,878) but slower on the sparse L1 graph (E=10,489); the Chebyshev form of a regulator-SHARED Hill (n=2) is not faster than the exact formula (it is 2-4x slower at r=16), though accurate (max |x*_cheb - x*_exact| ~3e-5).
+Where the basis form should matter: PER-EDGE learnable Hill-form shapes (edge-specific H_e(x)=sum_b c_eb T_b(2x-1); the H1 control of the plan). Edge-wise evaluation costs O(B E r) activations per step; the matmul form stacks Phi(x) in R^{B x G x r} and applies ONE sparse matrix with E r non-zeros (rows (src,b), columns dst), costing O(B G r) activations. Benchmark (A100, CPU): per-edge Chebyshev edge-wise vs SpMM, r in {8,16}, graphs {L1 (E=10,489), association (E=246,878)}, B in {32,128,512}, K=24; metrics: step time, peak memory, max |x*_edge - x*_spmm| (must be < 1e-5 in float32). Reported as measured, including OOM failures.
