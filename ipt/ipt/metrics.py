@@ -355,12 +355,8 @@ def paired_bootstrap(
     ci_low = np.percentile(boot_means, 2.5)
     ci_high = np.percentile(boot_means, 97.5)
 
-    # Two-sided p-value: fraction on opposite side of zero from observed
-    if mean_diff_obs >= 0:
-        p_two_sided = np.mean(boot_means <= -np.abs(mean_diff_obs))
-    else:
-        p_two_sided = np.mean(boot_means >= np.abs(mean_diff_obs))
-    p_two_sided = min(2 * p_two_sided, 1.0)
+    # Two-sided bootstrap p-value for H0: mean difference == 0
+    p_two_sided = min(2 * min(np.mean(boot_means <= 0), np.mean(boot_means >= 0)), 1.0)
 
     win_frac = np.mean(a_valid > b_valid)
 

@@ -459,3 +459,13 @@ class TestIntegration:
         assert np.all(np.abs(pcc) <= 1.0)
         assert np.all(np.abs(pcc_c) <= 1.0)
         assert np.all(rmse >= 0)
+
+
+def test_bootstrap_p_matches_ci_consistency():
+    from ipt.metrics import paired_bootstrap
+    rng = np.random.default_rng(1)
+    a = rng.normal(0.0, 1.0, 60); b = rng.normal(0.0, 1.0, 60)
+    r = paired_bootstrap(a, b, n_boot=4000, seed=0)
+    assert (r["ci_low"] <= 0 <= r["ci_high"]) == (r["p_two_sided"] > 0.05) or abs(r["p_two_sided"] - 0.05) < 0.03
+    r2 = paired_bootstrap(a + 1.0, b, n_boot=4000, seed=0)
+    assert r2["p_two_sided"] < 0.01
