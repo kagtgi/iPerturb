@@ -53,3 +53,7 @@ Thumbs.db
 # To version the deck itself, commit slides/dist/ instead, or remove this rule
 # once the notes are considered publishable.
 slides/
+*.gz
+*.h5ad
+ipt/artifacts/
+__pycache__/
