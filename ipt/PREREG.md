@@ -43,3 +43,8 @@ Decision rule: the "association prior" claim is made only if the gain survives (
 # Addendum C (written 2026-10-11, before running B5)
 
 B5 = learned message-passing control on the SAME undirected graph (L1+L3) as the best smoothing variant: 2-layer GCN (row-normalised adjacency, hidden 64, residual self-weights) over the 40 training-derived gene loadings; node embedding -> low-rank coefficients; prediction = train mean + E[t] G_k^T; MSE excluding the perturbed gene; AdamW, lr in {1e-3, 3e-3}, <=200 epochs, patience 20, selected on validation MSE; 3 seeds; real vs degree-preserving rewired graph. Question: does learned message passing beat fixed smoothing (smooth_L1+L3) and B2? Same primary metric, same folds, unit = unique target means.
+
+---
+# Addendum D (2026-10-11, before running explanations)
+
+Neighbour-ablation faithfulness for smooth_L1+L3 (selected k, alpha per fold from g4cfg): attribution a_j = <pred(N)-pred(N\j), pred(N)-train_mean> (prediction-only; no observed data). For test targets with >=6 association neighbours, remove the top-K (K=1,2,3,5) attributed neighbours vs K random neighbours (50 draws) and compare the drop in centered Pearson against the OBSERVED profile; unit = unique target; paired bootstrap. Positive = model-emphasised neighbours are the useful ones. Association explanation only; no causal path claim.

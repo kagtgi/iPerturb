@@ -469,3 +469,14 @@ def test_bootstrap_p_matches_ci_consistency():
     assert (r["ci_low"] <= 0 <= r["ci_high"]) == (r["p_two_sided"] > 0.05) or abs(r["p_two_sided"] - 0.05) < 0.03
     r2 = paired_bootstrap(a + 1.0, b, n_boot=4000, seed=0)
     assert r2["p_two_sided"] < 0.01
+
+
+def test_pcc_resid_removes_magnitude_only_signal():
+    from ipt.metrics import pcc_delta_resid
+    rng = np.random.default_rng(0)
+    G = 300; tm = rng.normal(size=G); spec = rng.normal(size=(40, G))
+    obs = 0.3 * tm[None, :] + spec; tgt = np.full(40, -1)
+    pred_mag = 1.0 * tm[None, :].repeat(40, 0)           # only the shared direction
+    pred_spec = spec + 0.0 * tm
+    assert abs(pcc_delta_resid(pred_mag, obs, tm, tgt).mean()) < 0.05
+    assert pcc_delta_resid(pred_spec, obs, tm, tgt).mean() > 0.9
