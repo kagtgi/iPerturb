@@ -1,5 +1,5 @@
 """Addendum F: context-specific L2 (GeneHancer) vs foreign-context L2 in association smoothing, K562."""
-import json, pickle, sys
+import argparse, json, pickle, sys
 from pathlib import Path
 import networkx as nx
 import numpy as np
@@ -12,6 +12,10 @@ from ipt.graph.l1 import load_l1
 ART = Path(__file__).parents[1] / "artifacts"
 CACHE = Path("D:/iPerturb/lnbi/cache")
 line = "K562_essential"
+ap = argparse.ArgumentParser()
+ap.add_argument("--folds", type=int, nargs="+", default=[0, 1, 2])
+ap.add_argument("--tag", default="")
+a = ap.parse_args()
 KS, ALPHAS = (5, 10, 20, 40), (0.0, 0.25, 0.5, 0.75)
 z = np.load(ART / "data" / f"{line}.npz", allow_pickle=True)
 genes = [g.upper() for g in z["genes"]]; gi = {g: i for i, g in enumerate(genes)}; G = len(genes)
@@ -67,7 +71,7 @@ def fit_smooth(D, tgt, V, Ah, k, al, ridge=1e-2):
 
 
 rows, cfgs = [], []
-for fo in (0, 1, 2):
+for fo in a.folds:
     f = folds[fo]; idx = {k: np.array([prow[p.upper()] for p in f[k]]) for k in ("train", "valid", "test")}
     Y = {k: Yall[idx[k]].astype(np.float64) for k in idx}; T = {k: tix[idx[k]] for k in idx}; tm = Y["train"].mean(0)
     mask = np.ones_like(Y["valid"], bool); mask[np.arange(len(T["valid"])), T["valid"]] = False
@@ -89,8 +93,8 @@ for fo in (0, 1, 2):
         ap_ = M.deg_auprc(p - tm, deg, tt)["ap"]; cn = M.centroid_accuracy(p, obs, tm, tt)["norm_rank_each"]
         for i in range(len(tt)):
             rows.append(dict(fold=fo, variant=name, target=f["test"][i], pcc_c=pc[i], pcc_resid=pres[i], top20_c=t20[i], deg_ap=ap_[i], cent_rank=cn[i]))
-df = pd.DataFrame(rows); df.to_csv(ART / "scores" / "g7_K562.tsv", sep="\t", index=False)
-pd.DataFrame(cfgs).to_csv(ART / "scores" / "g7cfg_K562.tsv", sep="\t", index=False)
+df = pd.DataFrame(rows); df.to_csv(ART / "scores" / f"g7_K562{a.tag}.tsv", sep="\t", index=False)
+pd.DataFrame(cfgs).to_csv(ART / "scores" / f"g7cfg_K562{a.tag}.tsv", sep="\t", index=False)
 u = df.groupby(["variant", "target"], as_index=False)[["pcc_c", "pcc_resid", "top20_c", "deg_ap", "cent_rank"]].mean()
 print(u.groupby("variant").mean(numeric_only=True).round(4).to_string())
 for m in ("pcc_c", "pcc_resid"):

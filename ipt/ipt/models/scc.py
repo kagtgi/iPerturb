@@ -88,3 +88,21 @@ def solve_scc(P, target, clamp, damping=0.5, tol=1e-13, max_iter=200000):
             if d < tol:
                 break
     return x, n_updates
+
+
+def solve_global_reach(P, target, clamp, damping=0.5, tol=1e-13, max_iter=200000):
+    """Global synchronous iteration restricted to the genes reachable from the target (no SCC ordering)."""
+    nodes = [i for i in sorted(nx.descendants(P.graph, target)) if i != target]
+    x = P.x0.copy()
+    x[target] = clamp
+    for it in range(max_iter):
+        hx = P.T(x)
+        new = x.copy()
+        for m in nodes:
+            new[m] = (1 - damping) * x[m] + damping * P.update(x, m, hx)
+        new[target] = clamp
+        d = np.abs(new - x).max()
+        x = new
+        if d < tol:
+            return x, it + 1
+    return x, max_iter

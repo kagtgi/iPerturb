@@ -89,5 +89,11 @@ for fo in a.folds:
     tests = [g[:-5] for g in sd["test"]]
     pred = model.predict([[g] for g in tests])
     P = np.stack([np.asarray(pred[g]) - ctrl_mean for g in tests]).astype(np.float32) if tests else np.zeros((0, len(gene_list)), np.float32)
-    np.savez_compressed(OUT / f"pred_fold{fo}.npz", targets=np.array(tests), delta=P, genes=np.array(gene_list))
+    rng2 = np.random.default_rng(a.seed + fo)
+    tr_all = [g[:-5] for g in sd["train"]]
+    tr_s = [str(g) for g in rng2.choice(tr_all, min(300, len(tr_all)), replace=False)]
+    predtr = model.predict([[g] for g in tr_s])
+    Ptr = np.stack([np.asarray(predtr[g]) - ctrl_mean for g in tr_s]).astype(np.float32)
+    np.savez_compressed(OUT / f"pred_fold{fo}.npz", targets=np.array(tests), delta=P, genes=np.array(gene_list),
+                        train_targets=np.array(tr_s), train_delta=Ptr, epochs=a.epochs, cells=a.cells)
     print(f"fold {fo}: predicted {len(tests)} test targets", flush=True)

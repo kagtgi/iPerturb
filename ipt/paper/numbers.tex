@@ -111,6 +111,11 @@
 \expandafter\def\csname data@bench_gpu_l1_512_E2_ms\endcsname{346}
 \expandafter\def\csname data@bench_gpu_l1_512_P1_mb\endcsname{4055}
 \expandafter\def\csname data@bench_gpu_l1_512_P1_ms\endcsname{70}
+\expandafter\def\csname data@binom_p_max\endcsname{$4\times10^{-8}$}
+\expandafter\def\csname data@cheb_err_r16\endcsname{$2.7\times10^{-3}$}
+\expandafter\def\csname data@cheb_err_r32\endcsname{$1.9\times10^{-4}$}
+\expandafter\def\csname data@cheb_err_r4\endcsname{$1.3\times10^{-1}$}
+\expandafter\def\csname data@cheb_err_r8\endcsname{$6.0\times10^{-2}$}
 \expandafter\def\csname data@eq_cheb16_dense_dd\endcsname{$2.4\times10^{-5}$}
 \expandafter\def\csname data@eq_cheb16_dense_dx\endcsname{$3.5\times10^{-5}$}
 \expandafter\def\csname data@eq_cheb16_spmm_dd\endcsname{$2.4\times10^{-5}$}
@@ -128,6 +133,7 @@
 \expandafter\def\csname data@eq_cheb8_spmm_dd\endcsname{$3.6\times10^{-4}$}
 \expandafter\def\csname data@eq_cheb8_spmm_dx\endcsname{$5.2\times10^{-4}$}
 \expandafter\def\csname data@eq_scale\endcsname{0.087}
+\expandafter\def\csname data@fallback_gain_max\endcsname{0.002}
 \expandafter\def\csname data@g7c_jaccard_HepG2_Jurkat\endcsname{0.05}
 \expandafter\def\csname data@g7c_jaccard_HepG2_K562\endcsname{0.08}
 \expandafter\def\csname data@g7c_jaccard_Jurkat_K562\endcsname{0.07}
@@ -148,6 +154,7 @@
 \expandafter\def\csname data@k562_b2_r20\endcsname{0.275}
 \expandafter\def\csname data@k562_b2_rc\endcsname{0.145}
 \expandafter\def\csname data@k562_b2_rr\endcsname{0.139}
+\expandafter\def\csname data@k562_binom_p\endcsname{$2\times10^{-10}$}
 \expandafter\def\csname data@k562_cfg\endcsname{fold 0: $k$=40, $\alpha$=0.75; fold 1: $k$=40, $\alpha$=0.75; fold 2: $k$=40, $\alpha$=0.75}
 \expandafter\def\csname data@k562_concord\endcsname{80}
 \expandafter\def\csname data@k562_d_gcn_ip_rc\endcsname{+0.029 [+0.019, +0.038]}
@@ -169,10 +176,10 @@
 \expandafter\def\csname data@k562_faith1\endcsname{0.000 [-0.002, +0.003]}
 \expandafter\def\csname data@k562_faith5\endcsname{+0.008 [+0.001, +0.016]}
 \expandafter\def\csname data@k562_faith_n\endcsname{651}
-\expandafter\def\csname data@k562_g2_b3_b2\endcsname{-0.0010 [-0.0037, +0.0006]}
-\expandafter\def\csname data@k562_g2_h2_b2\endcsname{+0.0003 [-0.0002, +0.0009]}
-\expandafter\def\csname data@k562_g2_h2_b3\endcsname{+0.0013 [0.0000, +0.0037]}
-\expandafter\def\csname data@k562_g2_h2_rew\endcsname{+0.0002 [-0.0001, +0.0007]}
+\expandafter\def\csname data@k562_g2_b3_b2\endcsname{-0.0013 [-0.0043, +0.0004]}
+\expandafter\def\csname data@k562_g2_h2_b2\endcsname{+0.0001 [-0.0003, +0.0007]}
+\expandafter\def\csname data@k562_g2_h2_b3\endcsname{+0.0014 [-0.0001, +0.0041]}
+\expandafter\def\csname data@k562_g2_h2_rew\endcsname{+0.0001 [-0.0002, +0.0005]}
 \expandafter\def\csname data@k562_g2_reach_n\endcsname{37}
 \expandafter\def\csname data@k562_g2_reach_pct\endcsname{5.3}
 \expandafter\def\csname data@k562_gcn_ap\endcsname{0.140}
@@ -191,11 +198,13 @@
 \expandafter\def\csname data@k562_ip_r20\endcsname{0.434}
 \expandafter\def\csname data@k562_ip_rc\endcsname{0.238}
 \expandafter\def\csname data@k562_ip_rr\endcsname{0.221}
+\expandafter\def\csname data@k562_iso_pct\endcsname{1.6}
 \expandafter\def\csname data@k562_knn_ap\endcsname{0.112}
 \expandafter\def\csname data@k562_knn_cent\endcsname{0.640}
 \expandafter\def\csname data@k562_knn_r20\endcsname{0.277}
 \expandafter\def\csname data@k562_knn_rc\endcsname{0.147}
 \expandafter\def\csname data@k562_knn_rr\endcsname{0.141}
+\expandafter\def\csname data@k562_n_tf\endcsname{8}
 \expandafter\def\csname data@k562_nbr_ap\endcsname{0.162}
 \expandafter\def\csname data@k562_nbr_cent\endcsname{0.791}
 \expandafter\def\csname data@k562_nbr_r20\endcsname{0.511}
@@ -213,7 +222,9 @@
 \expandafter\def\csname data@k562_scc_diff\endcsname{$1\times10^{-13}$}
 \expandafter\def\csname data@k562_scc_largest\endcsname{297}
 \expandafter\def\csname data@k562_scc_nodes\endcsname{8,563}
-\expandafter\def\csname data@k562_scc_speed\endcsname{2.5}
+\expandafter\def\csname data@k562_scc_reach_only\endcsname{1.4}
+\expandafter\def\csname data@k562_scc_speed\endcsname{2.3}
+\expandafter\def\csname data@k562_scc_vs_reach\endcsname{1.4}
 \expandafter\def\csname data@k562_signed_out_pct\endcsname{5.8}
 \expandafter\def\csname data@k562_str_ap\endcsname{0.132}
 \expandafter\def\csname data@k562_str_cent\endcsname{0.735}
@@ -221,15 +232,20 @@
 \expandafter\def\csname data@k562_str_rc\endcsname{0.235}
 \expandafter\def\csname data@k562_str_rr\endcsname{0.223}
 \expandafter\def\csname data@k562_targets\endcsname{1,835}
+\expandafter\def\csname data@k562_tf_wilcoxon_p\endcsname{0.008}
 \expandafter\def\csname data@k562_train_edges\endcsname{1,576}
 \expandafter\def\csname data@l1_signed\endcsname{61,215}
 \expandafter\def\csname data@l1_unique\endcsname{120,312}
+\expandafter\def\csname data@memratio_hi\endcsname{8.3}
+\expandafter\def\csname data@memratio_lo\endcsname{6.4}
 \expandafter\def\csname data@pe_edge_r16_128_gb\endcsname{OOM}
 \expandafter\def\csname data@pe_edge_r16_32_gb\endcsname{14.7}
 \expandafter\def\csname data@pe_edge_r16_512_gb\endcsname{OOM}
 \expandafter\def\csname data@pe_edge_r8_128_gb\endcsname{31.9}
 \expandafter\def\csname data@pe_edge_r8_32_gb\endcsname{8.1}
 \expandafter\def\csname data@pe_edge_r8_512_gb\endcsname{OOM}
+\expandafter\def\csname data@pe_equiv\endcsname{$1\times10^{-7}$}
+\expandafter\def\csname data@pe_memratio_r8_128\endcsname{6.2}
 \expandafter\def\csname data@pe_spmm_r16_128_gb\endcsname{9.9}
 \expandafter\def\csname data@pe_spmm_r16_32_gb\endcsname{6.5}
 \expandafter\def\csname data@pe_spmm_r16_512_gb\endcsname{23.7}
@@ -247,6 +263,7 @@
 \expandafter\def\csname data@rpe1_b2_r20\endcsname{0.276}
 \expandafter\def\csname data@rpe1_b2_rc\endcsname{0.170}
 \expandafter\def\csname data@rpe1_b2_rr\endcsname{0.108}
+\expandafter\def\csname data@rpe1_binom_p\endcsname{$4\times10^{-8}$}
 \expandafter\def\csname data@rpe1_cfg\endcsname{fold 0: $k$=40, $\alpha$=0.75; fold 1: $k$=40, $\alpha$=0.75; fold 2: $k$=40, $\alpha$=0.75}
 \expandafter\def\csname data@rpe1_concord\endcsname{68}
 \expandafter\def\csname data@rpe1_d_gcn_ip_rc\endcsname{+0.047 [+0.032, +0.063]}
@@ -268,10 +285,10 @@
 \expandafter\def\csname data@rpe1_faith1\endcsname{+0.004 [-0.002, +0.011]}
 \expandafter\def\csname data@rpe1_faith5\endcsname{+0.023 [+0.005, +0.041]}
 \expandafter\def\csname data@rpe1_faith_n\endcsname{689}
-\expandafter\def\csname data@rpe1_g2_b3_b2\endcsname{-0.0009 [-0.0026, 0.0000]}
-\expandafter\def\csname data@rpe1_g2_h2_b2\endcsname{-0.0004 [-0.0012, +0.0001]}
-\expandafter\def\csname data@rpe1_g2_h2_b3\endcsname{+0.0005 [0.0000, +0.0014]}
-\expandafter\def\csname data@rpe1_g2_h2_rew\endcsname{-0.0004 [-0.0012, +0.0001]}
+\expandafter\def\csname data@rpe1_g2_b3_b2\endcsname{-0.0011 [-0.0032, 0.0000]}
+\expandafter\def\csname data@rpe1_g2_h2_b2\endcsname{-0.0004 [-0.0015, +0.0002]}
+\expandafter\def\csname data@rpe1_g2_h2_b3\endcsname{+0.0006 [0.0000, +0.0018]}
+\expandafter\def\csname data@rpe1_g2_h2_rew\endcsname{-0.0004 [-0.0015, +0.0002]}
 \expandafter\def\csname data@rpe1_g2_reach_n\endcsname{50}
 \expandafter\def\csname data@rpe1_g2_reach_pct\endcsname{6.7}
 \expandafter\def\csname data@rpe1_gcn_ap\endcsname{0.191}
@@ -290,11 +307,13 @@
 \expandafter\def\csname data@rpe1_ip_r20\endcsname{0.374}
 \expandafter\def\csname data@rpe1_ip_rc\endcsname{0.252}
 \expandafter\def\csname data@rpe1_ip_rr\endcsname{0.179}
+\expandafter\def\csname data@rpe1_iso_pct\endcsname{1.9}
 \expandafter\def\csname data@rpe1_knn_ap\endcsname{0.175}
 \expandafter\def\csname data@rpe1_knn_cent\endcsname{0.630}
 \expandafter\def\csname data@rpe1_knn_r20\endcsname{0.271}
 \expandafter\def\csname data@rpe1_knn_rc\endcsname{0.172}
 \expandafter\def\csname data@rpe1_knn_rr\endcsname{0.109}
+\expandafter\def\csname data@rpe1_n_tf\endcsname{9}
 \expandafter\def\csname data@rpe1_nbr_ap\endcsname{0.204}
 \expandafter\def\csname data@rpe1_nbr_cent\endcsname{0.737}
 \expandafter\def\csname data@rpe1_nbr_r20\endcsname{0.440}
@@ -312,7 +331,9 @@
 \expandafter\def\csname data@rpe1_scc_diff\endcsname{$1\times10^{-13}$}
 \expandafter\def\csname data@rpe1_scc_largest\endcsname{321}
 \expandafter\def\csname data@rpe1_scc_nodes\endcsname{8,749}
-\expandafter\def\csname data@rpe1_scc_speed\endcsname{2.2}
+\expandafter\def\csname data@rpe1_scc_reach_only\endcsname{1.6}
+\expandafter\def\csname data@rpe1_scc_speed\endcsname{2.5}
+\expandafter\def\csname data@rpe1_scc_vs_reach\endcsname{1.4}
 \expandafter\def\csname data@rpe1_signed_out_pct\endcsname{7.1}
 \expandafter\def\csname data@rpe1_str_ap\endcsname{0.192}
 \expandafter\def\csname data@rpe1_str_cent\endcsname{0.679}
@@ -320,4 +341,7 @@
 \expandafter\def\csname data@rpe1_str_rc\endcsname{0.250}
 \expandafter\def\csname data@rpe1_str_rr\endcsname{0.184}
 \expandafter\def\csname data@rpe1_targets\endcsname{1,928}
+\expandafter\def\csname data@rpe1_tf_wilcoxon_p\endcsname{0.012}
 \expandafter\def\csname data@rpe1_train_edges\endcsname{1,510}
+\expandafter\def\csname data@speedratio_hi\endcsname{4.6}
+\expandafter\def\csname data@speedratio_lo\endcsname{3.3}

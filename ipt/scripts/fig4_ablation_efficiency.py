@@ -24,7 +24,7 @@ labs = [("H2_hill_regk", "real", "B3_linear", "real", "Hill vs linear\n(same gra
         ("H2_hill_regk", "real", "H2_hill_regk", "rewired", "real vs rewired\ngraph (Hill)")]
 for li, (line, f) in enumerate((("K562_essential", "g2all_K562_essential"), ("rpe1", "g2_rpe1"))):
     d = pd.read_csv(S / f"{f}.tsv", sep="\t"); R = d[d.reachable]
-    pt = lambda m, g: R[(R.model == m) & (R.graph == g)].groupby(["fold", "target"]).pcc_c.mean()
+    pt = lambda m, g: R[(R.model == m) & (R.graph == g)].groupby("target").pcc_c.mean()
     for yi, (ma, ga, mb, gb, lab) in enumerate(labs):
         a_, b_ = pt(ma, ga), pt(mb, gb); j = a_.index.intersection(b_.index)
         r = paired_bootstrap(a_.loc[j].to_numpy(), b_.loc[j].to_numpy(), 10000, 0)
