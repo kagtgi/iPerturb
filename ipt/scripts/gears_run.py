@@ -12,7 +12,10 @@ from pathlib import Path
 
 import numpy as np
 import scanpy as sc
+import pandas as pd
 import scipy.sparse as sp
+if not hasattr(pd.Series, "nonzero"):
+    pd.Series.nonzero = lambda self: np.asarray(self).nonzero()
 from gears import GEARS, PertData
 
 ap = argparse.ArgumentParser()
