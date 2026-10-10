@@ -48,3 +48,13 @@ B5 = learned message-passing control on the SAME undirected graph (L1+L3) as the
 # Addendum D (2026-10-11, before running explanations)
 
 Neighbour-ablation faithfulness for smooth_L1+L3 (selected k, alpha per fold from g4cfg): attribution a_j = <pred(N)-pred(N\j), pred(N)-train_mean> (prediction-only; no observed data). For test targets with >=6 association neighbours, remove the top-K (K=1,2,3,5) attributed neighbours vs K random neighbours (50 draws) and compare the drop in centered Pearson against the OBSERVED profile; unit = unique target; paired bootstrap. Positive = model-emphasised neighbours are the useful ones. Association explanation only; no causal path claim.
+
+---
+# Addendum E (2026-10-11, user-directed: accelerate learnable-Hill training via matrix multiplication). Computational study, pre-registered before any timing.
+
+Related work checked: FastKAN/KAN (learnable univariate edge functions via basis expansions, RBF evaluation as matmul), scKAN/KAN-GRN (KAN for GRN *inference*). We therefore do NOT claim first learnable-basis nonlinearity; the claim is limited to: (i) a monotone/bounded Hill-shaped transfer expressed in a Chebyshev basis, (ii) propagation as one SpMM/dense matmul instead of gather/scatter, (iii) measured speed, memory and numerical equivalence against the exact Hill4 edge-wise reference.
+
+Implementations compared (same graph, same parameters, same K=24 damped steps, same clamp): E0 exact Hill4 + edge gather/index_add (current GraphNet; reference); E1 exact Hill4 + sparse matmul; E2 exact Hill4 + dense matmul; C1 Chebyshev(r) Hill + sparse matmul; C2 Chebyshev(r) Hill + dense matmul; P1 per-edge Hill4 (k per edge) edge-wise (cost reference for H1). Chebyshev degree r in {4,8,16,32}; coefficients fitted by least squares to Hill4 on a k grid (log-spaced 0.05..1), differentiable in per-regulator k via table interpolation.
+Graphs: signed L1 core (K562: G=8563, E=10,489) and L1+L3 association graph (E ~ 4.7e5, both directions). Batch B in {32,128,512}. Devices: A100 (VM) and CPU.
+Metrics: seconds per forward+backward step (median of 20 after 5 warmup), peak GPU memory, max |Hill_cheb - Hill_exact| over [0,1] x k grid, max |x*_impl - x*_E0| over the equilibrium and max |predicted delta difference| for 200 real targets with fitted-scale parameters.
+Acceptance (stated now, reported either way): equivalence if max equilibrium difference < 1e-3 at some r<=32; "speedup" reported as measured ratio vs E0 with the batch/graph it applies to; no claim about accuracy of perturbation prediction (G2 already showed Hill=linear there).
