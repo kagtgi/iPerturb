@@ -38,3 +38,8 @@ Addendum A: STRING (L3) smoothing lifted centered Pearson by ~+0.10 (K562, RPE1)
 6. Report selected (k, alpha) per fold; the grid is NOT extended post hoc. Save test prediction arrays (float16) so metrics can be recomputed without refitting.
 7. DEG-AUPRC caveat: labels are dominated by the shared response (no-change has the best DEG AUPRC on RPE1); report with that note.
 Decision rule: the "association prior" claim is made only if the gain survives (1), (2) real-vs-rewired, and beats (4) or is reported as equal to it.
+
+---
+# Addendum C (written 2026-10-11, before running B5)
+
+B5 = learned message-passing control on the SAME undirected graph (L1+L3) as the best smoothing variant: 2-layer GCN (row-normalised adjacency, hidden 64, residual self-weights) over the 40 training-derived gene loadings; node embedding -> low-rank coefficients; prediction = train mean + E[t] G_k^T; MSE excluding the perturbed gene; AdamW, lr in {1e-3, 3e-3}, <=200 epochs, patience 20, selected on validation MSE; 3 seeds; real vs degree-preserving rewired graph. Question: does learned message passing beat fixed smoothing (smooth_L1+L3) and B2? Same primary metric, same folds, unit = unique target means.
