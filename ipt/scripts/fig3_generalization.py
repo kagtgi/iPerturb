@@ -14,6 +14,7 @@ MODELS = [  # (mid, label, color)
     ("smooth_L1+L3|rewired|self", "Smoothing, rewired GRN", GGREY_L), ("smooth_dataknn|real|self", "Smoothing, data-kNN", GGREY_L),
     ("smooth_L3|real|self", "Smoothing, STRING only", GBLUE_L), ("smooth_L1+L3|real|self", "iPerturb: smoothing head", GBLUE),
     ("B5_gcn|real|self", "iPerturb: GCN head (B5)", GGREEN), ("nbrmean_L3|real|self", "iPerturb: neighbour-mean head", GYELLOW),
+    ("prop[L1+L3]|rwr", "iPerturb: multi-hop RWR", GPURPLE), ("prop[integrated]|nnls", "iPerturb: multi-tier integrated", GPURPLE),
 ]
 PANELS = [("pcc_c", "Centered Pearson"), ("pcc_resid", "Residualised Pearson"),
           ("top20_c", "Top-20 Pearson"), ("cent_rank", "Centroid rank")]

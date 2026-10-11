@@ -1,0 +1,86 @@
+\section{Convergence of multi-hop propagation}
+\label{app:convergence}
+We show that the multi-hop propagation used by iPerturb has a unique convergence point (a fixed point) that is reached geometrically from any starting state, and that the hop-by-hop decomposition used for explanations is well defined. Throughout, $W\in\mathbb{R}^{G\times G}$ holds the signed effect of gene $j$ on gene $i$ ($W_{ij}$), $g$ is the clamped (perturbed) gene, $R$ the set of free genes, $\|W\|_\infty=\max_i\sum_j|W_{ij}|$ is the largest total incoming weight, $\rho(\cdot)$ the spectral radius and $|W|$ the entry-wise absolute value. Convergence is a property of the operator; it does not make a prediction correct (Remark~\ref{rem:notclaimed}).
+
+\paragraph{Operators.} (O1)~\emph{linear:} $\Delta x_R=W_{RR}\Delta x_R+W_{Rg}\Delta x_g$. (O2/O3)~\emph{Hill-form:} with a state $z_R$ ($z=\mathrm{logit}\,x$; the sigmoid-state variant iterates $x$ directly), baseline $z^0$ and clamped $z_g$,
+\begin{equation}
+F_i(z)=z^0_i+\sum_{j}W_{ij}\big[T(\sigma(z_j))-T(\sigma(z^0_j))\big],\qquad T(x)=(1-\lambda)H(x;k_j)+\lambda x,
+\label{eq:Fmap}
+\end{equation}
+iterated as $z^{t+1}=(1-\eta)z^t+\eta F(z^t)$ with the clamped coordinate held fixed at every step.
+
+\begin{lemma}[Hill slope]\label{lem:hill}
+For $n=2$ and $k\le\sqrt3$, $L_H(k):=\max_{x\in[0,1]}|H'(x;k)|=\dfrac{9(1+k^2)}{8\sqrt3\,k}$, attained at $1-x=k/\sqrt3$. With leak $\lambda$, $L_T\le(1-\lambda)L_H(k)+\lambda$.
+\end{lemma}
+\begin{proof}
+With $u=1-x$, $H=k^2(1-u^2)/(u^2+k^2)$ and $|H'|=2u\,k^2(1+k^2)/(u^2+k^2)^2$. The derivative of $u/(u^2+k^2)^2$ has the sign of $k^2-3u^2$, so the maximum is at $u=k/\sqrt3\le1$, where $u^2+k^2=4k^2/3$ and $|H'|=9(1+k^2)/(8\sqrt3k)$. The leak adds slope $\lambda$ and removes at most $\lambda L_H$.
+\end{proof}
+Numerically $L_H=\datanum{lh_0p05}$ at $k=0.05$, $\datanum{lh_0p3}$ at $k=0.3$ and $\datanum{lh_1p0}$ at $k=1$; the formula agrees with a dense-grid maximum in the test suite.
+
+\begin{proposition}[Existence]\label{prop:exist}
+For every $W$, every parameter value and every clamp, the map~\eqref{eq:Fmap} has a fixed point.
+\end{proposition}
+\begin{proof}
+$T$ takes values in $[0,1]$, so each bracket in~\eqref{eq:Fmap} lies in $[-1,1]$ and $F$ maps $\mathbb{R}^R$ into the compact convex box $\{|z_i-z_i^0|\le\|W\|_\infty\}$; $F$ is continuous, and Brouwer's theorem applies. (For the sigmoid state the box is $[0,1]^R$.)
+\end{proof}
+
+\begin{theorem}[Uniqueness and geometric convergence]\label{thm:contract}
+Let $q:=\tfrac{L_T}{4}\|W_{RR}\|_\infty<1$ and $q_\eta:=1-\eta(1-q)$. Then the damped clamped iteration is a contraction of $(\mathbb{R}^R,\|\cdot\|_\infty)$ with constant $q_\eta$. It has a unique fixed point $z^\ast$, which is also the unique fixed point of $F$, and for every start $z^0$ and all $t$,
+\[
+\|z^t-z^\ast\|_\infty\le q_\eta^{\,t}\|z^0-z^\ast\|_\infty,\qquad \|z^t-z^\ast\|_\infty\le\frac{q_\eta}{1-q_\eta}\|z^t-z^{t-1}\|_\infty .
+\]
+A tolerance $\tau$ is reached after $t\ge\ln\!\big(\tau(1-q_\eta)/\|z^1-z^0\|_\infty\big)/\ln q_\eta$ steps.
+\end{theorem}
+\begin{proof}
+Since $\sigma'\le1/4$ and $|T'|\le L_T$, $|F_i(z)-F_i(z')|\le\sum_j|W_{ij}|\,L_T\tfrac14|z_j-z'_j|$, hence $\|F(z)-F(z')\|_\infty\le q\|z-z'\|_\infty$ on the free coordinates (the clamped coordinate does not move). The damped map is the convex combination $(1-\eta)\mathrm{id}+\eta F$, with constant $1-\eta+\eta q=q_\eta$. Banach's fixed-point theorem gives existence, uniqueness and the first bound; the second follows from the triangle inequality $\|z^t-z^\ast\|\le\|z^t-z^{t+1}\|+q_\eta\|z^t-z^\ast\|$ and the bound on $\|z^{t+1}-z^t\|\le q_\eta\|z^t-z^{t-1}\|$.
+\end{proof}
+\begin{corollary}[Certified parametrisation]\label{cor:cert}
+GraphNet2 sets $\|W\|_\infty=\gamma\,\sigma(\varrho)\,4/L_T(k)$ with $\gamma\le\tfrac12$ (incoming weights normalised to sum one, then scaled by a learnable gain through $\sigma(\varrho)$). Since $\|W_{RR}\|_\infty\le\|W\|_\infty$, $q\le\gamma\le\tfrac12$ for every value of $k\in[0.05,1]$ and of the learnable parameters, so Theorem~\ref{thm:contract} holds for every model the optimiser can reach. With $\eta=\tfrac12$, $q_\eta\le\tfrac34$.
+\end{corollary}
+
+\begin{theorem}[Multi-hop response is an absolutely convergent walk sum]\label{thm:neumann}
+Assume $\rho(|W|)<1$ (enforced by the scaling in the construction of $W$). Then for every clamped gene $g$ and free set $R$: (i)~$\rho(|W_{RR}|)\le\rho(|W|)<1$, so $I-W_{RR}$ is invertible; (ii)~$\sum_{k\ge0}W_{RR}^{\,k}W_{Rg}\Delta x_g$ converges absolutely to $(I-W_{RR})^{-1}W_{Rg}\Delta x_g$, so the hop contributions $\Delta x^{(k)}=W_{RR}^{k-1}W_{Rg}\Delta x_g$ and the contributions of individual walks are well defined and may be summed in any order; (iii)~with $v=(I-|W|)^{-1}\mathbf 1\ge\mathbf 1$ and $q_v:=1-1/\max_iv_i<1$, truncating after $K$ hops leaves an error $\|\sum_{k>K}\Delta x^{(k)}\|_v\le\frac{q_v^{K}}{1-q_v}\|W_{Rg}\Delta x_g\|_v$, where $\|x\|_v=\max_i|x_i|/v_i$.
+\end{theorem}
+\begin{proof}
+(i)~$|W_{RR}|$ is a principal block of $|W|$; for non-negative matrices the spectral radius is monotone under entry-wise domination and under taking principal blocks (Perron--Frobenius), and $\rho(W_{RR})\le\rho(|W_{RR}|)$. (ii)~$|W_{RR}^kb|\le|W_{RR}|^k|b|$ and $\sum_k|W_{RR}|^k$ converges when $\rho<1$; absolute convergence permits rearrangement (Fubini) into hops and into walks. (iii)~$(I-|W|)^{-1}=\sum_k|W|^k\ge I$ entry-wise, so $v\ge\mathbf 1$ and $|W|v=v-\mathbf 1\le(1-1/\max v)\,v$. For any $x$, $|W_{RR}x|\le|W_{RR}||x|\le\|x\|_v|W|v\le q_v\|x\|_vv$ on $R$, so $\|W_{RR}x\|_v\le q_v\|x\|_v$ and the tail of the geometric series follows.
+\end{proof}
+\begin{remark}[Why $\rho(|W|)$]
+The signed spectral radius does not suffice: $W=\bigl(\begin{smallmatrix}1&1\\-1&-1\end{smallmatrix}\bigr)$ has $\rho(W)=0$, but the block $W_{RR}=(1)$ for $R=\{1\}$ has $\rho=1$ and $I-W_{RR}$ is singular. Nor is $\|W\|_\infty<1$ needed: on the curated graphs the total incoming weight is $\|W\|_\infty=\datanum{cert_k562_inf_scaled}$ (K562) and $\datanum{cert_rpe1_inf_scaled}$ (RPE1) after scaling to $\rho(|W|)=\datanum{cert_k562_rho_scaled}$, while $q_v=\datanum{cert_k562_qv}$ and $\datanum{cert_rpe1_qv}$.
+\end{remark}
+
+\begin{proposition}[SCC-aware execution]\label{prop:scc}
+Under Theorem~\ref{thm:contract}, iterating the strongly connected components of the free graph in topological order (a single update for acyclic singletons, a local damped iteration for feedback components with already settled inputs) converges to the same unique fixed point as the global iteration; genes not reachable from $g$ stay at their baseline.
+\end{proposition}
+\begin{proof}
+Each block map is a restriction of $F$ with the constant of a principal block ($\le q_\eta$), hence a contraction for fixed inputs. The block solutions, composed in topological order, satisfy every equation of the full system, and the fixed point is unique, so the two coincide. A gene without a path from $g$ has all parents either unreachable or at baseline, so $x^0_i$ solves its equation, and by uniqueness equals the fixed point.
+\end{proof}
+
+\begin{proposition}[Response-propagation kernels]\label{prop:kernel}
+For the association graph let $W=AD^{-1}$ (column-stochastic) and $S_\alpha=\alpha(I-(1-\alpha)W)^{-1}$, $\alpha\in(0,1]$. The series $\sum_k((1-\alpha)W)^k$ converges geometrically with ratio $1-\alpha$, every column of $S_\alpha$ is a probability vector (non-negative, sum one), and the symmetric normalisation $D^{-1/2}AD^{-1/2}$ has spectrum in $[-1,1]$, so $\rho((1-\alpha)W_{\rm sym})\le1-\alpha$. The heat kernel $e^{-tL}$, $L=D-A$, exists for all $t\ge0$. The propagated prediction $\sum_jS_{pj}\Delta_j/\sum_jS_{pj}$ is a convex combination of training responses and therefore stays in their convex hull.
+\end{proposition}
+\begin{proof}
+$\|(1-\alpha)W\|_1=1-\alpha<1$ because the columns of $W$ sum to one; the column sums of $S_\alpha$ are $\alpha\sum_k(1-\alpha)^k=1$; non-negativity follows from the series. $L$ is positive semi-definite, so $e^{-tL}$ is a contraction semigroup.
+\end{proof}
+
+\begin{remark}[What is not claimed]\label{rem:notclaimed}
+Convergence is not correctness. Endpoint data do not identify dynamics, the fixed point is a steady-state description, and the multi-hop signs beyond one hop are at chance on held-out targets (Section~\ref{sec:results_mech}); the theorems guarantee that the quantity we explain is well defined, not that it matches biology.
+\end{remark}
+
+\begin{table}[!ht]
+\centering
+\caption{\textbf{Convergence certificates on the curated signed graphs} (all values generated from the run). Linear operator: $\rho(|W|)$ before scaling, scaled value, and Neumann terms needed for $10^{-6}$ (median/max over 40 clamped genes); $q_v$ and the largest ratio of observed truncation error to the bound of Theorem~\ref{thm:neumann}(iii) ($\le1$ confirms the bound). Certified Hill-form operator at extreme and default parameters: contraction constants, steps to $10^{-6}$ from four random starts, spread of the solutions and fixed-point residual.}
+\label{tab:cert}
+\scriptsize
+\begin{tabular}{lcc}
+\toprule
+& K562 & RPE1\\\midrule
+$\rho(|W|)$ raw $\to$ scaled & \datanum{cert_k562_rho_raw} $\to$ \datanum{cert_k562_rho_scaled} & \datanum{cert_rpe1_rho_raw} $\to$ \datanum{cert_rpe1_rho_scaled}\\
+Neumann terms to $10^{-6}$ (median / max) & \datanum{cert_k562_terms_med} / \datanum{cert_k562_terms_max} & \datanum{cert_rpe1_terms_med} / \datanum{cert_rpe1_terms_max}\\
+$q_v$; truncation-bound ratio & \datanum{cert_k562_qv}; \datanum{cert_k562_trunc_ratio} & \datanum{cert_rpe1_qv}; \datanum{cert_rpe1_trunc_ratio}\\
+$q$ (max over parameters); $q_\eta$ & \datanum{cert_k562_q}; \datanum{cert_k562_qeta} & \datanum{cert_rpe1_q}; \datanum{cert_rpe1_qeta}\\
+Steps to $10^{-6}$ (max) & \datanum{cert_k562_iters} & \datanum{cert_rpe1_iters}\\
+Spread of solutions; residual & \datanum{cert_k562_spread}; \datanum{cert_k562_resid} & \datanum{cert_rpe1_spread}; \datanum{cert_rpe1_resid}\\
+\bottomrule
+\end{tabular}
+\end{table}
+The restart-walk kernels have column sums equal to one to within \datanum{cert_rwr_coldev} for $\alpha\in\{0.1,0.5,0.9\}$.

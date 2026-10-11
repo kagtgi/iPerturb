@@ -19,6 +19,15 @@ def unique_target_scores(line: str) -> pd.DataFrame:
     gp = S / f"gears_{line}.tsv"
     if gp.exists():
         parts.append(pd.read_csv(gp, sep="\t")[["fold", "target", "mid"] + METRICS])
+    g12p = S / f"g12_{line}.tsv"
+    if g12p.exists():
+        g12 = pd.read_csv(g12p, sep="\t")
+        g12 = g12[g12.model.str.startswith("prop[L1+L3]") | (g12.model == "prop[integrated]|nnls")].copy()
+        g12["mid"] = g12.model
+        for m in METRICS:
+            if m not in g12:
+                g12[m] = np.nan
+        parts.append(g12[["fold", "target", "mid"] + METRICS])
     df = pd.concat(parts)
     return df.groupby(["mid", "target"], as_index=False)[METRICS].mean()
 

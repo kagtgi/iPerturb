@@ -1,0 +1,11 @@
+\begin{tabular}{lcccc}
+\toprule
+Reachable targets & K562 $\rho_c$ & $\Delta$ vs B2 & RPE1 $\rho_c$ & $\Delta$ vs B2\\\midrule
+No graph (B2) & 0.073 & ref. & 0.147 & ref.\\
+Linear propagation, MSE & 0.069 & -0.0041 [-0.0139, +0.0017] & 0.146 & -0.0012 [-0.0045, +0.0010]\\
+Linear propagation, correlation loss & 0.067 & -0.0055 [-0.0161, +0.0018] & 0.145 & -0.0022 [-0.0051, -0.0001]\\
+Certified Hill, MSE & 0.073 & +0.0001 [-0.0016, +0.0020] & 0.147 & -0.0003 [-0.0014, +0.0006]\\
+Certified Hill, correlation loss & 0.070 & -0.0024 [-0.0086, +0.0016] & 0.146 & -0.0006 [-0.0026, +0.0010]\\
+Certified Hill, correlation + Huber & 0.070 & -0.0024 [-0.0087, +0.0016] & 0.146 & -0.0006 [-0.0026, +0.0010]\\
+\bottomrule
+\end{tabular}

@@ -7,7 +7,7 @@
 
 \section{Efficiency measurements}
 \label{app:bench}
-\begin{table}[h]
+\begin{table}[!ht]
 \centering
 \caption{Time per forward and backward step (ms) and peak memory (MB) of the regulator-shared Hill operator (24 updates, A100 40\,GB). E0: exact Hill, edge gather/scatter; E1: exact Hill, sparse matrix product; E2: dense product; C1: degree-16 Chebyshev form, sparse product.}
 \label{tab:bench}
@@ -19,3 +19,11 @@ On the CPU, the edge-wise form was the fastest for the sparse curated graph at e
 \section{Data replay}
 \label{app:replay}
 An independent re-computation of the target of ten random K562 perturbations directly from the raw counts (no chunking or sparse accumulation) reproduced the stored responses to within $4.5\times10^{-8}$ (single-precision rounding); the script and its output are in the repository.
+
+\begin{table}[!ht]
+\centering
+\caption{\textbf{Certified, anti-vanishing Hill propagation on reachable held-out targets.} Unique-target mean $\rho_c$ and paired difference to the no-graph linear baseline (95\% bootstrap interval); all variants use the same graph, decoder, optimiser and tuning grid. Predictions are not numerically collapsed (standard deviation of the learned correction $10^{-3}$ against a residual standard deviation of about $0.06$--$0.09$), but they carry no usable signal.}
+\label{tab:certhill}
+\scriptsize
+\input{tables/certhill.tex}
+\end{table}

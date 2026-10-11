@@ -24,6 +24,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--line", default="K562_essential")
 ap.add_argument("--folds", type=int, nargs="+", default=[0, 1, 2])
 ap.add_argument("--tag", default="")
+ap.add_argument("--fast", action="store_true")
 ap.add_argument("--extra", default="", help="comma list of name=path (tsv with a,b or source,target) extra tier graphs")
 a = ap.parse_args()
 
@@ -67,6 +68,12 @@ print({k: int(v.nnz // 2) for k, v in tiers.items()}, flush=True)
 KERNELS = ([("onehop", {})] + [("rwr", dict(alpha=al, norm=nm)) for al in (0.1, 0.3, 0.5, 0.7, 0.9) for nm in ("rw", "sym")]
            + [("heat", dict(t=t)) for t in (0.5, 1.0, 2.0)] + [("trunc", dict(steps=k, norm="rw")) for k in (1, 2, 3)])
 GAMMAS, LAMS = (0.0, 0.5, 1.0), (0.25, 0.5, 0.75, 1.0)
+if a.fast:
+    KERNELS = [('onehop', {})] + [('rwr', dict(alpha=al, norm='rw')) for al in (0.3, 0.7)] + [('trunc', dict(steps=k, norm='rw')) for k in (2, 3)]
+    SINGLE = [('onehop', {}), ('rwr', dict(alpha=0.5, norm='rw'))]
+    GAMMAS, LAMS = (0.0, 0.5), (0.5, 1.0)
+else:
+    SINGLE = KERNELS
 rows = []
 for fo in a.folds:
     f = folds[fo]
@@ -108,7 +115,7 @@ for fo in a.folds:
 
     chosen = {}
     for gname in ("L1+L3",) + tuple(k for k in tiers if k not in ("L1+L3",)):
-        bf = run_graph(gname, tiers[gname])
+        bf = run_graph(gname, tiers[gname], KERNELS if gname == 'L1+L3' else SINGLE)
         for fam, (v, kw, gamma, lam, prt, okt) in bf.items():
             p = base["test"].copy()
             p[okt] = (1 - lam) * base["test"][okt] + lam * prt[okt]

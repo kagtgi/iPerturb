@@ -57,3 +57,10 @@ slides/
 *.h5ad
 ipt/artifacts/
 __pycache__/
+*.aux
+*.log
+*.out
+*.bbl
+*.blg
+*.toc
+artifacts/build/

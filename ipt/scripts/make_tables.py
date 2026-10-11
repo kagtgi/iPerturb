@@ -14,7 +14,8 @@ OUT.mkdir(parents=True, exist_ok=True)
 ROWS = [("B0_nochange|-|-", "No change (B0)"), ("B1_trainmean|-|-", "Train mean (B1)"), ("B2_linear|-|-", "Linear low-rank (B2)"),
         ("B4_gears|-|-", "GEARS (B4)"), ("smooth_L1+L3|rewired|self", "Smoothing, rewired GRN"), ("smooth_dataknn|real|self", "Smoothing, data-kNN graph"),
         ("smooth_L3|real|self", "Smoothing, STRING only"), ("smooth_L1+L3|real|self", "iPerturb: smoothing head"),
-        ("B5_gcn|real|self", "iPerturb: GCN head (B5)"), ("nbrmean_L3|real|self", "iPerturb: neighbour-mean head")]
+        ("B5_gcn|real|self", "iPerturb: GCN head (B5)"), ("nbrmean_L3|real|self", "iPerturb: neighbour-mean head"),
+        ("prop[L1+L3]|rwr", "iPerturb: multi-hop propagation (RWR)"), ("prop[integrated]|nnls", "iPerturb: multi-tier integrated propagation")]
 MET = [("pcc_c", "$\\rho_c$"), ("pcc_resid", "$\\rho_r$"), ("top20_c", "$\\rho_{20}$"), ("cent_rank", "Cent."), ("deg_ap", "AUPRC")]
 U = {l: unique_target_scores(l) for l in LINES}
 

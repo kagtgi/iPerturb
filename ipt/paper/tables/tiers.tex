@@ -1,0 +1,18 @@
+\begin{tabular}{lcc}
+\toprule
+Graph (random walk with restart, $\alpha$ selected) & K562 $\rho_c$ & RPE1 $\rho_c$\\\midrule
+Linear low-rank (B2) & 0.145 & 0.170\\
+L1 curated (CollecTRI/OmniPath/TRRUST) & 0.131 & 0.162\\
+L1 + SIGNOR & 0.146 & 0.175\\
+L3 STRING & 0.298 & 0.313\\
+L3 CORUM complexes & 0.263 & 0.278\\
+L3 BioGRID physical & 0.241 & 0.264\\
+L4 COXPRESdb & 0.173 & 0.208\\
+L4 GTEx co-expression & 0.170 & 0.195\\
+L2 ChIP-Atlas (cell line) & 0.130 & --\\
+L1+L3, one hop (neighbour mean) & 0.282 & 0.301\\
+L1+L3, random walk with restart (multi-hop) & 0.291 & 0.316\\
+L1+L3, truncated 2--3 hops & 0.299 & 0.321\\
+All tiers, propagated separately and integrated & 0.319 & 0.333\\
+\bottomrule
+\end{tabular}

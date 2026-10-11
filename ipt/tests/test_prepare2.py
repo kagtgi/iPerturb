@@ -9,8 +9,8 @@ def test_mad_and_qc():
     batch = np.repeat([0, 1], 200)
     k = mad_mask(np.log1p(umi), batch)
     assert not k[:5].any() and k[5:].mean() > 0.97
-    keep, qc = cell_qc(umi, umi / 3, np.full(400, 5.0), batch, nperts=np.ones(400))
-    assert keep.sum() == qc["kept"] and qc["fail_umi"] >= 5
+    keep, qc = cell_qc(umi, umi / 3, np.full(400, 5.0), batch, nperts=np.r_[np.zeros(100), np.ones(290), 2 * np.ones(10)])
+    assert keep.sum() == qc["kept"] and qc["fail_umi"] >= 5 and qc["fail_multiguide"] == 10 and keep[5:100].all()
 
 
 def test_matches_naive_matched_control_and_knockdown():

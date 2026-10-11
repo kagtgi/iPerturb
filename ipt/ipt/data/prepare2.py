@@ -43,7 +43,7 @@ def cell_qc(umi, genes, mito, batch, nperts=None):
     k1 = mad_mask(np.log1p(umi), batch)
     k2 = mad_mask(np.log1p(genes), batch)
     k3 = mad_mask(mito, batch, two_sided=False)
-    k4 = np.ones(len(umi), bool) if nperts is None else (np.asarray(nperts) == 1)
+    k4 = np.ones(len(umi), bool) if nperts is None else (np.asarray(nperts) <= 1)
     keep = k1 & k2 & k3 & k4
     return keep, dict(n=len(keep), kept=int(keep.sum()), fail_umi=int((~k1).sum()), fail_genes=int((~k2).sum()), fail_mito=int((~k3).sum()),
                       fail_multiguide=int((~k4).sum()))

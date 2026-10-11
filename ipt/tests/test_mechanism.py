@@ -16,7 +16,9 @@ def test_signs_follow_biology_and_steady_state_solves_equation():
     assert d[1] < 0 and d[2] > 0 and d[3] < 0     # B down, C up (repressor B down), D down
     Wrr = W[nodes][:, nodes].toarray(); b = W[nodes][:, [0]].toarray().ravel() * dxg
     assert np.allclose((np.eye(len(nodes)) - Wrr) @ steady, b, atol=1e-10)   # dx_R = (I-W_RR)^-1 W_Rg dx_g
-    assert np.allclose(sum(hops), steady - 0, atol=0.5) or True               # Neumann series approximates steady state
+    nrm = float(abs(W[nodes][:, nodes]).sum(1).max())
+    b = W[nodes][:, [0]].toarray().ravel() * dxg
+    assert nrm < 1 and np.abs(steady - sum(hops)).max() <= nrm ** 4 / (1 - nrm) * np.abs(b).max() + 1e-12   # K=4 truncation bound (Theorem 2)
 
 
 def test_unreachable_gene_untouched_and_paths_report_competition():

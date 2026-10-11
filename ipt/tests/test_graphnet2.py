@@ -20,7 +20,7 @@ def test_gradient_not_vanishing_with_leak():
     for leak, expect in ((0.0, False), (0.1, True)):
         m = GraphNet2([0, 1, 2], [1, 2, 3], [1, 1, 1], [1, 1, 1], np.full(5, 0.5), leak=leak, k_init=0.06, steps=30)
         out = m(torch.tensor([0]), 0.8); out.abs().sum().backward()
-        assert (m.a.grad.abs().item() > 1e-6) == expect or leak == 0.0
+        assert (m.rho.grad.abs().item() > 1e-6) == expect or leak == 0.0
 
 
 def test_losses_scale_invariant_and_finite():

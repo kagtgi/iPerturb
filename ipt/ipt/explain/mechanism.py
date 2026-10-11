@@ -14,13 +14,36 @@ import scipy.sparse as sp
 from scipy.sparse.linalg import splu, eigs
 
 
+def abs_spectral_radius(W, iters=200, tol=1e-9):
+    """rho(|W|) by power iteration on the nonnegative matrix |W| (Perron-Frobenius: rho(|W_RR|) <= rho(|W|) for every principal block).
+    The SIGNED spectral radius is NOT used: rho(W) < 1 does not imply rho(W_RR) < 1 (counterexample in the appendix)."""
+    A = abs(W).tocsr()
+    v = np.ones(A.shape[0]) / np.sqrt(A.shape[0])
+    r = 0.0
+    for _ in range(iters):
+        w = A @ v
+        nw = np.linalg.norm(w)
+        if nw == 0:
+            return 0.0
+        v = w / nw
+        if abs(nw - r) < tol * max(nw, 1.0):
+            r = nw
+            break
+        r = nw
+    return float(r)
+
+
+def inf_norm(W):
+    """||W||_inf = maximum absolute row sum (total incoming weight of the most regulated gene)."""
+    return float(abs(W).sum(1).max())
+
+
 def build_W(src, dst, sign, conf, G, rho=0.9):
-    """W[dst, src] = sign*conf (row i = target, column j = regulator), rescaled so the spectral radius equals `rho` (<1)."""
+    """W[dst, src] = sign*conf (row i = target, column j = regulator), rescaled so that rho(|W|) = `rho` (< 1).
+    Then every principal block satisfies rho(|W_RR|) <= rho, so the Neumann series converges absolutely (Theorem 2).
+    Returns (W, rho_abs_before, scale)."""
     W = sp.coo_matrix((np.asarray(sign, float) * np.asarray(conf, float), (dst, src)), shape=(G, G)).tocsr()
-    try:
-        r = abs(eigs(W.astype(float), k=1, which="LM", return_eigenvectors=False, tol=1e-3)[0])
-    except Exception:
-        r = np.abs(W).sum(1).max()
+    r = abs_spectral_radius(W)
     scale = rho / r if r > rho else 1.0
     return (W * scale).tocsr(), float(r), float(scale)
 

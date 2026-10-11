@@ -10,6 +10,7 @@
 
 % every number in the text is generated from the result files (scripts/build_numbers.py)
 \input{numbers.tex}
+\InputIfFileExists{numbers2.tex}{}{}
 \newcommand{\datanum}[1]{\ifcsname data@#1\endcsname\csname data@#1\endcsname\else\textbf{??\detokenize{#1}}\fi}
 \newcommand{\datanumif}[2]{\ifcsname data@#1\endcsname #2\fi}
 
@@ -22,11 +23,12 @@
 \maketitle
 
 \begin{abstract}
-Building an interpretable model that predicts genome-wide transcriptional responses to genetic perturbations remains a grand challenge in biology. Mechanistic kinetic models are difficult to scale to the genome, whereas deep neural network--based models often lack interpretability. To bridge this gap, we propose iPerturb, a biologically informed and explainable framework for context-specific single-cell perturbation response modelling. iPerturb first integrates five tiers of regulatory and association evidence into a cell-line-specific gene regulatory network (GRN); then propagates a perturbation through it with a learnable transfer function that follows the Hill function of gene regulation, aggregated as a matrix product; and finally explains each prediction through the named neighbours that support it. Evaluated on held-out CRISPRi targets in two human cell lines (\datanum{k562_nuniq} in K562 and \datanum{rpe1_nuniq} in RPE1), the tiered GRN raises the centred correlation of the predicted response over a linear baseline by \datanum{k562_d_ip_b2_rc} and \datanum{rpe1_d_ip_b2_rc} (95\% intervals), whereas degree-preserving rewired and data-derived graphs give none; the cell-line-specific enhancer tier differs strongly between lines but adds no measurable predictive gain. The matrix-product form lowers peak memory \datanum{memratio_lo}- to \datanum{memratio_hi}-fold on a dense graph, and a Chebyshev form of the Hill curve, which reproduces exact Hill propagation to \datanum{eq_cheb16_spmm_dx}, makes edge-specific learnable shapes feasible. On the curated signed core, which reaches \datanum{k562_signed_out_pct}--\datanum{rpe1_signed_out_pct}\% of the perturbed genes, Hill-form propagation does not predict better than linear propagation.
+Building an interpretable model that predicts genome-wide transcriptional responses to genetic perturbations remains a grand challenge in biology. Mechanistic kinetic models are difficult to scale to the genome, whereas deep neural network--based models often lack interpretability. To bridge this gap, we propose iPerturb, a biologically informed and explainable framework for context-specific single-cell perturbation response modelling. iPerturb first integrates five tiers of regulatory and association evidence into a cell-line-specific gene regulatory network (GRN) from carefully quality-controlled Perturb-seq data; then propagates a perturbation through it over multiple hops, with a clamped steady state whose convergence we prove and a learnable transfer function that follows the Hill function, aggregated as a matrix product; and finally explains each prediction through the regulatory paths and named neighbours that support it. Evaluated on held-out CRISPRi targets in two human cell lines (\datanum{k562_nuniq} in K562 and \datanum{rpe1_nuniq} in RPE1), the tiered GRN raises the centred correlation of the predicted response over a linear baseline by \datanum{k562_d_ip_b2_rc} and \datanum{rpe1_d_ip_b2_rc} (95\% intervals), whereas degree-preserving rewired and data-derived graphs give none; the cell-line-specific enhancer tier differs strongly between lines but adds no measurable predictive gain. The matrix-product form lowers peak memory \datanum{memratio_lo}- to \datanum{memratio_hi}-fold on a dense graph, and a Chebyshev form of the Hill curve, which reproduces exact Hill propagation to \datanum{eq_cheb16_spmm_dx}, makes edge-specific learnable shapes feasible. On the curated signed core, which reaches \datanum{k562_signed_out_pct}--\datanum{rpe1_signed_out_pct}\% of the perturbed genes, the explanation predicts the direction of direct regulation (\datanum{mech_k562_real_h1} and \datanum{mech_rpe1_real_h1} sign accuracy at the first hop) but not of indirect effects, and Hill-form propagation does not predict better than linear propagation.
 \keywords{gene expression prediction \and genetic perturbation \and gene regulatory network \and biologically informed neural network \and Hill function \and interpretable AI}
 \end{abstract}
 
 \input{sections/intro.tex}
+\input{sections/related.tex}
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig1_overview.pdf}
@@ -35,9 +37,11 @@ Building an interpretable model that predicts genome-wide transcriptional respon
 \end{figure}
 \input{sections/methods.tex}
 \input{sections/results.tex}
+\input{sections/ablation.tex}
 \input{sections/discussion.tex}
 
 \bibliographystyle{splncs04}
 \bibliography{references}
 \input{sections/appendix.tex}
+\input{sections/appendix_convergence.tex}
 \end{document}

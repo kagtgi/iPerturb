@@ -2,6 +2,17 @@
 Ports the design-guide tokens to matplotlib (guide section 9.2). Import and call
 apply_style() at the top of every figure script."""
 import matplotlib as mpl
+from pathlib import Path as _Path
+from matplotlib import font_manager as _fm
+
+# the same bundled Google Sans files that the overview figure (Fig. 1) uses
+FONT_DIR = _Path("D:/iPerturb/lnbi/figure_tools/assets/fonts/Google_Sans/static")
+_REGISTERED = []
+for _f in ("GoogleSans-Regular.ttf", "GoogleSans-Medium.ttf", "GoogleSans-Bold.ttf"):
+    _p = FONT_DIR / _f
+    if _p.exists():
+        _fm.fontManager.addfont(str(_p))
+        _REGISTERED.append(_p.name)
 
 # Brand palette, semantic order (guide section 8.2)
 GBLUE   = "#4285F4"   # primary / proposed (iPerturb)
@@ -42,8 +53,9 @@ def apply_style():
         "axes.spines.top": False, "axes.spines.right": False,
         # fonts: sans for labels (>=7-8pt at final size), mono for numeric ticks
         "font.family": "sans-serif",
-        "font.sans-serif": ["Google Sans Flex", "Roboto", "DejaVu Sans"],
+        "font.sans-serif": ["Google Sans", "Google Sans Flex", "Roboto", "DejaVu Sans"],
         "font.monospace": ["Google Sans Code", "Roboto Mono", "DejaVu Sans Mono"],
+        "mathtext.fontset": "custom", "mathtext.rm": "Google Sans", "mathtext.it": "Google Sans", "mathtext.bf": "Google Sans:bold",
         "font.size": 8.0, "axes.titlesize": 9.0, "axes.labelsize": 8.5,
         "xtick.labelsize": 7.5, "ytick.labelsize": 7.5, "legend.fontsize": 7.5,
         "legend.frameon": False,

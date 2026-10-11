@@ -112,6 +112,35 @@
 \expandafter\def\csname data@bench_gpu_l1_512_P1_mb\endcsname{4055}
 \expandafter\def\csname data@bench_gpu_l1_512_P1_ms\endcsname{70}
 \expandafter\def\csname data@binom_p_max\endcsname{$4\times10^{-8}$}
+\expandafter\def\csname data@cert_k562_inf_raw\endcsname{50}
+\expandafter\def\csname data@cert_k562_inf_scaled\endcsname{5.3}
+\expandafter\def\csname data@cert_k562_iters\endcsname{36}
+\expandafter\def\csname data@cert_k562_q\endcsname{0.500}
+\expandafter\def\csname data@cert_k562_qeta\endcsname{0.750}
+\expandafter\def\csname data@cert_k562_qv\endcsname{0.977}
+\expandafter\def\csname data@cert_k562_resid\endcsname{$6.6\times10^{-7}$}
+\expandafter\def\csname data@cert_k562_rho_raw\endcsname{8.5}
+\expandafter\def\csname data@cert_k562_rho_scaled\endcsname{0.90}
+\expandafter\def\csname data@cert_k562_spread\endcsname{$2.2\times10^{-6}$}
+\expandafter\def\csname data@cert_k562_terms_max\endcsname{20}
+\expandafter\def\csname data@cert_k562_terms_med\endcsname{12}
+\expandafter\def\csname data@cert_k562_trunc_ratio\endcsname{0.019}
+\expandafter\def\csname data@cert_k562_vmax\endcsname{44}
+\expandafter\def\csname data@cert_rpe1_inf_raw\endcsname{83}
+\expandafter\def\csname data@cert_rpe1_inf_scaled\endcsname{8.0}
+\expandafter\def\csname data@cert_rpe1_iters\endcsname{44}
+\expandafter\def\csname data@cert_rpe1_q\endcsname{0.500}
+\expandafter\def\csname data@cert_rpe1_qeta\endcsname{0.750}
+\expandafter\def\csname data@cert_rpe1_qv\endcsname{0.983}
+\expandafter\def\csname data@cert_rpe1_resid\endcsname{$5.4\times10^{-7}$}
+\expandafter\def\csname data@cert_rpe1_rho_raw\endcsname{9.3}
+\expandafter\def\csname data@cert_rpe1_rho_scaled\endcsname{0.90}
+\expandafter\def\csname data@cert_rpe1_spread\endcsname{$3.0\times10^{-6}$}
+\expandafter\def\csname data@cert_rpe1_terms_max\endcsname{17}
+\expandafter\def\csname data@cert_rpe1_terms_med\endcsname{11}
+\expandafter\def\csname data@cert_rpe1_trunc_ratio\endcsname{0.014}
+\expandafter\def\csname data@cert_rpe1_vmax\endcsname{57}
+\expandafter\def\csname data@cert_rwr_coldev\endcsname{$2\times10^{-14}$}
 \expandafter\def\csname data@cheb_err_r16\endcsname{$2.7\times10^{-3}$}
 \expandafter\def\csname data@cheb_err_r32\endcsname{$1.9\times10^{-4}$}
 \expandafter\def\csname data@cheb_err_r4\endcsname{$1.3\times10^{-1}$}
@@ -177,6 +206,8 @@
 \expandafter\def\csname data@k562_d_gcn_rew_rr\endcsname{+0.117 [+0.104, +0.131]}
 \expandafter\def\csname data@k562_d_ip_b2_rc\endcsname{+0.093 [+0.077, +0.108]}
 \expandafter\def\csname data@k562_d_ip_b2_rr\endcsname{+0.083 [+0.069, +0.097]}
+\expandafter\def\csname data@k562_d_ip_gears_rc\endcsname{+0.196 [+0.177, +0.215]}
+\expandafter\def\csname data@k562_d_ip_gears_rr\endcsname{+0.194 [+0.176, +0.212]}
 \expandafter\def\csname data@k562_d_ip_knn_rc\endcsname{+0.091 [+0.076, +0.107]}
 \expandafter\def\csname data@k562_d_ip_knn_rr\endcsname{+0.081 [+0.067, +0.095]}
 \expandafter\def\csname data@k562_d_ip_noself_rc\endcsname{+0.098 [+0.084, +0.113]}
@@ -206,6 +237,12 @@
 \expandafter\def\csname data@k562_gcnrew_r20\endcsname{0.263}
 \expandafter\def\csname data@k562_gcnrew_rc\endcsname{0.144}
 \expandafter\def\csname data@k562_gcnrew_rr\endcsname{0.123}
+\expandafter\def\csname data@k562_gears_ap\endcsname{0.056}
+\expandafter\def\csname data@k562_gears_cent\endcsname{0.569}
+\expandafter\def\csname data@k562_gears_n\endcsname{698}
+\expandafter\def\csname data@k562_gears_r20\endcsname{0.089}
+\expandafter\def\csname data@k562_gears_rc\endcsname{0.042}
+\expandafter\def\csname data@k562_gears_rr\endcsname{0.028}
 \expandafter\def\csname data@k562_genes\endcsname{8,563}
 \expandafter\def\csname data@k562_ip_ap\endcsname{0.132}
 \expandafter\def\csname data@k562_ip_cent\endcsname{0.737}
@@ -224,7 +261,7 @@
 \expandafter\def\csname data@k562_nbr_r20\endcsname{0.511}
 \expandafter\def\csname data@k562_nbr_rc\endcsname{0.285}
 \expandafter\def\csname data@k562_nbr_rr\endcsname{0.276}
-\expandafter\def\csname data@k562_nuniq\endcsname{699}
+\expandafter\def\csname data@k562_nuniq\endcsname{702}
 \expandafter\def\csname data@k562_perts\endcsname{2,021}
 \expandafter\def\csname data@k562_reach100_pct\endcsname{4.4}
 \expandafter\def\csname data@k562_resp_edges\endcsname{109}
@@ -250,6 +287,85 @@
 \expandafter\def\csname data@k562_train_edges\endcsname{1,576}
 \expandafter\def\csname data@l1_signed\endcsname{61,215}
 \expandafter\def\csname data@l1_unique\endcsname{120,312}
+\expandafter\def\csname data@lh_0p05\endcsname{13.02}
+\expandafter\def\csname data@lh_0p3\endcsname{2.36}
+\expandafter\def\csname data@lh_1p0\endcsname{1.30}
+\expandafter\def\csname data@mech_k562_corr\endcsname{0.02}
+\expandafter\def\csname data@mech_k562_ntargets\endcsname{31}
+\expandafter\def\csname data@mech_k562_real_h1\endcsname{0.83}
+\expandafter\def\csname data@mech_k562_real_h1_ci\endcsname{[0.75, 0.89]}
+\expandafter\def\csname data@mech_k562_real_h1_n\endcsname{114}
+\expandafter\def\csname data@mech_k562_real_h2\endcsname{0.51}
+\expandafter\def\csname data@mech_k562_real_h2_ci\endcsname{[0.48, 0.55]}
+\expandafter\def\csname data@mech_k562_real_h2_n\endcsname{789}
+\expandafter\def\csname data@mech_k562_real_h3\endcsname{0.51}
+\expandafter\def\csname data@mech_k562_real_h3_ci\endcsname{[0.49, 0.54]}
+\expandafter\def\csname data@mech_k562_real_h3_n\endcsname{2,045}
+\expandafter\def\csname data@mech_k562_real_h4p\endcsname{0.55}
+\expandafter\def\csname data@mech_k562_real_h4p_ci\endcsname{[0.53, 0.57]}
+\expandafter\def\csname data@mech_k562_real_h4p_n\endcsname{2,403}
+\expandafter\def\csname data@mech_k562_rewired_h1\endcsname{0.69}
+\expandafter\def\csname data@mech_k562_rewired_h1_ci\endcsname{[0.64, 0.73]}
+\expandafter\def\csname data@mech_k562_rewired_h1_n\endcsname{395}
+\expandafter\def\csname data@mech_k562_rewired_h2\endcsname{0.64}
+\expandafter\def\csname data@mech_k562_rewired_h2_ci\endcsname{[0.62, 0.65]}
+\expandafter\def\csname data@mech_k562_rewired_h2_n\endcsname{3,666}
+\expandafter\def\csname data@mech_k562_rewired_h3\endcsname{0.63}
+\expandafter\def\csname data@mech_k562_rewired_h3_ci\endcsname{[0.62, 0.64]}
+\expandafter\def\csname data@mech_k562_rewired_h3_n\endcsname{8,586}
+\expandafter\def\csname data@mech_k562_rewired_h4p\endcsname{0.53}
+\expandafter\def\csname data@mech_k562_rewired_h4p_ci\endcsname{[0.52, 0.54]}
+\expandafter\def\csname data@mech_k562_rewired_h4p_n\endcsname{8,342}
+\expandafter\def\csname data@mech_k562_signperm_h1\endcsname{0.73}
+\expandafter\def\csname data@mech_k562_signperm_h1_ci\endcsname{[0.69, 0.76]}
+\expandafter\def\csname data@mech_k562_signperm_h1_n\endcsname{570}
+\expandafter\def\csname data@mech_k562_signperm_h2\endcsname{0.70}
+\expandafter\def\csname data@mech_k562_signperm_h2_ci\endcsname{[0.69, 0.72]}
+\expandafter\def\csname data@mech_k562_signperm_h2_n\endcsname{3,945}
+\expandafter\def\csname data@mech_k562_signperm_h3\endcsname{0.60}
+\expandafter\def\csname data@mech_k562_signperm_h3_ci\endcsname{[0.59, 0.61]}
+\expandafter\def\csname data@mech_k562_signperm_h3_n\endcsname{10,225}
+\expandafter\def\csname data@mech_k562_signperm_h4p\endcsname{0.60}
+\expandafter\def\csname data@mech_k562_signperm_h4p_ci\endcsname{[0.59, 0.61]}
+\expandafter\def\csname data@mech_k562_signperm_h4p_n\endcsname{12,015}
+\expandafter\def\csname data@mech_rpe1_corr\endcsname{0.01}
+\expandafter\def\csname data@mech_rpe1_ntargets\endcsname{47}
+\expandafter\def\csname data@mech_rpe1_real_h1\endcsname{0.76}
+\expandafter\def\csname data@mech_rpe1_real_h1_ci\endcsname{[0.71, 0.80]}
+\expandafter\def\csname data@mech_rpe1_real_h1_n\endcsname{358}
+\expandafter\def\csname data@mech_rpe1_real_h2\endcsname{0.60}
+\expandafter\def\csname data@mech_rpe1_real_h2_ci\endcsname{[0.58, 0.61]}
+\expandafter\def\csname data@mech_rpe1_real_h2_n\endcsname{3,019}
+\expandafter\def\csname data@mech_rpe1_real_h3\endcsname{0.52}
+\expandafter\def\csname data@mech_rpe1_real_h3_ci\endcsname{[0.51, 0.53]}
+\expandafter\def\csname data@mech_rpe1_real_h3_n\endcsname{7,316}
+\expandafter\def\csname data@mech_rpe1_real_h4p\endcsname{0.49}
+\expandafter\def\csname data@mech_rpe1_real_h4p_ci\endcsname{[0.48, 0.51]}
+\expandafter\def\csname data@mech_rpe1_real_h4p_n\endcsname{5,399}
+\expandafter\def\csname data@mech_rpe1_rewired_h1\endcsname{0.58}
+\expandafter\def\csname data@mech_rpe1_rewired_h1_ci\endcsname{[0.55, 0.61]}
+\expandafter\def\csname data@mech_rpe1_rewired_h1_n\endcsname{1,379}
+\expandafter\def\csname data@mech_rpe1_rewired_h2\endcsname{0.59}
+\expandafter\def\csname data@mech_rpe1_rewired_h2_ci\endcsname{[0.58, 0.59]}
+\expandafter\def\csname data@mech_rpe1_rewired_h2_n\endcsname{11,461}
+\expandafter\def\csname data@mech_rpe1_rewired_h3\endcsname{0.56}
+\expandafter\def\csname data@mech_rpe1_rewired_h3_ci\endcsname{[0.56, 0.57]}
+\expandafter\def\csname data@mech_rpe1_rewired_h3_n\endcsname{34,828}
+\expandafter\def\csname data@mech_rpe1_rewired_h4p\endcsname{0.54}
+\expandafter\def\csname data@mech_rpe1_rewired_h4p_ci\endcsname{[0.53, 0.54]}
+\expandafter\def\csname data@mech_rpe1_rewired_h4p_n\endcsname{31,738}
+\expandafter\def\csname data@mech_rpe1_signperm_h1\endcsname{0.70}
+\expandafter\def\csname data@mech_rpe1_signperm_h1_ci\endcsname{[0.68, 0.72]}
+\expandafter\def\csname data@mech_rpe1_signperm_h1_n\endcsname{1,790}
+\expandafter\def\csname data@mech_rpe1_signperm_h2\endcsname{0.60}
+\expandafter\def\csname data@mech_rpe1_signperm_h2_ci\endcsname{[0.59, 0.60]}
+\expandafter\def\csname data@mech_rpe1_signperm_h2_n\endcsname{15,095}
+\expandafter\def\csname data@mech_rpe1_signperm_h3\endcsname{0.61}
+\expandafter\def\csname data@mech_rpe1_signperm_h3_ci\endcsname{[0.61, 0.62]}
+\expandafter\def\csname data@mech_rpe1_signperm_h3_n\endcsname{36,580}
+\expandafter\def\csname data@mech_rpe1_signperm_h4p\endcsname{0.58}
+\expandafter\def\csname data@mech_rpe1_signperm_h4p_ci\endcsname{[0.58, 0.59]}
+\expandafter\def\csname data@mech_rpe1_signperm_h4p_n\endcsname{26,995}
 \expandafter\def\csname data@memratio_hi\endcsname{8.3}
 \expandafter\def\csname data@memratio_lo\endcsname{6.4}
 \expandafter\def\csname data@pe_edge_r16_128_gb\endcsname{OOM}
@@ -266,6 +382,34 @@
 \expandafter\def\csname data@pe_spmm_r8_128_gb\endcsname{5.1}
 \expandafter\def\csname data@pe_spmm_r8_32_gb\endcsname{3.4}
 \expandafter\def\csname data@pe_spmm_r8_512_gb\endcsname{12.0}
+\expandafter\def\csname data@prep_k562_agree\endcsname{1.0000}
+\expandafter\def\csname data@prep_k562_agree_p05\endcsname{0.990}
+\expandafter\def\csname data@prep_k562_cells\endcsname{310,385}
+\expandafter\def\csname data@prep_k562_ctrl_batches\endcsname{48}
+\expandafter\def\csname data@prep_k562_ctrl_cells\endcsname{10,670}
+\expandafter\def\csname data@prep_k562_fail_genes\endcsname{1,246}
+\expandafter\def\csname data@prep_k562_kd_det\endcsname{1,835}
+\expandafter\def\csname data@prep_k562_kd_lt50\endcsname{8.1}
+\expandafter\def\csname data@prep_k562_kd_med\endcsname{84}
+\expandafter\def\csname data@prep_k562_kd_spearman\endcsname{0.03}
+\expandafter\def\csname data@prep_k562_kept_pct\endcsname{99.6}
+\expandafter\def\csname data@prep_k562_ncells_med\endcsname{122}
+\expandafter\def\csname data@prep_k562_wn\endcsname{-0.005 [-0.008, -0.003]}
+\expandafter\def\csname data@prep_k562_wp\endcsname{-0.010 [-0.014, -0.006]}
+\expandafter\def\csname data@prep_rpe1_agree\endcsname{1.0000}
+\expandafter\def\csname data@prep_rpe1_agree_p05\endcsname{0.996}
+\expandafter\def\csname data@prep_rpe1_cells\endcsname{247,914}
+\expandafter\def\csname data@prep_rpe1_ctrl_batches\endcsname{56}
+\expandafter\def\csname data@prep_rpe1_ctrl_cells\endcsname{11,475}
+\expandafter\def\csname data@prep_rpe1_fail_genes\endcsname{501}
+\expandafter\def\csname data@prep_rpe1_kd_det\endcsname{1,927}
+\expandafter\def\csname data@prep_rpe1_kd_lt50\endcsname{5.0}
+\expandafter\def\csname data@prep_rpe1_kd_med\endcsname{91}
+\expandafter\def\csname data@prep_rpe1_kd_spearman\endcsname{-0.07}
+\expandafter\def\csname data@prep_rpe1_kept_pct\endcsname{99.8}
+\expandafter\def\csname data@prep_rpe1_ncells_med\endcsname{77}
+\expandafter\def\csname data@prep_rpe1_wn\endcsname{+0.021 [-0.002, +0.043]}
+\expandafter\def\csname data@prep_rpe1_wp\endcsname{+0.005 [-0.022, +0.033]}
 \expandafter\def\csname data@rpe1_b0_ap\endcsname{0.245}
 \expandafter\def\csname data@rpe1_b0_cent\endcsname{0.498}
 \expandafter\def\csname data@rpe1_b0_r20\endcsname{0.050}
@@ -286,6 +430,8 @@
 \expandafter\def\csname data@rpe1_d_gcn_rew_rr\endcsname{+0.095 [+0.082, +0.108]}
 \expandafter\def\csname data@rpe1_d_ip_b2_rc\endcsname{+0.082 [+0.059, +0.106]}
 \expandafter\def\csname data@rpe1_d_ip_b2_rr\endcsname{+0.071 [+0.059, +0.084]}
+\expandafter\def\csname data@rpe1_d_ip_gears_rc\endcsname{+0.090 [+0.059, +0.120]}
+\expandafter\def\csname data@rpe1_d_ip_gears_rr\endcsname{+0.171 [+0.154, +0.189]}
 \expandafter\def\csname data@rpe1_d_ip_knn_rc\endcsname{+0.080 [+0.057, +0.104]}
 \expandafter\def\csname data@rpe1_d_ip_knn_rr\endcsname{+0.070 [+0.058, +0.082]}
 \expandafter\def\csname data@rpe1_d_ip_noself_rc\endcsname{+0.089 [+0.066, +0.113]}
@@ -315,6 +461,12 @@
 \expandafter\def\csname data@rpe1_gcnrew_r20\endcsname{0.275}
 \expandafter\def\csname data@rpe1_gcnrew_rc\endcsname{0.182}
 \expandafter\def\csname data@rpe1_gcnrew_rr\endcsname{0.106}
+\expandafter\def\csname data@rpe1_gears_ap\endcsname{0.151}
+\expandafter\def\csname data@rpe1_gears_cent\endcsname{0.608}
+\expandafter\def\csname data@rpe1_gears_n\endcsname{741}
+\expandafter\def\csname data@rpe1_gears_r20\endcsname{0.257}
+\expandafter\def\csname data@rpe1_gears_rc\endcsname{0.163}
+\expandafter\def\csname data@rpe1_gears_rr\endcsname{0.008}
 \expandafter\def\csname data@rpe1_genes\endcsname{8,749}
 \expandafter\def\csname data@rpe1_ip_ap\endcsname{0.191}
 \expandafter\def\csname data@rpe1_ip_cent\endcsname{0.680}
@@ -333,7 +485,7 @@
 \expandafter\def\csname data@rpe1_nbr_r20\endcsname{0.440}
 \expandafter\def\csname data@rpe1_nbr_rc\endcsname{0.302}
 \expandafter\def\csname data@rpe1_nbr_rr\endcsname{0.254}
-\expandafter\def\csname data@rpe1_nuniq\endcsname{743}
+\expandafter\def\csname data@rpe1_nuniq\endcsname{746}
 \expandafter\def\csname data@rpe1_perts\endcsname{2,204}
 \expandafter\def\csname data@rpe1_reach100_pct\endcsname{4.7}
 \expandafter\def\csname data@rpe1_resp_edges\endcsname{222}
