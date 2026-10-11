@@ -8,8 +8,9 @@ for variant in fewshot zeroshot; do
     set -- $spec; line=$1; k=$2
     d=$B/$variant/$k
     out=pred_${variant}_$line.h5ad
+    [ -f virt_$line.h5ad ] || ~/state-env/bin/python ~/ext_state_pad.py ctrl_$line.h5ad perts_$line.tsv virt_$line.h5ad > pad_$line.log 2>&1
     /usr/bin/time -v ~/state-env/bin/state tx infer --model-dir $d --checkpoint $d/checkpoints/best.ckpt \
-      --adata ctrl_$line.h5ad --pert-col gene --embed-key X_hvg --tsv perts_$line.tsv --output $out > infer_${variant}_$line.log 2>&1
+      --adata virt_$line.h5ad --pert-col gene --embed-key X_hvg --output $out > infer_${variant}_$line.log 2>&1
     ~/state-env/bin/python ~/ext_state_post.py --line $line --h5ad $out --var-dims $d/var_dims.pkl \
       --targets-json targets_$line.json --out ~/ext/state_$variant/$line > post_${variant}_$line.log 2>&1
     rm -f $out

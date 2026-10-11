@@ -16,6 +16,10 @@
 \end{table}
 On the CPU, the edge-wise form was the fastest for the sparse curated graph at every batch size (\datanum{bench_cpu_l1_128_E0_ms}\,ms at batch 128 against \datanum{bench_cpu_l1_128_E1_ms}\,ms for the sparse product), and on the association graph the dense product matched it (\datanum{bench_cpu_assoc_128_E2_ms}\,ms vs.\ \datanum{bench_cpu_assoc_128_E0_ms}\,ms).
 
+\section{External baselines}
+\label{app:external}
+All external models were scored with the folds, metrics and centring of the other models (predictions are centred on the mean prediction for training targets). \emph{STATE}: the released State Transition checkpoints for Replogle-HVG data (zero-shot and few-shot variants, K562 and RPE1), evaluated without retraining; their pretraining data overlap with these screens (marked $^\dagger$). \emph{scGPT}: the whole-human checkpoint without fine-tuning; the official perturbation head is trained from scratch, so we ran a zero-shot in silico knockout (target expression set to zero in 100 control cells, change of the predicted expression averaged over cells) on the 1,199 most expressed in-vocabulary genes; targets outside the vocabulary or with near-zero control expression are excluded. \emph{biolord}: official package, with the gene-ontology neighbour vector of the GEARS gene-ontology graph as the attribute of the perturbed gene; no tuning. \emph{CPA}: \texttt{cpa-tools} with the same neighbour vectors as frozen perturbation embeddings, the hyper-parameters of its Norman tutorial, at most 50 cells per training target and a wall-clock cap of 25 minutes per fold (a reduced budget).
+
 \section{Data replay}
 \label{app:replay}
 An independent re-computation of the target of ten random K562 perturbations directly from the raw counts (no chunking or sparse accumulation) reproduced the stored responses to within $4.5\times10^{-8}$ (single-precision rounding); the script and its output are in the repository.

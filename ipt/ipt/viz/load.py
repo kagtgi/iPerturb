@@ -19,6 +19,10 @@ def unique_target_scores(line: str) -> pd.DataFrame:
     gp = S / f"gears_{line}.tsv"
     if gp.exists():
         parts.append(pd.read_csv(gp, sep="\t")[["fold", "target", "mid"] + METRICS])
+    for ext in ("biolord", "cpa", "scgpt", "state_zeroshot", "state_fewshot"):
+        ep = S / f"{ext}_{line}.tsv"
+        if ep.exists():
+            parts.append(pd.read_csv(ep, sep="\t")[["fold", "target", "mid"] + METRICS])
     g12p = S / f"g12_{line}.tsv"
     if g12p.exists():
         g12 = pd.read_csv(g12p, sep="\t")

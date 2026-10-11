@@ -6,6 +6,11 @@ No change (B0) & 0.096 & 0.000 & 0.116 & 0.503 & 0.099\\
 Train mean (B1) & 0.000 & 0.000 & 0.000 & 0.000 & 0.031\\
 Linear low-rank (B2) & 0.145 & 0.139 & 0.275 & 0.641 & 0.110\\
 GEARS (B4) & 0.042 & 0.028 & 0.089 & 0.569 & 0.056\\
+CPA (B7) & -0.001 & -0.002 & -0.004 & 0.488 & 0.041\\
+biolord (B8) & 0.001 & 0.005 & 0.004 & 0.497 & 0.059\\
+scGPT, zero-shot knockout$^\dagger$ & 0.020 & -0.004 & -0.015 & 0.511 & 0.061\\
+STATE, zero-shot$^\dagger$ & 0.157 & 0.105 & 0.347 & 0.818 & 0.070\\
+STATE, few-shot$^\dagger$ & 0.253 & 0.185 & 0.472 & 0.882 & 0.100\\
 Smoothing, rewired GRN & 0.141 & 0.134 & 0.268 & 0.633 & 0.110\\
 Smoothing, data-kNN graph & 0.147 & 0.141 & 0.277 & 0.640 & 0.112\\
 Smoothing, STRING only & 0.235 & 0.223 & 0.430 & 0.735 & 0.132\\
@@ -15,12 +20,17 @@ iPerturb: neighbour-mean head & 0.285 & 0.276 & 0.511 & 0.791 & 0.162\\
 iPerturb: multi-hop propagation (RWR) & 0.291 & 0.286 & 0.520 & 0.805 & 0.169\\
 iPerturb: multi-tier integrated propagation & \textbf{0.319} & \textbf{0.308} & \textbf{0.570} & \textbf{0.824} & \textbf{0.180}\\
 \midrule
-\multicolumn{6}{l}{\textbf{RPE1} (746 held-out targets)}\\
+\multicolumn{6}{l}{\textbf{RPE1} (747 held-out targets)}\\
 Model & $\rho_c$ & $\rho_r$ & $\rho_{20}$ & Cent. & AUPRC\\\midrule
 No change (B0) & 0.115 & 0.000 & 0.050 & 0.498 & \textbf{0.245}\\
 Train mean (B1) & 0.000 & 0.000 & 0.000 & 0.000 & 0.054\\
 Linear low-rank (B2) & 0.170 & 0.108 & 0.276 & 0.634 & 0.175\\
 GEARS (B4) & 0.163 & 0.008 & 0.257 & 0.608 & 0.151\\
+CPA (B7) & 0.002 & 0.000 & 0.012 & 0.514 & 0.066\\
+biolord (B8) & -0.000 & 0.002 & -0.004 & 0.503 & 0.079\\
+scGPT, zero-shot knockout$^\dagger$ & 0.030 & 0.006 & -0.053 & 0.510 & 0.097\\
+STATE, zero-shot$^\dagger$ & 0.186 & 0.088 & 0.372 & 0.751 & 0.115\\
+STATE, few-shot$^\dagger$ & 0.343 & 0.151 & 0.528 & 0.816 & 0.143\\
 Smoothing, rewired GRN & 0.163 & 0.108 & 0.260 & 0.631 & 0.174\\
 Smoothing, data-kNN graph & 0.172 & 0.109 & 0.271 & 0.630 & 0.175\\
 Smoothing, STRING only & 0.250 & 0.184 & 0.375 & 0.679 & 0.192\\

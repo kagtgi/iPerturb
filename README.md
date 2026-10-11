@@ -18,6 +18,40 @@ reproduce the results for the two human cell lines studied (K562 and RPE1).
 
 ---
 
+## Extended version (`ipt/`) — journal manuscript
+
+The directory [`ipt/`](ipt/) holds a from-scratch rebuild with a pre-registered,
+target-held-out protocol (`ipt/PREREG.md`), used for the extended manuscript
+(`ipt/paper/`, LNCS). It contains:
+
+- **Data**: Perturb-seq preprocessing from raw counts (per-gem-group QC, batch-matched
+  controls, knockdown efficiency) for K562 and RPE1 (`ipt/ipt/data/`).
+- **Context-specific GRN**: five evidence tiers (L1 curated signed, L2 enhancer/binding,
+  L3 protein association, L4 co-expression, L5 training response); association evidence
+  is undirected and unsigned (`ipt/ipt/graph/`).
+- **Learnable Hill propagation**: Hill transfer in a Chebyshev basis evaluated as a matrix
+  product, persistent clamp, SCC-aware solver, and a certified (contraction-guaranteed)
+  variant with a convergence proof (`ipt/ipt/models/`, appendix of the paper).
+- **Multi-hop propagation and explanations**: random walks with restart, truncated walks and
+  tier integration; signed-path mechanism reports with sign-accuracy tests by hop
+  (`ipt/ipt/explain/`, `ipt/scripts/g12_prop.py`, `g13_mechanism.py`).
+- **Benchmarks**: linear/no-change baselines, GEARS, biolord, CPA, scGPT (zero-shot knockout)
+  and STATE (released checkpoints, evaluated as-is, marked as not held-out) scored on the
+  same folds and metrics (`ipt/scripts/ext_to_scores.py`).
+
+Headline (K562 / RPE1, centred correlation on held-out targets): linear low-rank
+0.145 / 0.170; iPerturb multi-tier integrated propagation 0.319 / 0.333. The Hill form
+is faithful to exact Hill propagation and cheap as a matrix product, but gives no
+predictive gain over a linear transfer on this data; the predictive signal comes from
+protein-association evidence. See the manuscript for all controls and negative results.
+
+Reproduce: `cd ipt && py -m pytest tests` (unit tests), then the numbered scripts in
+`ipt/scripts/` (`g1_check.py` … `g14_prep2.py`), `make_tables.py`, `make_tables2.py`,
+`build_numbers.py`, and build `ipt/paper/main.tex` (pdflatex + bibtex). Large artifacts
+(`ipt/artifacts/`) and license-gated resources (GeneHancer) are not tracked.
+
+---
+
 ## Quickstart (Google Colab — recommended)
 
 Open [`notebooks/iPerturb_Colab.ipynb`](notebooks/iPerturb_Colab.ipynb) in Colab

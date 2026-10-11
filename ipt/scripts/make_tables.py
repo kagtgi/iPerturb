@@ -12,7 +12,9 @@ from ipt.viz.load import LINES, LINE_NAME, mean_ci, unique_target_scores
 OUT = Path(__file__).parents[1] / "paper" / "tables"
 OUT.mkdir(parents=True, exist_ok=True)
 ROWS = [("B0_nochange|-|-", "No change (B0)"), ("B1_trainmean|-|-", "Train mean (B1)"), ("B2_linear|-|-", "Linear low-rank (B2)"),
-        ("B4_gears|-|-", "GEARS (B4)"), ("smooth_L1+L3|rewired|self", "Smoothing, rewired GRN"), ("smooth_dataknn|real|self", "Smoothing, data-kNN graph"),
+        ("B4_gears|-|-", "GEARS (B4)"), ("B7_cpa|-|-", "CPA (B7)"), ("B8_biolord|-|-", "biolord (B8)"),
+        ("B9_scgpt_asis|-|-", "scGPT, zero-shot knockout$^\\dagger$"), ("B10_state_zeroshot|-|-", "STATE, zero-shot$^\\dagger$"),
+        ("B10_state_fewshot|-|-", "STATE, few-shot$^\\dagger$"), ("smooth_L1+L3|rewired|self", "Smoothing, rewired GRN"), ("smooth_dataknn|real|self", "Smoothing, data-kNN graph"),
         ("smooth_L3|real|self", "Smoothing, STRING only"), ("smooth_L1+L3|real|self", "iPerturb: smoothing head"),
         ("B5_gcn|real|self", "iPerturb: GCN head (B5)"), ("nbrmean_L3|real|self", "iPerturb: neighbour-mean head"),
         ("prop[L1+L3]|rwr", "iPerturb: multi-hop propagation (RWR)"), ("prop[integrated]|nnls", "iPerturb: multi-tier integrated propagation")]
@@ -29,7 +31,7 @@ for l in LINES:
     d = U[l]
     lines.append(f"\\multicolumn{{{len(MET) + 1}}}{{l}}{{\\textbf{{{LINE_NAME[l]}}} ({d.target.nunique()} held-out targets)}}\\\\")
     lines.append("Model & " + " & ".join(h for _, h in MET) + "\\\\\\midrule")
-    best = {m: max(mean_ci(d[d.mid == mid][m])[0] for mid, _ in ROWS if (d.mid == mid).any()) for m, _ in MET}
+    best = {m: max(mean_ci(d[d.mid == mid][m])[0] for mid, lab_ in ROWS if (d.mid == mid).any() and 'dagger' not in lab_) for m, _ in MET}
     for mid, lab in ROWS:
         v = d[d.mid == mid]
         if v.empty:
