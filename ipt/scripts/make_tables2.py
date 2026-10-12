@@ -106,6 +106,17 @@ if g12:
                 put(f"g12w_{SHORT[line]}_{k}", f"{v:.2f}")
     pd.DataFrame(W).to_csv(ROOT / "artifacts" / "g12_integration_weights.tsv", sep="\t")
 
+    # Addendum M: integrated propagation on real vs degree-preserving rewired tier graphs
+    for line in LINES:
+        rw = sorted(S.glob(f"g12_{line}_rw[0-9].tsv"))
+        if len(rw) == 3 and line in g12:
+            r = pd.concat([pd.read_csv(p, sep="\t") for p in rw])
+            r = r[r.model == "prop[integrated]|nnls"].assign(model="rewired")
+            real = g12[line][g12[line].model == "prop[integrated]|nnls"]
+            u = uniq(pd.concat([real, r]), "model")
+            put(f"g12rw_d_{SHORT[line]}", ci(diff(u, "model", "prop[integrated]|nnls", "rewired")))
+            put(f"g12rw_{SHORT[line]}", f"{u[u.model == 'rewired'].pcc_c.mean():.3f}")
+
 # ---------------- g11: losses
 g11 = {}
 for line in LINES:

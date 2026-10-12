@@ -33,9 +33,9 @@ def lock(ax, x, y, s=0.45, col=GREY900):
     ax.add_patch(Arc((x, y + s * 0.3), s * 0.62, s * 0.8, theta1=0, theta2=180, ec=col, lw=1.1, zorder=6))
 
 
-def edge(ax, p, q, sign, rad=0.0, shrink=11.5, lw=1.3):
+def edge(ax, p, q, sign, rad=0.0, shrink=11.5, lw=LW_ARROW):
     col = GGREEN if sign > 0 else GRED
-    style, ms = ("-|>,head_length=3.5,head_width=2", 1) if sign > 0 else ("-[,widthB=0.7,lengthB=0.25", 5)
+    style, ms = (ARROW_STYLE, ARROW_MS) if sign > 0 else ("-[,widthB=0.45,lengthB=0.0", ARROW_MS)
     ax.add_patch(FancyArrowPatch(p, q, arrowstyle=style, connectionstyle=f"arc3,rad={rad}", shrinkA=shrink, shrinkB=shrink,
                                  color=col, lw=lw, mutation_scale=ms, zorder=2))
 
@@ -68,16 +68,37 @@ axa = fig.add_axes([0.005, 0.60, 0.355, 0.33]); axa.axis("off"); axa.set_xlim(0,
 P = dict(A=(1.3, 5.6), B=(4.7, 5.6), C=(8.6, 8.1), D=(8.6, 3.1))
 m = max(abs(v) for v in toy.values())
 col = {"A": "white", "B": CMAP(0.5 + 0.5 * toy[1] / m), "C": CMAP(0.5 + 0.5 * toy[2] / m), "D": CMAP(0.5 + 0.5 * toy[3] / m)}
-edge(axa, P["A"], P["B"], +1); edge(axa, P["B"], P["C"], -1); edge(axa, P["B"], P["D"], +1, rad=0.28); edge(axa, P["D"], P["B"], -1, rad=0.28)
+SA = 6.5   # node radius (pt) of the toy nodes, same size as the toy GRN of the propagation figure
+UX, UY = 10 / (0.355 * 122), 10 / (0.33 * 108)      # data units per mm (x, y)
+RN = (SA - 1.3) / 72 * 25.4 + 0.35                   # node radius + gap, mm
+
+
+def on(k, deg):
+    """Point on the rim of node k at angle deg (screen angle, mm-isotropic)."""
+    a = np.deg2rad(deg)
+    return (P[k][0] + RN * np.cos(a) * UX, P[k][1] + RN * np.sin(a) * UY)
+
+
+def edge2(p, q, sign, rad=0.0):
+    col = GGREEN if sign > 0 else GRED
+    style = ARROW_STYLE if sign > 0 else "-[,widthB=0.45,lengthB=0.0"
+    axa.add_patch(FancyArrowPatch(p, q, arrowstyle=style, connectionstyle=f"arc3,rad={rad}", shrinkA=0, shrinkB=0,
+                                  color=col, lw=LW_ARROW, mutation_scale=ARROW_MS, zorder=2))
+
+
+edge2(on("A", 0), on("B", 180), +1)
+edge2(on("B", 62), on("C", 205), -1)                  # leaves B toward the upper right
+edge2(on("B", -105), on("D", 190), +1, rad=0.3)        # leaves B downward, enters D from the left
+edge2(on("D", 130), on("B", -32), -1, rad=0.2)        # feedback arrives at B's right side
 for k, (x, y) in P.items():
-    axa.scatter([x], [y], s=330, c=[col[k]], edgecolors=GREY900 if k == "A" else GREY700, linewidths=1.2 if k == "A" else 0.8, zorder=4)
-    axa.text(x, y, k, ha="center", va="center", fontsize=FS + 1, fontweight="bold", zorder=5)
-lock(axa, P["A"][0], P["A"][1] + 1.6)
+    axa.scatter([x], [y], s=(2 * SA - 2.6) ** 2, c=[col[k]], edgecolors=GREY900 if k == "A" else GREY700, linewidths=1.0 if k == "A" else LW, zorder=4)
+    axa.text(x, y, k, ha="center", va="center", fontsize=FS, zorder=5)
+lock(axa, P["A"][0], P["A"][1] + 1.25)
 axa.text(P["A"][0] + 0.4, 9.2, "CRISPRi\n(clamped)", ha="center", va="center", fontsize=FS)
 axa.text(0.1, 1.2, "B down, C up, D down", ha="left", va="center", fontsize=FS, color=GREY900)
 axa.text(7.2, 5.75, "feedback", ha="left", va="center", fontsize=FS, color=GREY700)
-axa.add_line(Line2D([0.2, 1.1], [2.9, 2.9], color=GGREEN, lw=1.5)); axa.text(1.35, 2.9, "act.", va="center", fontsize=FS, color=GREY700)
-axa.add_line(Line2D([3.4, 4.3], [2.9, 2.9], color=GRED, lw=1.5)); axa.text(4.55, 2.9, "rep.", va="center", fontsize=FS, color=GREY700)
+edge2((0.2, 2.9), (1.6, 2.9), +1); axa.text(1.85, 2.9, "act.", va="center", fontsize=FS, color=GREY700)
+edge2((3.6, 2.9), (5.0, 2.9), -1); axa.text(5.25, 2.9, "rep.", va="center", fontsize=FS, color=GREY700)
 
 # ---- (b)
 KC = {"real": (GBLUE, "real signs"), "signperm": (GGREY, "permuted signs"), "rewired": (GYELLOW, "rewired edges")}
@@ -91,17 +112,17 @@ for j, (ln, nm) in enumerate(LINES):
         g = a[a.kind == k].groupby("hop")[["n", "hit"]].sum()
         for h, hop in enumerate(HOPS):
             p, lo, hi = wilson(g.loc[hop, "hit"], g.loc[hop, "n"])
-            ax.errorbar(h + off, p, yerr=[[p - lo], [hi - p]], fmt="o", ms=3.2, color=KC[k][0], elinewidth=1.0, capsize=0, zorder=3)
+            ax.errorbar(h + off, p, yerr=[[p - lo], [hi - p]], fmt="o", ms=3.2, color=KC[k][0], elinewidth=LW, capsize=0, zorder=3)
             b_res[(ln, k, hop)] = (p, lo, hi, int(g.loc[hop, "n"]))
-    ax.axhline(0.5, color=GREY900, lw=0.8, ls=(0, (3, 2)), zorder=1)
+    ax.axhline(0.5, color=GREY900, lw=LW_THIN, ls=(0, (3, 2)), zorder=1)
     ax.set_xticks(range(4)); ax.set_xticklabels(HL); ax.set_xlim(-0.55, 3.55); ax.set_ylim(0.4, 1.0)
-    ax.set_title(nm, fontsize=FS + 1, pad=2, color=GREY900)
+    ax.set_title(nm, fontsize=FS_TITLE, pad=3, color=GREY900)
     ax.set_xlabel("hop distance", fontsize=FS, labelpad=1)
     ax.tick_params(labelsize=FS, pad=1.5)
     n1 = b_res[(ln, "real", "1")][3]
     ax.text(-0.5, 0.43, f"n={n1}", fontsize=FS, color=GBLUE, va="bottom", ha="left")
     if j == 0:
-        ax.set_ylabel("sign accuracy", fontsize=FS + 0.5, labelpad=1)
+        ax.set_ylabel("sign accuracy", fontsize=FS, labelpad=1)
     else:
         ax.set_yticklabels([])
 axb[1].legend(handles=[Line2D([], [], marker="o", ls="", ms=3.5, color=KC[k][0], label=KC[k][1]) for k in KC], loc="upper right",
@@ -138,19 +159,19 @@ for r in recs:
         if (a_, b_) in drawn:
             continue
         drawn.add((a_, b_))
-        edge(axc, pos[a_], pos[b_], sg, lw=1.3)
+        edge(axc, pos[a_], pos[b_], sg)
         edb[(a_, b_)] = db
-axc.scatter([pos[tgt][0]], [pos[tgt][1]], s=330, c="white", edgecolors=GREY900, linewidths=1.2, zorder=4)
+axc.scatter([pos[tgt][0]], [pos[tgt][1]], s=330, c="white", edgecolors=GREY900, linewidths=1.0, zorder=4)
 lock(axc, pos[tgt][0], pos[tgt][1] + 1.55)
 axc.text(pos[tgt][0], pos[tgt][1] - 1.35, tgt, ha="center", va="top", fontsize=FS, fontweight="bold")
 for mid in mids:
-    axc.scatter([pos[mid][0]], [pos[mid][1]], s=330, c=GREY200, edgecolors=GREY500, linewidths=0.8, zorder=4)
+    axc.scatter([pos[mid][0]], [pos[mid][1]], s=330, c=GREY200, edgecolors=GREY500, linewidths=LW, zorder=4)
     axc.text(*pos[mid], mid, ha="center", va="center", fontsize=FS, zorder=5)
 nok = 0
 for r in recs:
     x, y = pos[r["gene"]]
     ok = (r["z"] < 0) == (r["pred"] == "-"); nok += ok
-    axc.scatter([x], [y], s=330, c=[CMAP(norm(r["z"]))], edgecolors=GGREEN if ok else GRED, linewidths=1.8, zorder=4)
+    axc.scatter([x], [y], s=330, c=[CMAP(norm(r["z"]))], edgecolors=GGREEN if ok else GRED, linewidths=1.5, zorder=4)
     axc.scatter([x], [y], s=26, marker="v" if r["pred"] == "-" else "^", c=GREY900, zorder=5)
     axc.text(x + 0.85, y + 0.5, r["gene"], ha="left", va="center", fontsize=FS, fontweight="bold")
     axc.text(x + 0.85, y - 0.5, f"z={r['z']:+.1f}", ha="left", va="center", fontsize=FS, color=GGREEN if ok else GRED)
@@ -169,20 +190,30 @@ cb = fig.colorbar(plt.cm.ScalarMappable(norm, CMAP), cax=cax, orientation="horiz
 cb.set_ticks([-25, 0, 25]); cb.ax.tick_params(labelsize=FS, length=2, pad=1); cb.outline.set_visible(False)
 
 # ---- (d)
-axd = fig.add_axes([0.665, 0.16, 0.19, 0.34]); axd2 = fig.add_axes([0.915, 0.16, 0.075, 0.34])
+axd = fig.add_axes([0.62, 0.12, 0.2, 0.38]); axd2 = fig.add_axes([0.89, 0.12, 0.105, 0.38])
+GX = 2.6; HX = 1.2   # pair offset, within-pair spacing   # x offset of the RPE1 pair
 xs, labs = [], []
 d_res = {}
 for j, (ln, nm) in enumerate(LINES):
     a = acc_table(sc[ln], ["1", "2", "3", "4+"]); a = a[a.kind == "real"]
     for h, (name, hs) in enumerate((("1", ["1"]), ("$\\geq$2", ["2", "3", "4+"]))):
         n = int(a[a.hop.isin(hs)].n.sum()); hit = a[a.hop.isin(hs)].hit.sum()
-        p, lo, hi = wilson(hit, n); x = j * 2.6 + h
-        axd.errorbar(x, p, yerr=[[p - lo], [hi - p]], fmt="o", ms=4, color=GBLUE, elinewidth=1.2, zorder=3)
-        axd.text(x, hi + 0.02, f"n={n}", ha="center", va="bottom", fontsize=FS)
+        p, lo, hi = wilson(hit, n); x = j * GX + HX * h
+        axd.errorbar(x, p, yerr=[[p - lo], [hi - p]], fmt="o", ms=3.2, color=GBLUE, elinewidth=LW, zorder=3)
+        if h == 0:   # hop 1: above the error bar
+            axd.text(x, hi + 0.015, f"n={n}", ha="center", va="bottom", fontsize=FS)
+        else:        # hop >= 2: below the 0.5 reference line (the rightmost one right-aligned to stay inside)
+            last = j == 1
+            axd.text(x + (0.45 if last else 0), 0.488, f"n={n}", ha="right" if last else "center", va="top", fontsize=FS)
         d_res[(ln, name)] = (p, lo, hi, n)
         xs.append(x); labs.append(name)
-axd.axhline(0.5, color=GREY900, lw=0.8, ls=(0, (3, 2)), zorder=1)
-axd.set_xticks(xs); axd.set_xticklabels([f"{nm} hop {l}" for nm in ("K562", "RPE1") for l in ("1", "$\\geq$2")], rotation=90, ha="center"); axd.set_ylim(0.3, 1.0); axd.set_xlim(-0.9, 5.0)
+axd.axhline(0.5, color=GREY900, lw=LW_THIN, ls=(0, (3, 2)), zorder=1)
+axd.set_xticks(xs); axd.set_xticklabels(["hop 1", "\u2265 2"] * 2); axd.set_ylim(0.3, 1.0); axd.set_xlim(-0.6, GX + HX + 0.5)
+axd.grid(axis="x", visible=False)
+import matplotlib.transforms as mtrans
+for j, (ln, nm) in enumerate(LINES):   # group label centred under each pair
+    axd.annotate(nm, xy=(j * GX + HX / 2, 0), xycoords=mtrans.blended_transform_factory(axd.transData, axd.transAxes),
+                 xytext=(0, -2.0 - 2.5 - FS - 2.5), textcoords="offset points", ha="center", va="top", fontsize=FS, color=GREY900)
 axd.tick_params(labelsize=FS, pad=1.5); axd.set_ylabel("sign accuracy", fontsize=FS, labelpad=1)
 rng = np.random.default_rng(0)
 pc = {}
@@ -190,16 +221,16 @@ for j, (ln, nm) in enumerate(LINES):
     c = sc[ln]; c = c[c.hop == "corr"].hit.astype(float).to_numpy()
     pc[ln] = (c.mean(), len(c))
     axd2.scatter(j + rng.uniform(-0.22, 0.22, len(c)), c, s=4, color=GBLUE_L, lw=0, zorder=2)
-    axd2.plot([j - 0.3, j + 0.3], [c.mean()] * 2, color=GBLUE, lw=2.0, zorder=3)
-axd2.axhline(0, color=GREY900, lw=0.8, ls=(0, (3, 2)), zorder=1)
-axd2.set_xticks([0, 1]); axd2.set_xticklabels(["K562", "RPE1"], rotation=90, ha="center"); axd2.set_xlim(-0.6, 1.6)
+    axd2.plot([j - 0.3, j + 0.3], [c.mean()] * 2, color=GBLUE, lw=1.5, zorder=3)
+axd2.axhline(0, color=GREY900, lw=LW_THIN, ls=(0, (3, 2)), zorder=1)
+axd2.set_xticks([0, 1]); axd2.set_xticklabels(["K562", "RPE1"]); axd2.set_xlim(-0.45, 1.45); axd2.grid(axis="x", visible=False)
 axd2.set_ylim(-0.5, 0.5); axd2.tick_params(labelsize=FS, pad=1.5)
 print("panel d", d_res, pc)
-axd2.set_title("Pearson r", fontsize=FS, pad=2, color=GREY900, loc="right")
+axd2.set_title("Pearson r", fontsize=FS_TITLE, pad=3, color=GREY900, loc="right")
 
 # ---- panel letters
-for lab, x, y in (("a", 0.0, 0.985), ("b", 0.375, 0.985), ("c", 0.0, 0.595), ("d", 0.57, 0.595)):
-    fig.text(x, y, f"({lab})", fontsize=9.5, fontweight="bold", va="top", ha="left", color=GREY900)
+for lab, x, y in (("a", 0.0025, 0.992), ("b", 0.375, 0.992), ("c", 0.0025, 0.595), ("d", 0.57, 0.595)):
+    fig.text(x, y, f"({lab})", fontsize=FS_LETTER, fontweight="bold", va="top", ha="left", color=GREY900)
 
 plt.rcParams["savefig.bbox"] = "standard"
 for ext in (".pdf", ".png"):

@@ -14,8 +14,42 @@ The effect of a perturbation is the difference of mean log-normalised expression
 
 \subsection{Constructing the context-specific GRN}
 \label{sec:grn}
-iPerturb integrates evidence into a five-tier hierarchy ordered by strength (Level~1: curated, signed TF--target interactions; Level~2: GeneHancer enhancer--gene links whose enhancers are active in the target cell line and whose TF-binding sites match the TF; Level~3: STRING associations, added as undirected, unsigned pairs; Level~4: COXPRESdb co-expression, top partners per gene; Level~5: signed edges read from training perturbations only). Association evidence (Levels~3--4) is \emph{never} represented as a signed or directed regulatory arrow: it is stored as an undirected edge and used only by the association channel of Section~\ref{sec:model}.
-Cross-tier duplicates were resolved in favour of the lowest-numbered tier, and within-tier sign conflicts defaulted to unsigned, so an unknown sign is never promoted to activation. The graph is built separately for every cell line: Level~2 depends on the enhancers and TF-binding sites active in that line, and Level~5, when used, is fitted on the training perturbations of that line alone.
+\begin{algorithm}[!tb]
+\caption{iPerturb: context-specific GRN assembly and integrated propagation}
+\label{alg:iperturb}
+\small
+\begin{algorithmic}[1]
+\Require evidence tiers $\mathcal{E}_1,\dots,\mathcal{E}_4$; cell line $c$; training and validation perturbations with responses $(\mathcal{P}_{\mathrm{tr}},\Delta_{\mathrm{tr}})$, $(\mathcal{P}_{\mathrm{va}},\Delta_{\mathrm{va}})$; kernel grid $\mathcal{K}$; held-out target $t$
+\Ensure predicted response $\hat\Delta_t$; signed paths and supporting neighbours of $t$
+\State $A_\ell \gets$ edges of $\mathcal{E}_\ell$ on the gene axis of $c$, Level~2 active in $c$ \Comment{\emph{Phase I}}
+\State resolve duplicates by the lowest tier; set conflicting signs to unsigned
+\State $R \gets$ signed, directed edges of Level~1 \Comment{regulatory core}
+\State $\mathcal{A} \gets \{A_\ell\}$ as undirected, unsigned graphs \Comment{association tiers}
+\State clamp $x_t \gets x_t^{0}(1-\zeta)$ and iterate Eq.~\eqref{eq:fp} on $R$ \Comment{\emph{Phase II}}
+\State report the signed paths from $t$ and their supporting databases \Comment{Eq.~\eqref{eq:mech}}
+\State $\hat\Delta^{(0)} \gets$ linear low-rank prediction fitted on $\mathcal{P}_{\mathrm{tr}}$
+\For{each tier graph $A_\ell \in \mathcal{A}$}
+  \For{each kernel $\kappa \in \mathcal{K}$ and degree correction $\gamma$}
+    \State $S \gets \kappa(A_\ell)$;\quad $\hat\Delta^{(\ell)}_p \gets \sum_{j\in\mathcal{P}_{\mathrm{tr}}\setminus\{p\}} S_{pj}\deg_j^{-\gamma}\Delta_j \,/\, \sum_{j} S_{pj}\deg_j^{-\gamma}$
+  \EndFor
+  \State keep the $(\kappa,\gamma)$ with lowest validation error; $\hat\Delta^{(\ell)}_p\gets\hat\Delta^{(0)}_p$ if $p$ reaches no training target
+\EndFor
+\State $w \gets \mathrm{NNLS}\big([\hat\Delta^{(0)},\hat\Delta^{(1)},\dots,\hat\Delta^{(L)}]_{\mathcal{P}_{\mathrm{va}}},\Delta_{\mathrm{va}}\big)$;\quad $w \gets w/\textstyle\sum_\ell w_\ell$
+\State \Return $\hat\Delta_t=\sum_\ell w_\ell\,\hat\Delta^{(\ell)}_t$ and the top-weighted neighbours of $t$
+\end{algorithmic}
+\end{algorithm}
+To construct the GRN of a cell line, we integrated the evidence of Section~\ref{sec:data} into a five-tier hierarchy ordered by evidence strength.
+Level~1 forms the signed, directed backbone: curated TF--target interactions from TRRUST, OmniPath and CollecTRI, extended with transcriptional edges from SIGNOR~\cite{losurdo2023signor}; an edge keeps a sign only when its sources agree.
+Level~2 adds unsigned TF--target edges whose regulatory element is active in the cell line: GeneHancer enhancers with a tissue annotation of the line and a TF-binding site of the TF, and, as an extension, the 20 strongest factors per target gene in ChIP-Atlas experiments of the same line (K562 or hTERT RPE-1, $\pm$5\,kb of the transcription start site)~\cite{zou2024chipatlas}.
+Level~3 adds protein association, STRING pairs with combined score $\ge 700$, CORUM complex co-membership~\cite{tsitsiridis2023corum} and BioGRID physical interactions~\cite{oughtred2021biogrid}, and Level~4 adds co-expression: at most 20 of the 50 top-ranked COXPRESdb partners of each gene, and the 50 strongest partners per gene in GTEx samples re-aligned by ARCHS4~\cite{gtex2020atlas,lachmann2018archs4}.
+Level~5 is the observed response of the training perturbations of the line; it enters the GRN as the signal that is propagated (Section~\ref{sec:model}) and is recomputed for every fold, so no held-out response reaches the network.
+Levels~3--4 are association evidence: they are stored as undirected, unsigned edges and never drawn as regulatory arrows.
+
+Cross-tier duplicates were resolved in favour of the lowest-numbered tier, and within-tier sign conflicts defaulted to unsigned, so an unknown sign is never promoted to activation.
+Context therefore enters at three points: the gene axis and Level~2 depend on the cell line, Level~5 comes from that line's training perturbations, and the weights that combine the tiers are fitted on that line's validation perturbations.
+All tiers are restricted to the gene axis of the screen, and each tier is kept as a separate graph $A_\ell$ so that its contribution can be measured and weighted.
+Algorithm~\ref{alg:iperturb} summarises how the tiers are assembled and propagated; the propagation operators are defined in Section~\ref{sec:model}.
+
 
 \subsection{Learnable propagation that follows the Hill function}
 \label{sec:model}
@@ -68,4 +102,4 @@ Feedback makes Eq.~\eqref{eq:fp} cyclic. For a frozen graph we compute strongly 
 \label{sec:eval}
 For each cell line, targets were split into training, validation and test perturbations (70/15/15\%) in three folds stratified only by properties known without response data (TF status, control-expression tertile, curated out-degree bin); no target is shared across the splits of a fold. All graph-derived quantities, loadings, knockdown efficacy and hyper-parameters use training (and validation) perturbations only.
 Because the mean response of a perturbation is dominated by a response shared across perturbations~\cite{vinas2025systema}, the primary metric is the Pearson correlation of $\Delta$ \emph{centred} on the training-mean response ($\rho_c$), computed per perturbation without the perturbed gene and averaged over perturbations; we also report the same correlation after projecting the training-mean direction out of both profiles ($\rho_r$, which removes response magnitude), the top-20 centred correlation ($\rho_{20}$), the mean normalised rank of the correct perturbation among all test perturbations (Cent.; 0.5 is chance) and the area under the precision--recall curve for differentially expressed genes (|Welch $z|>4$, cell level, no biological replicates, prevalence-dominated by the shared response). Intervals are 95\% bootstrap intervals over unique held-out targets (each target averaged over the folds in which it is tested); paired differences use the same bootstrap.
-We compare against no change, the training-mean response, a ridge model on a low-rank gene embedding~\cite{ahlmanneltze2025comparison}, GEARS~\cite{roohani2024predicting} trained on the same folds (Section~\ref{sec:results_pred}), a two-layer graph convolutional network on the same GRN, and control GRNs with degree-preserving rewired edges or a graph learned from the training data alone. The full protocol was fixed in a hashed pre-registration file before fitting, and later analyses are labelled as such in the repository.
+We compare against no change, the training-mean response, a ridge model on a low-rank gene embedding~\cite{ahlmanneltze2025comparison}, GEARS~\cite{roohani2024predicting}, CPA~\cite{lotfollahi2023predicting} and biolord~\cite{piran2024biolord} trained on the same folds, released checkpoints of scGPT~\cite{cui2024scgpt} and STATE~\cite{adduri2025predicting} (Appendix~\ref{app:external}), a two-layer graph convolutional network on the same GRN, and control GRNs with degree-preserving rewired edges or a graph learned from the training data alone. The full protocol was fixed in a hashed pre-registration file before fitting, and later analyses are labelled as such in the repository.

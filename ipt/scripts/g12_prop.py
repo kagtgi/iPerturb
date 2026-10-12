@@ -25,6 +25,7 @@ ap.add_argument("--line", default="K562_essential")
 ap.add_argument("--folds", type=int, nargs="+", default=[0, 1, 2])
 ap.add_argument("--tag", default="")
 ap.add_argument("--fast", action="store_true")
+ap.add_argument("--rewire", action="store_true", help="degree-preserving rewired control of every tier graph")
 ap.add_argument("--extra", default="", help="comma list of name=path (tsv with a,b or source,target) extra tier graphs")
 a = ap.parse_args()
 
@@ -64,6 +65,25 @@ for item in [x for x in a.extra.split(",") if x]:
     tiers[nm] = adj(pairs(d[ca].astype(str).str.upper(), d[cb].astype(str).str.upper()))
 tiers["L1+L3"] = adj(np.concatenate([pairs(l1.source, l1.target), pairs(st.a.str.upper(), st.b.str.upper())]))
 print({k: int(v.nnz // 2) for k, v in tiers.items()}, flush=True)
+if a.rewire:
+    # Addendum M: degree-preserving rewired control of every tier graph (double-edge swaps, fixed seed)
+    import networkx as nx
+
+    def _rewire(A, seed):
+        e = np.array(sp.triu(A, 1).nonzero()).T
+        g = nx.Graph()
+        g.add_edges_from(map(tuple, e))
+        try:
+            nx.double_edge_swap(g, nswap=2 * len(e), max_tries=200 * len(e), seed=seed)
+        except nx.NetworkXAlgorithmError as err:  # dense hub tiers: keep the swaps already made (degrees preserved)
+            print("rewire: swap budget reached, keeping partial rewiring:", err, flush=True)
+        return adj(np.array(g.edges()))
+
+    for k in list(tiers):
+        if k != "L1+L3":
+            tiers[k] = _rewire(tiers[k], 0)
+    tiers["L1+L3"] = _rewire(tiers["L1+L3"], 1)
+    print("rewired", {k: int(v.nnz // 2) for k, v in tiers.items()}, flush=True)
 
 KERNELS = ([("onehop", {})] + [("rwr", dict(alpha=al, norm=nm)) for al in (0.1, 0.3, 0.5, 0.7, 0.9) for nm in ("rw", "sym")]
            + [("heat", dict(t=t)) for t in (0.5, 1.0, 2.0)] + [("trunc", dict(steps=k, norm="rw")) for k in (1, 2, 3)])

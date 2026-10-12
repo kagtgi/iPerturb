@@ -59,7 +59,7 @@ for line in LINES:
 for line in LINES:
     s = SHORT[line]
     U = unique_target_scores(line)
-    put(f"{s}_nuniq", U.target.nunique(), "{:,}")
+    put(f"{s}_nuniq", U[U.mid == "smooth_L1+L3|real|self"].target.nunique(), "{:,}")
     put(f"{s}_b1_raw", U[U.mid == "B1_trainmean|-|-"].pcc.mean(), "{:.2f}")
 
     def m(mid, met):

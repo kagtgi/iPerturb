@@ -20,7 +20,7 @@ mpl.rcParams["savefig.bbox"] = "standard"
 mpl.rcParams["axes.grid"] = False
 OUT = ROOT / "paper" / "figures"; OUT.mkdir(parents=True, exist_ok=True)
 CACHE = Path("D:/iPerturb/lnbi/cache")
-FW, FH = 122.0, 104.0
+FW, FH = 122.0, 110.0
 MM = 1 / 25.4
 fig = plt.figure(figsize=(FW * MM, FH * MM))
 CAP = []
@@ -31,7 +31,7 @@ def ax_mm(l, t, w, h, **kw):
 
 
 def letter(l, t, s):
-    fig.text(l / FW, 1 - t / FH, s, fontsize=9, fontweight="bold", va="top", ha="left")
+    fig_letter(fig, l, t, s, FH)
 
 
 # ---------------------------------------------------------------- data
@@ -64,7 +64,7 @@ sc = S1[order]
 nodes = [gi[seed]] + order
 isr = np.array([isrib(genes[n]) for n in nodes])
 n_rib_nb = int(isr[1:].sum())
-ra = ax_mm(2, 11, 50, 44); ra.axis("off")
+ra = ax_mm(2, 13, 50, 52); ra.axis("off")
 NN = len(order)
 ang = np.array([((i * 7) % NN) / NN * 2 * np.pi + np.pi / 2 for i in range(NN)])   # stride 7 spreads the ranks
 xy = np.column_stack([np.cos(ang), np.sin(ang)])
@@ -73,10 +73,12 @@ for k in range(NN):
 area = 48 * sc / sc.max()
 ra.scatter(xy[:, 0], xy[:, 1], s=area, c=[GBLUE if x else GGREY_L for x in isr[1:]], edgecolors="white", linewidths=0.3, zorder=2)
 ra.scatter([0], [0], s=170, c=GBLUE, edgecolors=GRED, linewidths=1.2, zorder=3)
-ra.text(0, -0.17, seed, fontsize=7, ha="center", va="top", color=GREY900, fontweight="bold", zorder=4)
+ra.text(0, -0.27, seed, fontsize=7, ha="center", va="top", color=GREY900, fontweight="bold", zorder=4,
+        bbox=dict(fc="white", ec="none", pad=0.6))
 for k in range(8):   # label the eight highest-scoring neighbours
     c_, s_ = np.cos(ang[k]), np.sin(ang[k])
-    ra.text(1.13 * c_, 1.13 * s_, genes[order[k]], fontsize=7, color=GREY900, va="center",
+    ra.text(1.15 * c_, 1.15 * s_, genes[order[k]], fontsize=7, color=GREY900,
+            va="bottom" if s_ > 0.9 else ("top" if s_ < -0.9 else "center"),
             ha="left" if c_ > 0.2 else ("right" if c_ < -0.2 else "center"), zorder=4)
 ra.set_xlim(-1.75, 1.75); ra.set_ylim(-1.3, 1.3); ra.set_aspect("equal")
 fig.text(7 / FW, 1 - 3.2 / FH, "Propagated neighbourhood", fontsize=8, ha="left", va="center", color=GREY900)
@@ -91,19 +93,19 @@ Dr = np.stack([D[prow[t]] for t in train_rib])  # (n_rib, G)
 top = np.argsort(-np.abs(Dr).mean(0))[:20]
 M = np.stack([D[prow[t]][top] for t in cols_sel], 1)
 cc = np.corrcoef(Dr); iu = np.triu_indices(len(train_rib), 1); pear = float(cc[iu].mean())
-rb = ax_mm(78, 15, 31, 41)
+rb = ax_mm(78, 15, 31, 51)
 vm = np.percentile(np.abs(M), 98)
 cmap = mpl.colors.LinearSegmentedColormap.from_list("bwr_g", [GBLUE, "white", GRED])
 im = rb.imshow(M, cmap=cmap, vmin=-vm, vmax=vm, aspect="auto", interpolation="nearest")
 rb.set_yticks(range(20)); rb.set_yticklabels(genes[top], fontsize=7)
 rb.set_xticks(range(ncol)); rb.set_xticklabels(cols_sel, rotation=90, fontsize=7)
-rb.xaxis.tick_top(); rb.tick_params(length=1.5, pad=1)
+rb.xaxis.tick_top(); rb.tick_params(length=0, pad=1.5)
 for s in rb.spines.values(): s.set_visible(False)
-cb = fig.add_axes([(111.5) / FW, 1 - 56 / FH, 2.2 / FW, 41 / FH])
+cb = fig.add_axes([(111.5) / FW, 1 - 66 / FH, 2.2 / FW, 51 / FH])
 cbar = fig.colorbar(im, cax=cb); cbar.outline.set_visible(False)
 cbar.set_ticks([-vm, 0, vm]); cbar.set_ticklabels([f"{-vm:.1f}", "0", f"{vm:.1f}"]); cbar.ax.tick_params(labelsize=7, length=1.5, pad=1)
 fig.text(56 / FW, 1 - 3.2 / FH, "Observed Δ, training RPL/RPS perturbations", fontsize=8, ha="left", va="center", color=GREY900)
-letter(0.5, 0.5, "(a)")
+letter(0.3, 0.8, "(a)")
 
 # ---------------------------------------------------------------- (b) similarity network
 fam_rules = [("MRPL", "mito-ribosome", GGREEN), ("MRPS", "mito-ribosome", GGREEN), ("RPL", "ribosome", GBLUE),
@@ -144,7 +146,7 @@ fr = pd.Series(fl).value_counts(normalize=True)
 chance = float((fr ** 2).sum())
 # note: chance computed among nodes with a family, per the spec: P(two random family nodes share family)
 posb = nx.spring_layout(Gb, seed=1, k=0.35, iterations=300)
-rbx = ax_mm(1, 61, 52, 24); rbx.axis("off")
+rbx = ax_mm(1, 74, 27, 30); rbx.axis("off")
 for u, v in E:
     rbx.plot([posb[u][0], posb[v][0]], [posb[u][1], posb[v][1]], color=GREY300, lw=0.35, zorder=1)
 X = np.array([posb[i] for i in range(len(names))])
@@ -157,11 +159,11 @@ rbx.set_aspect("equal"); rbx.margins(0.03)
 # legend (outside network, below title)
 leg = [(famcol[n], n) for n in dict.fromkeys(f for _, f, _ in fam_rules)] + [(GGREY_L, "other")]
 handles = [plt.Line2D([], [], marker="o", ls="", color=c_, markersize=3.6, markeredgewidth=0) for c_, _ in leg]
-fig.legend(handles, [t for _, t in leg], loc="upper left", bbox_to_anchor=(0.0, 1 - 87 / FH), fontsize=7,
-           ncol=2, handletextpad=0.1, columnspacing=0.8, labelspacing=0.15, borderpad=0, frameon=False,
+fig.legend(handles, [t for _, t in leg], loc="upper left", bbox_to_anchor=(28.6 / FW, 1 - 77 / FH), fontsize=7,
+           ncol=1, handletextpad=0.1, columnspacing=0.8, labelspacing=0.15, borderpad=0, frameon=False,
            bbox_transform=fig.transFigure)
-fig.text(7 / FW, 1 - 59 / FH, "Test-perturbation similarity", fontsize=8, ha="left", va="center", color=GREY900)
-letter(0.5, 57, "(b)")
+fig.text(7 / FW, 1 - 70.6 / FH, "Test-perturbation similarity", fontsize=8, ha="left", va="center", color=GREY900)
+letter(0.3, 68.5, "(b)")
 
 # ---------------------------------------------------------------- (c) integration
 DISP = {"L1": "L1 curated", "L3": "L3 STRING", "L4": "L4 COXPRES", "signor": "SIGNOR", "corum": "CORUM",
@@ -195,19 +197,20 @@ tiers = [t for t in DISP if any(t in W[k][0].index and (W[k][0][t] > 0.005 or t 
 BX, BW, BH = 56, 28, 7.2
 boxes = [("Tier graphs", "L1, L3, L4, ..."), ("Separate\npropagation", "one response per tier"),
          ("Non-negative\nweights", "fitted on validation"), ("Integrated\nresponse", "")]
-sa = ax_mm(55, 62, 23, 39); sa.axis("off"); sa.set_xlim(0, 23); sa.set_ylim(41, 0)
-ys = [0.5, 10.7, 20.9, 31.1]; bh = 8.6
+sa = ax_mm(55, 74, 23, 35.5); sa.axis("off"); sa.set_xlim(0, 23); sa.set_ylim(35.5, 0)
+ys = [0.5, 9.9, 19.3, 28.7]; bh = 6.4
 fc = [GBLUE_L, "#E8F0FE", "#E8F0FE", GBLUE]
 for (t1, _), y0, f_ in zip(boxes, ys, fc):
     sa.add_patch(FancyBboxPatch((0.5, y0), 22, bh, boxstyle="round,pad=0,rounding_size=1.2", fc=f_, ec=GBLUE, lw=0.8))
     sa.text(11.5, y0 + bh / 2, t1, ha="center", va="center", fontsize=7, color="white" if f_ == GBLUE else GREY900, linespacing=0.95)
 for y0 in ys[:-1]:
-    sa.add_patch(FancyArrowPatch((11.5, y0 + bh + 0.1), (11.5, y0 + 10.2 - 0.1), arrowstyle="-|>", mutation_scale=5, color=GREY700, lw=0.8))
-sa.set_xlim(0, 23); sa.set_ylim(41, 0)
-fig.text(61 / FW, 1 - 59 / FH, "Integration", fontsize=8, ha="left", va="center", color=GREY900)
-letter(54, 57, "(c)")
+    sa.add_patch(FancyArrowPatch((11.5, y0 + bh + 0.15), (11.5, y0 + 9.4 - 0.15), **ARROW_KW, color=GREY700, lw=LW_ARROW,
+                                 shrinkA=0, shrinkB=0))
+sa.set_xlim(0, 23); sa.set_ylim(35.5, 0)
+fig.text(61 / FW, 1 - 70.6 / FH, "Integration", fontsize=8, ha="left", va="center", color=GREY900)
+letter(54, 68.5, "(c)")
 # bars
-bx = ax_mm(98, 62, 23, 32)
+bx = ax_mm(98, 75, 23, 27)
 nt = len(tiers); yy = np.arange(nt)
 h = 0.38
 for k, (lab_, ln, col_) in enumerate(lines):
@@ -217,7 +220,7 @@ for k, (lab_, ln, col_) in enumerate(lines):
     bx.barh(yy + off, vals, height=h if len(W) > 1 else 0.6, color=col_, label=lab_, zorder=3)
 bx.set_yticks(yy); bx.set_yticklabels([DISP[t] for t in tiers], fontsize=7)
 bx.invert_yaxis(); bx.grid(axis="x", color=GREY200, lw=0.6, zorder=0); bx.set_axisbelow(True)
-bx.set_xlabel("NNLS weight", fontsize=7.5, labelpad=1); bx.tick_params(axis="x", labelsize=7, length=2, pad=1); bx.tick_params(axis="y", length=0, pad=2)
+bx.set_xlabel("NNLS weight", fontsize=7, labelpad=1); bx.tick_params(axis="x", labelsize=7, length=2, pad=1); bx.tick_params(axis="y", length=0, pad=2)
 bx.legend(loc="upper right", ncol=2, columnspacing=0.8, fontsize=7, handlelength=0.9, handletextpad=0.4, borderaxespad=0.2)
 bx.spines["left"].set_visible(False)
 bx.spines["bottom"].set_color(GREY300)

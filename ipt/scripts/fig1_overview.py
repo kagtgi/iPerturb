@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib import font_manager as fm
 from matplotlib.patches import (FancyBboxPatch, Rectangle, Circle, Ellipse, Arc,
                                 FancyArrowPatch)
-from ipt.viz.style import apply_style, GREY300, GREY500, GREY700, GREY900
+from ipt.viz.style import apply_style, GREY300, GREY500, GREY700, GREY900, ARROW_KW, LW_ARROW, FS_TITLE
 from ipt.viz.style import GBLUE_L, GGREEN, GRED, GBLUE, GGREY, GPURPLE_L, GYELLOW
 
 FONTDIR = r"D:\iPerturb\lnbi\figure_tools\assets\fonts\Google_Sans\static"
@@ -55,8 +55,7 @@ def seg(p, q, shrink0=0, shrink1=0):
 def edge(p, q, kind, r0=0.8, r1=0.8, lw=0.6, z=3):
     a, b, u = seg(p, q, r0, r1)
     if kind == "act":
-        ax.add_patch(FancyArrowPatch(a, b, arrowstyle="-|>,head_length=1.6,head_width=0.8",
-                                     mutation_scale=1, lw=lw, color=ACT, shrinkA=0, shrinkB=0, zorder=z))
+        ax.add_patch(FancyArrowPatch(a, b, **ARROW_KW, lw=LW_ARROW, color=ACT, shrinkA=0, shrinkB=0, zorder=z))
     elif kind == "rep":
         ax.plot([a[0], b[0]], [a[1], b[1]], color=REP, lw=lw, zorder=z, solid_capstyle="butt")
         n = np.array([-u[1], u[0]]) * 0.8
@@ -66,8 +65,7 @@ def edge(p, q, kind, r0=0.8, r1=0.8, lw=0.6, z=3):
     elif kind == "plain":
         ax.plot([a[0], b[0]], [a[1], b[1]], color=GREY700, lw=lw, zorder=z)
     elif kind == "flow":
-        ax.add_patch(FancyArrowPatch(a, b, arrowstyle="-|>,head_length=1.8,head_width=0.95",
-                                     mutation_scale=1, lw=0.7, color="black", shrinkA=0, shrinkB=0, zorder=z))
+        ax.add_patch(FancyArrowPatch(a, b, **ARROW_KW, lw=LW_ARROW, color="black", shrinkA=0, shrinkB=0, zorder=z))
 
 
 def node(p, r=0.8, fc=GBLUE, ec="white", z=4, lw=0.3):
@@ -85,9 +83,9 @@ def mini_grn(x0, y0, w, h, nodes, edges, hl=None):
 
 # ---------------------------------------------------------------- layout
 BY0, BY1 = 10.0, 69.0
-OY0, EY1 = 45.3, 42.3          # output box bottom / explanation box top
-widths = [19.0, 48.5, 22.0, 25.0, 25.0]
-gap = 2.3
+OY0, EY1 = 46.3, 40.8          # output box bottom / explanation box top
+widths = [18.3, 47.6, 21.7, 24.4, 24.4]
+gap = 3.2
 x = (W - (sum(widths[:4]) + gap * 3)) / 2
 XS = []
 for w in widths[:4]:
@@ -103,11 +101,11 @@ for i, (x0, y0, y1, title) in enumerate(BOXES):
          ec=GREY300 if not core else GBLUE_L, lw=0.7, r=1.2)
     ax.add_patch(Circle((x0 + w / 2, y1), 1.45, fc=GBLUE, ec="white", lw=0.5, zorder=6))
     T(x0 + w / 2, y1, str(i + 1), w="bold", c="white", fs=FS)
-    T(x0 + w / 2, y1 - (5.8 if "\n" in title else 4.6), title, w="bold", fs=FS, box=(x0, y0, w, y1 - y0))
+    T(x0 + w / 2, y1 - (6.0 if "\n" in title else 4.6), title, w="bold", fs=FS_TITLE, box=(x0, y0, w, y1 - y0))
 for i in range(3):
     xa = XS[i] + widths[i]
     edge((xa + 0.15, 40 if i < 2 else 56), (xa + gap - 0.15, 40 if i < 2 else 56), "flow", 0, 0)
-edge((XS[3] + widths[3] / 2, OY0 - 0.15), (XS[3] + widths[3] / 2, EY1 + 0.15), "flow", 0, 0)
+edge((XS[3] + widths[3] / 2, OY0 - 0.15), (XS[3] + widths[3] / 2, EY1 + 1.45 + 0.15), "flow", 0, 0)
 
 # ---------------------------------------------------------------- 1 Inputs
 P = 3.1   # line pitch (mm) for 7 pt stacked text
@@ -182,7 +180,7 @@ ax.add_patch(Rectangle((rc - 3.0, cyl_y - 5.0), 6.0, 5.0, fc=GBLUE_L, ec=GBLUE, 
 ax.add_patch(Ellipse((rc, cyl_y - 5.0), 6.0, 1.8, fc=GBLUE_L, ec=GBLUE, lw=0.5, zorder=3))
 ax.add_patch(Ellipse((rc, cyl_y), 6.0, 1.8, fc="#D2E3FC", ec=GBLUE, lw=0.5, zorder=4))
 T(rc, cyl_y - 7.3, "databases", box=box1)
-edge((rc, cyl_y - 9.2), (rc, cyl_y - 11.4), "flow", 0, 0)
+edge((rc, cyl_y - 9.1), (rc, cyl_y - 11.2), "flow", 0, 0)
 for k, s in enumerate(["context-", "specific", "GRN"]):
     T(rc, 46.6 - k * P, s, box=box1)
 nodes = [(0.12, 0.85), (0.88, 0.9), (0.5, 0.45), (0.15, 0.08), (0.85, 0.1)]
@@ -228,8 +226,7 @@ ax.add_patch(Arc((px, 21.7), 5.2, 5.2, theta1=-60, theta2=235, ec=GBLUE, lw=1.0,
 ha = np.deg2rad(235); hp = (px + 2.6 * np.cos(ha), 21.7 + 2.6 * np.sin(ha))
 tan = np.array([-np.sin(ha), np.cos(ha)])
 ax.add_patch(FancyArrowPatch((hp[0] - tan[0] * 0.3, hp[1] - tan[1] * 0.3), (hp[0] + tan[0] * 0.3, hp[1] + tan[1] * 0.3),
-                             arrowstyle="-|>,head_length=1.6,head_width=0.9", mutation_scale=1,
-                             color=GBLUE, lw=0.8, shrinkA=0, shrinkB=0, zorder=5))
+                             **ARROW_KW, color=GBLUE, lw=LW_ARROW, shrinkA=0, shrinkB=0, zorder=5))
 T(px, 21.7, "x*", w="bold", c=GBLUE, box=box2)
 for k, s in enumerate(["fixed", "point"]):
     T(px, 16.4 - k * P, s, box=box2)
@@ -240,25 +237,25 @@ box3 = (x0, OY0, w, BY1 - OY0)
 vals = [0.9, 0.55, 0.3, -0.15, -0.5, -0.95, 0.7, -0.3, 0.25, -0.6, 0.45, -0.2]
 bw_, bg_ = 1.3, 0.45
 xb0 = cx - (12 * bw_ + 11 * bg_) / 2
-base = 57.2
+base = 57.9
 for k, v in enumerate(vals):
     ax.add_patch(Rectangle((xb0 + k * (bw_ + bg_), base), bw_, v * 3.8, fc=GYELLOW if v > 0 else GPURPLE_L,
                            ec="none", zorder=3))
 ax.plot([xb0 - 0.5, xb0 + 12 * bw_ + 11 * bg_ + 0.5], [base, base], color=GREY700, lw=0.5, zorder=4)
 for k, s in enumerate(["predicted", "expression change"]):
-    T(cx, 51.0 - k * P, s, box=box3)
+    T(cx, 51.7 - k * P, s, box=box3)
 
 # ---------------------------------------------------------------- 5 Explanation
 x0, w = XS[3], widths[3]; cx = x0 + w / 2
 box4 = (x0, BY0, w, EY1 - BY0)
-pts = mini_grn(x0 + 3.5, 29.2, w - 7.0, 5.6,
+pts = mini_grn(x0 + 3.5, 27.9, w - 7.0, 5.0,
                [(0.5, 0.9), (0.1, 0.5), (0.9, 0.5), (0.3, 0.05), (0.75, 0.05)],
                [(1, 0, "act"), (2, 0, "rep"), (3, 1, "act"), (4, 2, "assoc")],
                hl={0: GBLUE, 1: GBLUE_L, 2: GBLUE_L, 3: GREY500, 4: GREY500})
 ax.add_patch(Circle(pts[0], 1.3, fc="none", ec=GBLUE, lw=0.6, zorder=5))
 lines5 = ["top affected genes", "+ supporting", "neighbours/paths,", "validated by edge/", "neighbour ablation"]
 for k, s in enumerate(lines5):
-    T(cx, 24.6 - k * P, s, box=box4)
+    T(cx, 23.9 - k * P, s, box=box4)
 
 # ---------------------------------------------------------------- legend strip
 LY = 4.2

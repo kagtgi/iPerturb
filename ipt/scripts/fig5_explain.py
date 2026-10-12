@@ -84,41 +84,48 @@ for L, kind, name in cases:
                    nn=len(nb), top=top, gain=float(gain[name]))
     print(L, name, "gain %.4f" % gain[name], "nn", len(nb), top, "r_B2 %.3f r_sm %.3f" % (info[L]["rb"], info[L]["rs"]))
 
-# ---------- figure
-mm = 1 / 25.4
-fig = plt.figure(figsize=(122 * mm, 112 * mm))
-gs = fig.add_gridspec(2, 2, left=0.115, right=0.985, top=0.885, bottom=0.165, wspace=0.40, hspace=0.95)
-axa = fig.add_subplot(gs[0, 0])
+# ---------- figure (122 mm = LNCS text width; positions in mm)
+FW, FH = 122.0, 105.0
+fig = plt.figure(figsize=(FW * MM, FH * MM))
+def ax_mm(x0, top, w, h):
+    return fig.add_axes([x0 / FW, 1 - (top + h) / FH, w / FW, h / FH])
+AXH, TOP1, TOP2 = 28.0, 11.0, 59.5
+XL, WL, XR, WR = 18.0, 40.0, 79.0, 41.0
+axa = ax_mm(XL, TOP1, WL, AXH)
 for line, col, lab, dx in (("K562_essential", GBLUE, "K562", -0.07), ("rpe1", GGREEN, "RPE1", 0.07)):
     m, lo, hi, n = zip(*resa[line]); m, lo, hi = map(np.array, (m, lo, hi))
     x = np.array(Ks) + dx
-    axa.errorbar(x, m, yerr=[m - lo, hi - m], fmt="o-", color=col, ms=3.5, lw=1.1, capsize=2, label=f"{lab} (n={n[0]})")
-axa.axhline(0, color=GGREY, lw=0.9, ls="--")
+    axa.errorbar(x, m, yerr=[m - lo, hi - m], fmt="o-", color=col, ms=3.2, lw=LW, elinewidth=LW, capsize=1.5,
+                 capthick=LW, label=f"{lab} (n={n[0]})")
+axa.axhline(0, color=GGREY, lw=LW_THIN, ls="--")
 axa.set_xticks(Ks); axa.set_xlabel("K removed neighbours")
-axa.set_ylabel("drop in centered Pearson:\ntop-K minus random-K\nremoval", fontsize=7)
-axa.legend(loc="upper left", fontsize=7, handlelength=1.4, borderaxespad=0.1)
-axa.set_title("Faithfulness (mean, 95% CI)", fontsize=7.5, loc="left", pad=4)
-for ax_, L in zip([fig.add_subplot(gs[0, 1]), fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[1, 1])], "bcd"):
+axa.set_ylabel("drop in centred Pearson:\ntop-K minus random-K\nremoval", linespacing=1.1)
+axa.legend(loc="upper left", handlelength=1.4, borderaxespad=0.1)
+axa.set_title("Faithfulness (mean, 95% CI)", fontsize=FS_TITLE, loc="left", pad=3)
+for ax_, L, x0, top in ((ax_mm(XR, TOP1, WR, AXH), "b", XR, TOP1), (ax_mm(XL, TOP2, WL, AXH), "c", XL, TOP2),
+                        (ax_mm(XR, TOP2, WR, AXH), "d", XR, TOP2)):
     d = info[L]
-    ax_.scatter(d["o"], d["pb"], s=7, color=GRED_L, alpha=0.9, lw=0, label="B2 linear")
-    ax_.scatter(d["o"], d["ps"], s=7, color=GBLUE, alpha=0.9, lw=0, label="smooth L1+L3")
+    ax_.scatter(d["o"], d["pb"], s=6, color=GRED_L, alpha=0.9, lw=0, label="B2 linear")
+    ax_.scatter(d["o"], d["ps"], s=6, color=GBLUE, alpha=0.9, lw=0, label="smooth L1+L3")
     lim = np.abs(np.concatenate([d["o"], d["pb"], d["ps"]])).max() * 1.05
-    ax_.plot([-lim, lim], [-lim, lim], color=GGREY_L, lw=0.8, zorder=0)
+    ax_.plot([-lim, lim], [-lim, lim], color=GGREY_L, lw=LW_THIN, zorder=0)
     ax_.set_xlim(-lim, lim); ax_.set_ylim(-lim, lim)
     ax_.set_xlabel("observed delta"); ax_.set_ylabel("predicted delta")
-    ax_.tick_params(labelsize=6.5)
     t1 = f"{d['name']} ({d['kind']}), {d['nn']} nbr" + ("" if d["nn"] == 1 else "s")
     t2 = f"r: B2 {d['rb']:.2f}, L1+L3 {d['rs']:.2f}"
     t3 = ("top nbrs: " + ", ".join(d["top"])) if d["top"] else "no association neighbours"
-    ax_.set_title(f"{t1}\n{t2}\n{t3}", fontsize=7, loc="left", pad=3, linespacing=1.15)
+    # title line (8 pt) above two 7-pt detail lines
+    ax_.annotate(f"{t2}\n{t3}", xy=(0, 1), xycoords="axes fraction", xytext=(0, 3), textcoords="offset points",
+                 fontsize=FS_BODY, ha="left", va="bottom", color=GREY900, linespacing=1.1)
+    ax_.annotate(t1, xy=(0, 1), xycoords="axes fraction", xytext=(0, 3 + 2 * FS_BODY * 1.1 + 2.0),
+                 textcoords="offset points", fontsize=FS_TITLE, ha="left", va="bottom", color=GREY900)
     globals()["ax" + L] = ax_
-axb.legend(loc="lower right", fontsize=6.5, handletextpad=0.1, borderaxespad=0.1, markerscale=1.2)
-for ax_, L in ((axa, "a"), (axb, "b"), (axc, "c"), (axd, "d")):
-    ax_.text(-0.36 if L in "ac" else -0.30, 1.0 + (0.34 if L in "cd" else 0.30 if L=="b" else 0.14), f"({L})", transform=ax_.transAxes,
-             fontsize=10, fontweight="bold", va="bottom", ha="left", clip_on=False)
-fig.text(0.01, 0.005, "Case rule (K562, fold 0): gain = Pearson(L1+L3) - Pearson(B2); (b) max gain, (c) min gain,\n"
+axb.legend(loc="lower right", handletextpad=0.1, borderaxespad=0.1, markerscale=1.2)
+for L, x, top in (("a", 0.3, TOP1), ("b", 64.0, TOP1), ("c", 0.3, TOP2), ("d", 64.0, TOP2)):
+    fig_letter(fig, x, top - 9.6, f"({L})", FH)
+fig.text(0.3 / FW, 0.3 / FH, "Case rule (K562, fold 0): gain = Pearson(L1+L3) - Pearson(B2); (b) max gain, (c) min gain,\n"
          "(d) alphabetically first test target without neighbours. \nScatter: 40 genes with largest |observed| delta, perturbed gene excluded.",
-         fontsize=7, ha="left", va="bottom", color=GREY700, linespacing=1.15)
+         fontsize=FS_BODY, ha="left", va="bottom", color=GREY700, linespacing=1.15)
 fig.savefig(OUT / "fig5_explain.pdf"); fig.savefig(OUT / "fig5_explain.png", dpi=600)
 json.dump({L: dict(name=d["name"], gain=d["gain"], n_nb=d["nn"], top=d["top"], r_b2=d["rb"], r_sm=d["rs"]) for L, d in info.items()},
           open(OUT / "fig5_explain.provenance.json", "w"), indent=1)

@@ -103,3 +103,11 @@ Selection on validation masked MSE; ties broken toward simpler. A kernel is repo
 (b) Validation on held-out reachable targets (3 folds x 2 lines; unit = test perturbation; responding genes |z|>3 with z = delta/SE): sign accuracy by shortest-path distance (1,2,3,>=4) and Pearson over reached genes, for finite-step K=1..4 and steady state; controls: edge signs permuted, and degree-preserving rewiring of the same edges (each with 20 random draws). Expected under no mechanism: sign accuracy 0.5. Reported with binomial 95% intervals pooled over (test target, gene) pairs and per-target paired bootstrap vs controls. Multi-hop (>=2) sign accuracy is reported even if it is at chance.
 (c) Mechanism reports (markdown) for the 3 test targets per line with the most responding reached genes (rule fixed here): knockdown, direct regulatory targets with observed vs predicted sign, strongest signed paths (<=3 hops) to the 5 most strongly responding reached genes with edge provenance, reinforcing vs opposing path mass; paths are candidate mechanisms only.
 (d) Preprocessing (prepare2): 5-MAD per-gem-group cell QC, single-guide cells only, no batch correction/imputation/cell-cycle regression, effect SE, pseudobulk log2FC, knockdown efficiency with detection flag; a precision-weighted variant of the smoothing head (row weights ~ n_cells) is compared with the unweighted head on the same folds (decision rule: CI excludes 0 in both lines).
+
+# Addendum M (2026-10-12; written before the run)
+Degree-preserving rewired control for the tier-integrated propagation (g12): every tier graph is
+rewired by double-edge swaps (2|E| swaps, seed 0; L1+L3 seed 1), then the identical g12 --fast
+pipeline (kernel/gamma/lambda selection and NNLS integration on validation) is run on the three
+folds. Comparison: prop[integrated]|nnls real vs rewired, paired bootstrap over unique targets.
+Addendum M note (2026-10-12): RPE1 rewiring exceeded networkx's swap-attempt budget on a dense tier; the budget was raised
+to 200|E| and a partial rewiring is kept (degrees stay preserved) if the budget is still exceeded. K562 runs unchanged.

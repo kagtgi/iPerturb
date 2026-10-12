@@ -16,12 +16,12 @@ MODELS = [  # (mid, label, color)
     ("B5_gcn|real|self", "iPerturb: GCN head (B5)", GGREEN), ("nbrmean_L3|real|self", "iPerturb: neighbour-mean head", GYELLOW),
     ("prop[L1+L3]|rwr", "iPerturb: multi-hop RWR", GPURPLE), ("prop[integrated]|nnls", "iPerturb: multi-tier integrated", GPURPLE),
 ]
-PANELS = [("pcc_c", "Centered Pearson"), ("pcc_resid", "Residualised Pearson"),
+PANELS = [("pcc_c", "Centred Pearson"), ("pcc_resid", "Residualised Pearson"),
           ("top20_c", "Top-20 Pearson"), ("cent_rank", "Centroid rank")]
 U = {l: unique_target_scores(l) for l in LINES}
 have = {m for l in LINES for m in U[l].mid.unique()}
 models = [m for m in MODELS if m[0] in have]
-fig, axes = plt.subplots(2, 2, figsize=(122 / 25.4, 112 / 25.4), sharey=True)
+fig, axes = plt.subplots(2, 2, figsize=(TEXT_W_MM * MM, 102 * MM), sharey=True)
 for ax, (met, title) in zip(axes.ravel(), PANELS):
     for li, l in enumerate(LINES):
         for yi, (mid, lab, col) in enumerate(models):
@@ -29,17 +29,19 @@ for ax, (met, title) in zip(axes.ravel(), PANELS):
             if v.empty: continue
             m, lo, hi = mean_ci(v)
             off = (-0.16, 0.16)[li]
-            ax.errorbar(m, yi + off, xerr=[[m - lo], [hi - m]], fmt=("o", "s")[li], ms=3.6, color=col, ecolor=col, elinewidth=1,
+            ax.errorbar(m, yi + off, xerr=[[m - lo], [hi - m]], fmt=("o", "s")[li], ms=3.2, color=col, ecolor=col, elinewidth=LW, mew=LW,
                         mec="white" if li == 0 else col, mfc=col if li == 0 else "white", capsize=0)
-    ax.set_title(title, fontsize=8.5, loc="left"); ax.set_yticks(range(len(models)))
-    ax.set_yticklabels([m[1] for m in models], fontsize=7); ax.invert_yaxis(); ax.grid(axis="y", visible=False)
-    if met == "cent_rank": ax.axvline(0.5, color=GGREY, lw=0.8, ls=":")
+    ax.set_title(title, fontsize=FS_TITLE, loc="left", pad=3); ax.set_yticks(range(len(models)))
+    ax.set_yticklabels([m[1] for m in models], fontsize=FS_BODY); ax.invert_yaxis(); ax.grid(axis="y", visible=False)
+    if met == "cent_rank": ax.axvline(0.5, color=GGREY, lw=LW_THIN, ls=":")
+LET = []
 for ax, c in zip(axes.ravel(), "abcd"):
-    ax.text(-0.02, 1.16, f"({c})", transform=ax.transAxes, fontweight="bold", fontsize=10, va="bottom")
+    LET.append((ax, panel_letter(ax, f"({c})", dx=-0.02, dy=1.09)))
 from matplotlib.lines import Line2D
-fig.legend([Line2D([], [], marker="o", ls="", color=GGREY, ms=4), Line2D([], [], marker="s", ls="", mfc="white", color=GGREY, ms=4)],
-           ["K562 (filled)", "RPE1 (open)"], loc="lower center", ncol=2, frameon=False, fontsize=7.5)
-fig.tight_layout(rect=(0, 0.04, 1, 1), h_pad=1.8, w_pad=0.8)
+fig.legend([Line2D([], [], marker="o", ls="", color=GGREY, ms=3.2), Line2D([], [], marker="s", ls="", mfc="white", color=GGREY, ms=3.2)],
+           ["K562 (filled)", "RPE1 (open)"], loc="lower center", ncol=2, frameon=False, fontsize=FS_BODY, borderaxespad=0.2)
+fig.tight_layout(rect=(0, 0.045, 1, 1), h_pad=1.2, w_pad=1.6, pad=0.4)
+align_letters_to_ink(fig, LET)
 Path("paper/figures").mkdir(parents=True, exist_ok=True)
 for ext in ("pdf", "png"): fig.savefig(f"paper/figures/fig3_generalization.{ext}")
 print({LINE_NAME[l]: int(U[l].target.nunique()) for l in LINES})
